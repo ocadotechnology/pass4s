@@ -158,7 +158,7 @@ lazy val plaintext = module("plaintext", directory = "addons")
   .dependsOn(core, kernel)
 
 lazy val extra = module("extra", directory = "addons")
-  .dependsOn(high, circe) // TODO This should not need circe, should only rely on `high`
+  .dependsOn(high, circe) 
 
 lazy val s3Proxy = module("s3proxy", directory = "addons")
   .settings(
