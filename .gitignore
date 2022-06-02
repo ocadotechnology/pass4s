@@ -1,0 +1,31 @@
+# Created by .ignore support plugin (hsz.mobi)
+*.log
+*.ctxt
+.mtj.tmp/
+*.jar
+hs_err_pid*
+.idea
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+.idea/replstate.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+.cache
+.lib/
+.metals/
+.bloop/
+.bsp/
+
+# vs code
+.history/
+.vscode/
+project/metals.sbt
+project/project/

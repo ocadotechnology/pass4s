@@ -1,0 +1,3 @@
+Code used in taps.scala in
+connectors/activemq/src/main/scala/com/ocado/ospnow/wms/pass4s/connectors/activemq
+is modified version of the Code originally created by Martin Krasser. (https://github.com/krasserm/streamz/)

@@ -1,0 +1,26 @@
+digraph "projects-graph" {
+    graph [dpi = 150]
+
+    node [
+        shape="record"
+    ]
+    edge [
+        arrowtail="none"
+    ]
+    "activemq"[label=<activemq>]
+    "circe"[label=<circe>]
+    "core"[label=<core>]
+    "extra"[label=<extra>]
+    "high"[label=<high>]
+    "kernel"[label=<kernel>]
+    "phobos"[label=<phobos>]
+    "activemq" -> "core" [style=solid]
+    "circe" -> "core" [style=solid]
+    "circe" -> "kernel" [style=solid]
+    "extra" -> "circe" [style=solid]
+    "extra" -> "high" [style=solid]
+    "high" -> "core" [style=solid]
+    "high" -> "kernel" [style=solid]
+    "phobos" -> "core" [style=solid]
+    "phobos" -> "kernel" [style=solid]
+}
