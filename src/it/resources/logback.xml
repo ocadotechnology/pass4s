@@ -1,0 +1,27 @@
+<configuration>
+
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+    <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{YYYY-MM-dd HH:mm:ss.SSS} [%level] %magenta(%logger{36}) [%thread] %message%n%xException</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC_STDOUT" class="ch.qos.logback.classic.AsyncAppender">
+        <param name="queueSize" value="1024"/>
+        <param name="neverBlock" value="true"/>
+        <appender-ref ref="STDOUT"/>
+    </appender>
+
+    <logger name="com.ocadotechnology.pass4s" level="TRACE"/>
+    <logger name="org.apache" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC_STDOUT"/>
+    </root>
+
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+
+</configuration>
