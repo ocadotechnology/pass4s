@@ -15,7 +15,7 @@
         <appender-ref ref="STDOUT"/>
     </appender>
 
-    <logger name="com.ocado.ospnow.wms.pass4s" level="TRACE"/>
+    <logger name="com.ocadotechnology.pass4s" level="TRACE"/>
     <logger name="org.apache" level="INFO"/>
 
     <root level="INFO">
