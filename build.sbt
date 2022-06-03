@@ -49,6 +49,8 @@ lazy val root = (project in file("."))
   .aggregate(core, kernel, high, activemq, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
   .dependsOn(high, activemq, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
 
+excludeFilter.in(headerSources) := HiddenFileFilter || "taps.scala"
+
 def module(name: String, directory: String = ".") = Project(s"pass4s-$name", file(directory) / name).settings(commonSettings)
 
 lazy val core = module("core")
