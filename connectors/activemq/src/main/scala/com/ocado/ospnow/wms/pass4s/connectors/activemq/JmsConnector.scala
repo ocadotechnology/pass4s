@@ -1,16 +1,16 @@
-package com.ocado.ospnow.wms.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.activemq
 
 import akka.actor.ActorSystem
 import akka.stream.{RestartSettings => AkkaRestartSettings}
 import cats.effect.Resource
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsSource.JmsSourceSettings
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.consumer._
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.producer._
-import com.ocado.ospnow.wms.pass4s.core.CommittableMessage
-import com.ocado.ospnow.wms.pass4s.core.Connector
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Source
+import com.ocadotechnology.pass4s.connectors.activemq.JmsSource.JmsSourceSettings
+import com.ocadotechnology.pass4s.connectors.activemq.consumer._
+import com.ocadotechnology.pass4s.connectors.activemq.producer._
+import com.ocadotechnology.pass4s.core.CommittableMessage
+import com.ocadotechnology.pass4s.core.Connector
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Source
 import fs2.Stream
 import org.typelevel.log4cats.Logger
 

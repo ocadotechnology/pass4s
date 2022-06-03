@@ -1,9 +1,9 @@
-package com.ocado.ospnow.wms.pass4s.core
+package com.ocadotechnology.pass4s.core
 
 import cats.Applicative
 import cats.effect.Resource
 import cats.effect.kernel.Resource.ExitCase
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core.Message.Payload
 import fs2.Stream
 
 import scala.concurrent.duration.FiniteDuration

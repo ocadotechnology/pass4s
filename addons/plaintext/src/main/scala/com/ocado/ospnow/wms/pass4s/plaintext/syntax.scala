@@ -1,10 +1,10 @@
-package com.ocado.ospnow.wms.pass4s.plaintext
+package com.ocadotechnology.pass4s.plaintext
 
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.groupId.GroupIdMeta
-import com.ocado.ospnow.wms.pass4s.core.groupId.MessageGroup
-import com.ocado.ospnow.wms.pass4s.kernel.Sender
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
+import com.ocadotechnology.pass4s.core.groupId.MessageGroup
+import com.ocadotechnology.pass4s.kernel.Sender
 
 object syntax {
 

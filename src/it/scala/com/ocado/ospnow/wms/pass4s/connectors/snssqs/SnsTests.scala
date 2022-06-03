@@ -1,25 +1,25 @@
-package com.ocado.ospnow.wms.pass4s.connectors.snssqs
+package com.ocadotechnology.pass4s.connectors.snssqs
 
 import cats.effect.IO
 import cats.effect.Resource
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.connectors.sns.Sns
-import com.ocado.ospnow.wms.pass4s.connectors.sns.SnsArn
-import com.ocado.ospnow.wms.pass4s.connectors.sns.SnsClientException
-import com.ocado.ospnow.wms.pass4s.connectors.sns.SnsDestination
-import com.ocado.ospnow.wms.pass4s.connectors.sns.SnsFifo
-import com.ocado.ospnow.wms.pass4s.connectors.sns.SnsFifoDestination
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.Sqs
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsEndpoint
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsFifo
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsFifoEndpoint
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsUrl
-import com.ocado.ospnow.wms.pass4s.connectors.util.LocalStackContainerUtils._
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.groupId.MessageGroup
-import com.ocado.ospnow.wms.pass4s.high.Broker
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer
-import com.ocado.ospnow.wms.pass4s.kernel.Sender
+import com.ocadotechnology.pass4s.connectors.sns.Sns
+import com.ocadotechnology.pass4s.connectors.sns.SnsArn
+import com.ocadotechnology.pass4s.connectors.sns.SnsClientException
+import com.ocadotechnology.pass4s.connectors.sns.SnsDestination
+import com.ocadotechnology.pass4s.connectors.sns.SnsFifo
+import com.ocadotechnology.pass4s.connectors.sns.SnsFifoDestination
+import com.ocadotechnology.pass4s.connectors.sqs.Sqs
+import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
+import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
+import com.ocadotechnology.pass4s.connectors.sqs.SqsFifoEndpoint
+import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
+import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.groupId.MessageGroup
+import com.ocadotechnology.pass4s.high.Broker
+import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.kernel.Sender
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.circe.Encoder
@@ -99,7 +99,7 @@ object SnsTests extends MutableIOSuite {
       fifoTopicWithSubscriptionResource(snsClient, sqsClient)("another-fifo-topic")
         .use {
           case (topicArn, queueUrl) =>
-            import com.ocado.ospnow.wms.pass4s.circe.syntax._
+            import com.ocadotechnology.pass4s.circe.syntax._
             val sender: Sender[IO, Foo] = broker.sender.asJsonSenderWithMessageGroup[Foo](SnsFifoDestination(SnsArn(topicArn)))
             val consumeMessageFromQueue =
               Consumer
@@ -131,8 +131,8 @@ object SnsTests extends MutableIOSuite {
       import org.scalatest.matchers.should.Matchers._
 
       """
-        import com.ocado.ospnow.wms.pass4s.circe.syntax._
-        import com.ocado.ospnow.wms.pass4s.core.Destination
+        import com.ocadotechnology.pass4s.circe.syntax._
+        import com.ocadotechnology.pass4s.core.Destination
 
         final case class Foo(bar: Int, order: String)
         object Foo {

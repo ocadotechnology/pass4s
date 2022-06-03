@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.connectors.jms
+package com.ocadotechnology.pass4s.connectors.jms
 
 import akka.actor.ActorSystem
 import akka.stream.alpakka.jms.ConnectionRetryException
@@ -7,14 +7,14 @@ import cats.effect.Resource
 import cats.effect.kernel.Deferred
 import cats.effect.std.Semaphore
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.Jms
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsDestination
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsSource
-import com.ocado.ospnow.wms.pass4s.connectors.util.EmbeddedJmsBroker._
-import com.ocado.ospnow.wms.pass4s.connectors.util.ResourceAccess
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.high.Broker
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.connectors.activemq.Jms
+import com.ocadotechnology.pass4s.connectors.activemq.JmsDestination
+import com.ocadotechnology.pass4s.connectors.activemq.JmsSource
+import com.ocadotechnology.pass4s.connectors.util.EmbeddedJmsBroker._
+import com.ocadotechnology.pass4s.connectors.util.ResourceAccess
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.high.Broker
+import com.ocadotechnology.pass4s.kernel.Consumer
 import org.apache.activemq.broker.BrokerService
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger

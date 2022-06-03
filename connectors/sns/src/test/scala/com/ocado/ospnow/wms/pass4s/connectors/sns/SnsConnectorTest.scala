@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.connectors.sns
+package com.ocadotechnology.pass4s.connectors.sns
 
 import weaver.SimpleIOSuite
 

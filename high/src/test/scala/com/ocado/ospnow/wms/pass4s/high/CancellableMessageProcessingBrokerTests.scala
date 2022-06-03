@@ -1,9 +1,9 @@
-package com.ocado.ospnow.wms.pass4s.high
+package com.ocadotechnology.pass4s.high
 
 import cats.data.Chain
 import cats.effect._
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.core._
+import com.ocadotechnology.pass4s.core._
 import fs2.Stream
 import weaver.SimpleIOSuite
 

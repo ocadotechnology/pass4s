@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.kernel
+package com.ocadotechnology.pass4s.kernel
 
 import cats.data.Writer
 import cats.kernel.laws.discipline.EqTests
@@ -7,8 +7,8 @@ import cats.laws.discipline.ContravariantMonoidalTests
 import cats.laws.discipline.MiniInt
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
-import com.ocado.ospnow.wms.pass4s.kernel.Arbitraries._
-import com.ocado.ospnow.wms.pass4s.kernel.Cogens._
+import com.ocadotechnology.pass4s.kernel.Arbitraries._
+import com.ocadotechnology.pass4s.kernel.Cogens._
 import org.scalacheck.Arbitrary
 import weaver.FunSuite
 import weaver.discipline.Discipline

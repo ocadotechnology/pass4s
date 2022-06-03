@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.core
+package com.ocadotechnology.pass4s.core
 
 object groupId {
 

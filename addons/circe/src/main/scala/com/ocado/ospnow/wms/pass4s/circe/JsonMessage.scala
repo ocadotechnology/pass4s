@@ -1,7 +1,7 @@
-package com.ocado.ospnow.wms.pass4s.circe
+package com.ocadotechnology.pass4s.circe
 
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message
 import io.circe.Encoder
 import io.circe.syntax._
 

@@ -1,11 +1,11 @@
-package com.ocado.ospnow.wms.pass4s.connectors.util
+package com.ocadotechnology.pass4s.connectors.util
 
 import akka.actor.ActorSystem
 
 import cats.effect.IO
 import cats.effect.Resource
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsConnector
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsConnector.JmsConnector
+import com.ocadotechnology.pass4s.connectors.activemq.JmsConnector
+import com.ocadotechnology.pass4s.connectors.activemq.JmsConnector.JmsConnector
 import org.typelevel.log4cats.Logger
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.broker.BrokerService

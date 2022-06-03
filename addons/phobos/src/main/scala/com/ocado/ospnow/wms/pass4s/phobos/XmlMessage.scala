@@ -1,7 +1,7 @@
-package com.ocado.ospnow.wms.pass4s.phobos
+package com.ocadotechnology.pass4s.phobos
 
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message
 import ru.tinkoff.phobos.encoding.XmlEncoder
 
 object XmlMessage {

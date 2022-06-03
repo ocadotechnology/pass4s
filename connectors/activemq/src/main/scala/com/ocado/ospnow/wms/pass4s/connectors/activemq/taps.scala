@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ocado.ospnow.wms.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.activemq
 
 import akka.stream.FlowShape
 import akka.stream.Graph

@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.demo
+package com.ocadotechnology.pass4s.demo
 
 import cats.Foldable
 import cats.Monad
@@ -14,14 +14,14 @@ import cats.effect.Resource
 import cats.effect.implicits._
 import cats.implicits._
 import cats.~>
-import com.ocado.ospnow.wms.pass4s.circe.syntax._
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.Jms
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsConnector
-import com.ocado.ospnow.wms.pass4s.core._
-import com.ocado.ospnow.wms.pass4s.extra.MessageProcessor
-import com.ocado.ospnow.wms.pass4s.high._
-import com.ocado.ospnow.wms.pass4s.kernel._
-import com.ocado.ospnow.wms.pass4s.logging.syntax._
+import com.ocadotechnology.pass4s.circe.syntax._
+import com.ocadotechnology.pass4s.connectors.activemq.Jms
+import com.ocadotechnology.pass4s.connectors.activemq.JmsConnector
+import com.ocadotechnology.pass4s.core._
+import com.ocadotechnology.pass4s.extra.MessageProcessor
+import com.ocadotechnology.pass4s.high._
+import com.ocadotechnology.pass4s.kernel._
+import com.ocadotechnology.pass4s.logging.syntax._
 import fs2.Pipe
 import fs2.Stream
 import org.typelevel.log4cats.Logger

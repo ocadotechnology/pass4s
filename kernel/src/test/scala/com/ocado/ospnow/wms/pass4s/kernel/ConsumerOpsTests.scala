@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.kernel
+package com.ocadotechnology.pass4s.kernel
 
 import cats.data.Kleisli
 import cats.effect.IO

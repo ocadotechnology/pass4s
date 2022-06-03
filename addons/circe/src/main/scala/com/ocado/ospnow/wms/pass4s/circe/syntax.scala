@@ -1,15 +1,15 @@
-package com.ocado.ospnow.wms.pass4s.circe
+package com.ocadotechnology.pass4s.circe
 
 import cats.Defer
 import cats.MonadError
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.core.groupId.GroupIdMeta
-import com.ocado.ospnow.wms.pass4s.core.groupId.MessageGroup
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer._
-import com.ocado.ospnow.wms.pass4s.kernel._
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
+import com.ocadotechnology.pass4s.core.groupId.MessageGroup
+import com.ocadotechnology.pass4s.kernel.Consumer._
+import com.ocadotechnology.pass4s.kernel._
 import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.parser.decode

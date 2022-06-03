@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.activemq
 
 import cats.effect.Resource
 import cats.effect.Sync

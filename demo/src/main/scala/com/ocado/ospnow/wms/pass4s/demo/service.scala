@@ -1,7 +1,7 @@
-package com.ocado.ospnow.wms.pass4s.demo
+package com.ocadotechnology.pass4s.demo
 
 import cats.~>
-import com.ocado.ospnow.wms.pass4s.kernel._
+import com.ocadotechnology.pass4s.kernel._
 
 trait MyService[F[_]] {
   def foo(): F[Unit]

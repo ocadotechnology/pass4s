@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.connectors.kinesis
+package com.ocadotechnology.pass4s.connectors.kinesis
 
 import cats.ApplicativeThrow
 import cats.effect.Async
@@ -6,8 +6,8 @@ import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.Sync
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.core._
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core._
 import fs2.Stream
 import io.laserdisc.pure.kinesis.tagless.KinesisAsyncClientOp
 import io.laserdisc.pure.kinesis.tagless.{Interpreter => KinesisInterpreter}

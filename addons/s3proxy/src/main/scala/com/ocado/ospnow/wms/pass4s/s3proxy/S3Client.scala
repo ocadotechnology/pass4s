@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.s3proxy
+package com.ocadotechnology.pass4s.s3proxy
 
 
 import cats.effect.kernel.Async

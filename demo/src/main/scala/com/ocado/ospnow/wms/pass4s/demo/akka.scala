@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.demo
+package com.ocadotechnology.pass4s.demo
 
 import akka.actor.ActorSystem
 import cats.effect.Async

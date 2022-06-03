@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.demo
+package com.ocadotechnology.pass4s.demo
 
 import cats.effect.ExitCode
 import cats.effect.IO
@@ -7,16 +7,16 @@ import cats.effect.kernel.Async
 import cats.effect.kernel.Sync
 import cats.effect.kernel.Temporal
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.circe.syntax._
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.Jms
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsSource
-import com.ocado.ospnow.wms.pass4s.core.CommittableMessage
-import com.ocado.ospnow.wms.pass4s.core.Connector
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.core.Source
-import com.ocado.ospnow.wms.pass4s.high.Broker
-import com.ocado.ospnow.wms.pass4s.logging.syntax._
+import com.ocadotechnology.pass4s.circe.syntax._
+import com.ocadotechnology.pass4s.connectors.activemq.Jms
+import com.ocadotechnology.pass4s.connectors.activemq.JmsSource
+import com.ocadotechnology.pass4s.core.CommittableMessage
+import com.ocadotechnology.pass4s.core.Connector
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core.Source
+import com.ocadotechnology.pass4s.high.Broker
+import com.ocadotechnology.pass4s.logging.syntax._
 import fs2.Pure
 import fs2.Stream
 import org.typelevel.log4cats.Logger

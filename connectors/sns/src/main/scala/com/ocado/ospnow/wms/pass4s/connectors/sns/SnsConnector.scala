@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.connectors.sns
+package com.ocadotechnology.pass4s.connectors.sns
 
 import cats.ApplicativeThrow
 import cats.Monad
@@ -7,9 +7,9 @@ import cats.data.OptionT
 import cats.effect.Async
 import cats.effect.Resource
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.core._
-import com.ocado.ospnow.wms.pass4s.core.groupId.GroupIdMeta
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core._
+import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
 import fs2.Stream
 import io.laserdisc.pure.sns.tagless.SnsAsyncClientOp
 import io.laserdisc.pure.sns.tagless.{Interpreter => SnsInterpreter}

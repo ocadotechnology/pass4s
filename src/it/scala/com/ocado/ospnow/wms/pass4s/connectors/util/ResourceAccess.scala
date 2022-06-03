@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.connectors.util
+package com.ocadotechnology.pass4s.connectors.util
 
 import cats.effect.IO
 import cats.effect.Resource

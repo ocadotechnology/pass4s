@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.logging
+package com.ocadotechnology.pass4s.logging
 
 import cats.Monad
 import cats.effect.Resource
@@ -7,14 +7,14 @@ import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Outcome
 import cats.effect.kernel.Resource.ExitCase
 import cats.syntax.all._
-import com.ocado.ospnow.wms.pass4s.core.CommittableMessage
-import com.ocado.ospnow.wms.pass4s.core.Connector
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.core.Source
-import com.ocado.ospnow.wms.pass4s.high.Broker
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer
-import com.ocado.ospnow.wms.pass4s.kernel.Sender
+import com.ocadotechnology.pass4s.core.CommittableMessage
+import com.ocadotechnology.pass4s.core.Connector
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core.Source
+import com.ocadotechnology.pass4s.high.Broker
+import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.kernel.Sender
 import fs2.Stream
 import org.typelevel.log4cats.Logger
 

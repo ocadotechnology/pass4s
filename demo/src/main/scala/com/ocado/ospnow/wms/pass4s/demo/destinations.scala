@@ -1,7 +1,7 @@
-package com.ocado.ospnow.wms.pass4s.demo
+package com.ocadotechnology.pass4s.demo
 
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsDestination
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.JmsSource
+import com.ocadotechnology.pass4s.connectors.activemq.JmsDestination
+import com.ocadotechnology.pass4s.connectors.activemq.JmsSource
 
 object Destinations {
   val inventoryEvents = JmsSource.queue("Inventory.Events")

@@ -1,16 +1,16 @@
-package com.ocado.ospnow.wms.pass4s.connectors.snssqs
+package com.ocadotechnology.pass4s.connectors.snssqs
 
 import cats.implicits._
 import cats.effect.IO
 import cats.effect.Resource
-import com.ocado.ospnow.wms.pass4s.connectors.util.MockServerContainerUtils._
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.Sqs
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsClientException
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsConnector
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsEndpoint
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsUrl
-import com.ocado.ospnow.wms.pass4s.high.Broker
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.connectors.util.MockServerContainerUtils._
+import com.ocadotechnology.pass4s.connectors.sqs.Sqs
+import com.ocadotechnology.pass4s.connectors.sqs.SqsClientException
+import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
+import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
+import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
+import com.ocadotechnology.pass4s.high.Broker
+import com.ocadotechnology.pass4s.kernel.Consumer
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.apache.commons.codec.digest.DigestUtils

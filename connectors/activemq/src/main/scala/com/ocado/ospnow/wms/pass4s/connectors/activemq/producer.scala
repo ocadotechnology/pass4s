@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.activemq
 
 import akka.actor.ActorSystem
 import akka.stream.alpakka.jms.scaladsl.JmsProducer
@@ -13,9 +13,9 @@ import cats.effect.kernel.Ref
 import cats.effect.std.Queue
 import cats.effect.std.Semaphore
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.connectors.activemq.taps._
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.Message
+import com.ocadotechnology.pass4s.connectors.activemq.taps._
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message
 import fs2.Pipe
 import fs2.Stream
 

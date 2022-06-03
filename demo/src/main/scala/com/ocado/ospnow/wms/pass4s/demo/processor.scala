@@ -1,10 +1,10 @@
-package com.ocado.ospnow.wms.pass4s.demo
+package com.ocadotechnology.pass4s.demo
 
 import scala.concurrent.duration._
 
 import cats.effect.kernel.Temporal
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.kernel._
+import com.ocadotechnology.pass4s.kernel._
 
 object MyProcessor {
 

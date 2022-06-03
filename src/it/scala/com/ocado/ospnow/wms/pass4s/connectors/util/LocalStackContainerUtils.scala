@@ -1,17 +1,17 @@
-package com.ocado.ospnow.wms.pass4s.connectors.util
+package com.ocadotechnology.pass4s.connectors.util
 
 import cats.Endo
 import cats.effect.IO
 import cats.effect.Resource
 import cats.implicits._
 import com.dimafeng.testcontainers.LocalStackV2Container
-import com.ocado.ospnow.wms.pass4s.connectors.kinesis.KinesisConnector
-import com.ocado.ospnow.wms.pass4s.connectors.kinesis.KinesisConnector.KinesisConnector
-import com.ocado.ospnow.wms.pass4s.connectors.sns.SnsConnector
-import com.ocado.ospnow.wms.pass4s.connectors.sns.SnsConnector.SnsConnector
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsConnector
-import com.ocado.ospnow.wms.pass4s.connectors.sqs.SqsConnector.SqsConnector
-import com.ocado.ospnow.wms.pass4s.s3proxy.S3Client
+import com.ocadotechnology.pass4s.connectors.kinesis.KinesisConnector
+import com.ocadotechnology.pass4s.connectors.kinesis.KinesisConnector.KinesisConnector
+import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
+import com.ocadotechnology.pass4s.connectors.sns.SnsConnector.SnsConnector
+import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
+import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector.SqsConnector
+import com.ocadotechnology.pass4s.s3proxy.S3Client
 import io.laserdisc.pure.kinesis.tagless.KinesisAsyncClientOp
 import io.laserdisc.pure.sns.tagless.SnsAsyncClientOp
 import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp

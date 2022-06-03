@@ -1,14 +1,14 @@
-package com.ocado.ospnow.wms.pass4s.extra
+package com.ocadotechnology.pass4s.extra
 
 import cats.arrow.FunctionK
 import cats.effect.Concurrent
 import cats.effect.syntax.all._
 import cats.syntax.all._
 import cats.~>
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Source
-import com.ocado.ospnow.wms.pass4s.high.Broker
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Source
+import com.ocadotechnology.pass4s.high.Broker
+import com.ocadotechnology.pass4s.kernel.Consumer
 
 object MessageProcessor {
 

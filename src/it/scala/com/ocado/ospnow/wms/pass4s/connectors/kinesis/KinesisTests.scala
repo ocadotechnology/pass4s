@@ -1,11 +1,11 @@
-package com.ocado.ospnow.wms.pass4s.connectors.kinesis
+package com.ocadotechnology.pass4s.connectors.kinesis
 
 import cats.effect.IO
 import cats.effect.Resource
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.connectors.util.LocalStackContainerUtils._
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.high.Broker
+import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.high.Broker
 import io.laserdisc.pure.kinesis.tagless.KinesisAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import software.amazon.awssdk.services.kinesis.model.GetRecordsRequest

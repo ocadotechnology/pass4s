@@ -1,4 +1,4 @@
-package com.ocado.ospnow.wms.pass4s.high
+package com.ocadotechnology.pass4s.high
 
 import cats.ApplicativeThrow
 import cats.MonadThrow
@@ -6,13 +6,13 @@ import cats.effect.Resource
 import cats.effect.implicits._
 import cats.effect.kernel.Async
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.core.Connector
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.End
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.core.Source
-import com.ocado.ospnow.wms.pass4s.kernel._
+import com.ocadotechnology.pass4s.core.Connector
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.End
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core.Source
+import com.ocadotechnology.pass4s.kernel._
 import fs2.Stream
 
 import scala.reflect.runtime.universe._

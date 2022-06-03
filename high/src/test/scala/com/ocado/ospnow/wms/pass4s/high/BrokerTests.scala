@@ -1,14 +1,14 @@
-package com.ocado.ospnow.wms.pass4s.high
+package com.ocadotechnology.pass4s.high
 
 import cats.effect._
 import cats.implicits._
-import com.ocado.ospnow.wms.pass4s.core.Destination
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Source
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer
-import com.ocado.ospnow.wms.pass4s.kernel.RefSender
-import com.ocado.ospnow.wms.pass4s.kernel.Sender
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Source
+import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.kernel.RefSender
+import com.ocadotechnology.pass4s.kernel.Sender
 import weaver.SimpleIOSuite
 
 import scala.reflect.runtime.universe._

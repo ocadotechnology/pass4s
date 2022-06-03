@@ -1,13 +1,13 @@
-package com.ocado.ospnow.wms.pass4s.s3proxy
+package com.ocadotechnology.pass4s.s3proxy
 
 import cats.Monad
 import cats.MonadThrow
 import cats.effect.std.UUIDGen
 import cats.syntax.all._
-import com.ocado.ospnow.wms.pass4s.core.Message
-import com.ocado.ospnow.wms.pass4s.core.Message.Payload
-import com.ocado.ospnow.wms.pass4s.kernel.Consumer
-import com.ocado.ospnow.wms.pass4s.kernel.Sender
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
+import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.kernel.Sender
 import io.circe.parser.decode
 import io.circe.syntax._
 
