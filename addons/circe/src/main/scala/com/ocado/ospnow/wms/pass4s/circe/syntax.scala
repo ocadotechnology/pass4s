@@ -93,7 +93,6 @@ object syntax {
     def asJsonConsumer[B: Decoder](implicit M: MonadError[F, _ >: io.circe.Error], ev: A <:< Payload): Consumer[F, B] =
       consumer.mapM(msg => decode[B](msg.text).liftTo[F])
 
-    // for that one app that actually requires the raw message..., cubing service also wants ;)
     def asJsonConsumerWithMessage[B: Decoder](implicit M: MonadError[F, _ >: io.circe.Error], D: Defer[F], ev: A <:< Payload): Consumer[F, (A, B)] =
       consumer.selfProduct(_.asJsonConsumer)
 
