@@ -61,12 +61,11 @@ object KinesisTests extends MutableIOSuite {
         )
   }
 
-  test("exception should be wrapped using own exception").usingRes {
-    case (broker, _) =>
-      val payload = Message.Payload("body", Map())
-      broker.sender.sendOne(Message(payload, KinesisDestination("nonexistent-stream"))).attempt.map { res =>
-        expect(res.leftMap(_.getClass) == Left(classOf[KinesisClientException]))
-      }
+  test("exception should be wrapped using own exception").usingRes { case (broker, _) =>
+    val payload = Message.Payload("body", Map())
+    broker.sender.sendOne(Message(payload, KinesisDestination("nonexistent-stream"))).attempt.map { res =>
+      expect(res.leftMap(_.getClass) == Left(classOf[KinesisClientException]))
+    }
   }
 
   private def getShardIterator(streamName: String)(implicit kinesisClient: KinesisAsyncClientOp[IO]): IO[String] =

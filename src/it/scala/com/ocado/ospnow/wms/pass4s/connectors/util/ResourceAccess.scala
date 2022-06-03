@@ -21,10 +21,10 @@ trait ResourceAccess { self =>
 
 object ResourceAccess {
 
-  //the cleanup of this resource ensures that the underlying one has been shut down
+  // the cleanup of this resource ensures that the underlying one has been shut down
   def fromResource[A](resource: Resource[IO, A]): Resource[IO, ResourceAccess] =
     Resource.suspend {
-      //lock is necessary to make sure `start` is atomic
+      // lock is necessary to make sure `start` is atomic
       Semaphore[IO](1).flatMap { lock =>
         Ref[IO].of(Option.empty[IO[Unit]]).map { ref =>
           val access = new ResourceAccess {
@@ -41,8 +41,8 @@ object ResourceAccess {
                   case Some(_) => IO.raiseError(new Throwable("Can't start - resource already allocated!"))
                   case None    => resource.allocated
                 }
-                .flatMap {
-                  case (_, finalizer) => ref.set(Some(finalizer))
+                .flatMap { case (_, finalizer) =>
+                  ref.set(Some(finalizer))
                 }
           }
 

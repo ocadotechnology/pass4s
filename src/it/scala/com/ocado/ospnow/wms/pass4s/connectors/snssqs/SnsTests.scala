@@ -44,19 +44,17 @@ object SnsTests extends MutableIOSuite {
       broker       <- Resource.eval(Broker.mergeByCapabilities(Broker.fromConnector(snsConnector), Broker.fromConnector(sqsConnector)))
     } yield (broker, snsConnector.underlying, sqsConnector.underlying)
 
-  test("sending a message should publish it").usingRes {
-    case (broker, snsClient, sqsClient) =>
-      val payload = Message.Payload("body", Map("foo" -> "bar"))
-      topicWithSubscriptionResource(snsClient, sqsClient)("output-topic")
-        .use {
-          case (topicArn, queueUrl) =>
-            val consume1MessageFromQueue =
-              Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(SqsUrl(queueUrl)))).head.compile.lastOrError
-            val sendMessageOnTopic = broker.sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))))
+  test("sending a message should publish it").usingRes { case (broker, snsClient, sqsClient) =>
+    val payload = Message.Payload("body", Map("foo" -> "bar"))
+    topicWithSubscriptionResource(snsClient, sqsClient)("output-topic")
+      .use { case (topicArn, queueUrl) =>
+        val consume1MessageFromQueue =
+          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(SqsUrl(queueUrl)))).head.compile.lastOrError
+        val sendMessageOnTopic = broker.sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))))
 
-            consume1MessageFromQueue <& sendMessageOnTopic
-        }
-        .map(message => expect(message == payload))
+        consume1MessageFromQueue <& sendMessageOnTopic
+      }
+      .map(message => expect(message == payload))
   }
 
   test("sending a message through fifo topic should preserve the ordering within a message group").usingRes {
@@ -66,17 +64,16 @@ object SnsTests extends MutableIOSuite {
         0L.until(numMessages).map(n => Message.Payload(s"body$n", Map(SnsFifo.groupIdMetadata -> (n % 2).toString, "foo" -> "bar"))).toList
 
       fifoTopicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic")
-        .use {
-          case (topicArn, queueUrl) =>
-            val consume10MessagesFromQueue =
-              Consumer
-                .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
-                .take(numMessages)
-                .compile
-                .toList
-            val sendMessagesOnTopic = broker.sender[SnsFifo].sendAll(payloads.map(Message(_, SnsFifoDestination(SnsArn(topicArn)))))
+        .use { case (topicArn, queueUrl) =>
+          val consume10MessagesFromQueue =
+            Consumer
+              .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
+              .take(numMessages)
+              .compile
+              .toList
+          val sendMessagesOnTopic = broker.sender[SnsFifo].sendAll(payloads.map(Message(_, SnsFifoDestination(SnsArn(topicArn)))))
 
-            consume10MessagesFromQueue <& sendMessagesOnTopic
+          consume10MessagesFromQueue <& sendMessagesOnTopic
         }
         .map { messages =>
           val messagesByGroupId = messages.groupBy(_.metadata(SnsFifo.groupIdMetadata))
@@ -86,44 +83,41 @@ object SnsTests extends MutableIOSuite {
         }
   }
 
-  test("sending a message through using a convenient sender works properly").usingRes {
-    case (broker, snsClient, sqsClient) =>
-      final case class Foo(bar: Int, order: String)
-      object Foo {
-        implicit val encoder: Encoder[Foo] = foo => Json.obj("bar" -> Json.fromInt(foo.bar), "order" -> Json.fromString(foo.order))
-        implicit val messageGroup: MessageGroup[Foo] = _.order
+  test("sending a message through using a convenient sender works properly").usingRes { case (broker, snsClient, sqsClient) =>
+    final case class Foo(bar: Int, order: String)
+    object Foo {
+      implicit val encoder: Encoder[Foo] = foo => Json.obj("bar" -> Json.fromInt(foo.bar), "order" -> Json.fromString(foo.order))
+      implicit val messageGroup: MessageGroup[Foo] = _.order
+    }
+
+    val payload = Foo(2137, order = "uśmiechu")
+
+    fifoTopicWithSubscriptionResource(snsClient, sqsClient)("another-fifo-topic")
+      .use { case (topicArn, queueUrl) =>
+        import com.ocadotechnology.pass4s.circe.syntax._
+        val sender: Sender[IO, Foo] = broker.sender.asJsonSenderWithMessageGroup[Foo](SnsFifoDestination(SnsArn(topicArn)))
+        val consumeMessageFromQueue =
+          Consumer
+            .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
+            .head
+            .compile
+            .lastOrError
+
+        consumeMessageFromQueue <& sender.sendOne(payload)
       }
-
-      val payload = Foo(2137, order = "uśmiechu")
-
-      fifoTopicWithSubscriptionResource(snsClient, sqsClient)("another-fifo-topic")
-        .use {
-          case (topicArn, queueUrl) =>
-            import com.ocadotechnology.pass4s.circe.syntax._
-            val sender: Sender[IO, Foo] = broker.sender.asJsonSenderWithMessageGroup[Foo](SnsFifoDestination(SnsArn(topicArn)))
-            val consumeMessageFromQueue =
-              Consumer
-                .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
-                .head
-                .compile
-                .lastOrError
-
-            consumeMessageFromQueue <& sender.sendOne(payload)
-        }
-        .map { receivedPayload =>
-          expect.all(
-            receivedPayload.text == payload.asJson.noSpaces,
-            receivedPayload.metadata == Map(SnsFifo.groupIdMetadata -> payload.order)
-          )
-        }
+      .map { receivedPayload =>
+        expect.all(
+          receivedPayload.text == payload.asJson.noSpaces,
+          receivedPayload.metadata == Map(SnsFifo.groupIdMetadata -> payload.order)
+        )
+      }
   }
 
-  test("exception should be wrapped using own exception").usingRes {
-    case (broker, _, _) =>
-      val payload = Message.Payload("body", Map())
-      broker.sender.sendOne(Message(payload, SnsDestination(SnsArn("nonexistent-topic")))).attempt.map { res =>
-        expect(res.leftMap(_.getClass) == Left(classOf[SnsClientException]))
-      }
+  test("exception should be wrapped using own exception").usingRes { case (broker, _, _) =>
+    val payload = Message.Payload("body", Map())
+    broker.sender.sendOne(Message(payload, SnsDestination(SnsArn("nonexistent-topic")))).attempt.map { res =>
+      expect(res.leftMap(_.getClass) == Left(classOf[SnsClientException]))
+    }
   }
 
   test("ensure at compile time that message groups are provided") {

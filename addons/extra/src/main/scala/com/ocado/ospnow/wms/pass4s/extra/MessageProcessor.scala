@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.extra
 
 import cats.arrow.FunctionK
@@ -33,6 +49,7 @@ object MessageProcessor {
       def transacted[T[_]](transact: T ~> F) = new ModifierWithTransaction(modifier, transact)
       def effectful = new ModifierWithTransaction(modifier, FunctionK.id[F])
     }
+
   }
 
   final class ModifierWithTransaction[F[_], T[_], A] private[MessageProcessor] (
@@ -41,6 +58,7 @@ object MessageProcessor {
   )
 
   object ModifierWithTransaction {
+
     implicit class ModifierWithTransactionSyntax[F[_]: Concurrent, T[_], A, P](modifierWithTransaction: ModifierWithTransaction[F, T, A]) {
       def bindBroker(broker: Broker[F, P]) = new MessageHandler(modifierWithTransaction.modifier, modifierWithTransaction.transact, broker)
     }

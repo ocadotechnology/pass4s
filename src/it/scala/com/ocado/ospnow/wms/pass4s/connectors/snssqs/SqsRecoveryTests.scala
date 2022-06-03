@@ -44,19 +44,18 @@ object SqsRecoveryTests extends MutableIOSuite {
                    )
     } yield (Broker.fromConnector(connector), createClient(container))
 
-  test("should recover after receiving temporary errors from AWS").usingRes {
-    case (broker, mockServerClient) =>
-      val source = SqsEndpoint(SqsUrl("http://sqs/some-queue1"), SqsEndpoint.Settings(waitTimeSeconds = 1))
-      val requestMatcher = sqsReceiveMessageRequest(source.url.value)
-      for {
-        _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(1)).respond(sqsReceiveMessageResponseSuccess("foo")))
-        // AWS client is retrying request once by itself, so we need more than 1 failure from AWS side
-        _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(2)).respond(sqsReceiveMessageResponseFailure))
-        _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(3)).respond(sqsReceiveMessageResponseFailure))
-        _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(4)).respond(sqsReceiveMessageResponseFailure))
-        _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(5)).respond(sqsReceiveMessageResponseSuccess("bar")))
-        messages <- Consumer.toStreamBounded(maxSize = 1)(broker.consumer(source)).take(2).compile.toList
-      } yield expect(messages.map(_.text) == List("foo", "bar"))
+  test("should recover after receiving temporary errors from AWS").usingRes { case (broker, mockServerClient) =>
+    val source = SqsEndpoint(SqsUrl("http://sqs/some-queue1"), SqsEndpoint.Settings(waitTimeSeconds = 1))
+    val requestMatcher = sqsReceiveMessageRequest(source.url.value)
+    for {
+      _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(1)).respond(sqsReceiveMessageResponseSuccess("foo")))
+      // AWS client is retrying request once by itself, so we need more than 1 failure from AWS side
+      _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(2)).respond(sqsReceiveMessageResponseFailure))
+      _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(3)).respond(sqsReceiveMessageResponseFailure))
+      _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(4)).respond(sqsReceiveMessageResponseFailure))
+      _        <- IO(mockServerClient.when(requestMatcher, Times.exactly(5)).respond(sqsReceiveMessageResponseSuccess("bar")))
+      messages <- Consumer.toStreamBounded(maxSize = 1)(broker.consumer(source)).take(2).compile.toList
+    } yield expect(messages.map(_.text) == List("foo", "bar"))
   }
 
   test("should fail consuming and rethrow exception if the error occurs at the beginning of the consume").usingRes {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.connectors.kinesis
 
 import cats.ApplicativeThrow
@@ -34,9 +50,8 @@ trait Kinesis
 
 object Kinesis {
 
-  /**
-    * By default KinesisConnector is using random UUID as a partitionKey.
-    * To use specific partitionKey add to the message's metadata entry (Kinesis.partitionKeyMetadata -> "myPartitionKeyValue")
+  /** By default KinesisConnector is using random UUID as a partitionKey. To use specific partitionKey add to the message's metadata entry
+    * (Kinesis.partitionKeyMetadata -> "myPartitionKeyValue")
     */
   val partitionKeyMetadata = "pass4s.kinesis.partitionKey"
 }
@@ -93,15 +108,20 @@ object KinesisConnector {
       endpointOverride.fold(builder)(builder.endpointOverride)
     }
 
-  /**
-    * Create Kinesis connector with specific authorization details. It can be used
-    * in case if you are connecting to other application Kinesis.
-    * @param region AWS region
-    * @param endpointOverride endpoint override for testing
-    * @param stsAuthorizationDetails authorization details
-    * @param sessionName session name
-    * @tparam F effect type
-    * @return KinesisConnector
+  /** Create Kinesis connector with specific authorization details. It can be used in case if you are connecting to other application
+    * Kinesis.
+    * @param region
+    *   AWS region
+    * @param endpointOverride
+    *   endpoint override for testing
+    * @param stsAuthorizationDetails
+    *   authorization details
+    * @param sessionName
+    *   session name
+    * @tparam F
+    *   effect type
+    * @return
+    *   KinesisConnector
     */
   def usingRegionAndConnectionDetails[F[_]: Async](
     region: Region,
@@ -209,7 +229,7 @@ object KinesisConnector {
                               .durationSeconds(sessionDuration.toSeconds.toInt)
                               .build()
         stsAssumeRoleCredentialsProvider <- Resource.fromAutoCloseable(
-                                              Sync[F].delay( //This builder can start thread (depends on flags)
+                                              Sync[F].delay( // This builder can start thread (depends on flags)
                                                 StsAssumeRoleCredentialsProvider
                                                   .builder
                                                   .stsClient(stsClientWithEndpoint)

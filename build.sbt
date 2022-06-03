@@ -1,25 +1,14 @@
-inThisBuild(
-  List(
-    organization := "com.ocadotechnology",
-    homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2")),
-    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    developers := List(
-      Developer(
-        "majk-p",
-        "Michał Pawlik",
-        "michal.pawlik@ocado.com",
-        url("https://michalp.net")
-      ),
-      Developer(
-        "matwojcik",
-        "Mateusz Wójcik",
-        "mateusz.wojcik@ocado.com",
-        url("https://github.com/matwojcik")
-      )
-    ),
-    versionScheme := Some("early-semver")
-  )
+ThisBuild / tlBaseVersion := "0.1" // current series x.y
+
+ThisBuild / organization := "com.ocadotechnology"
+ThisBuild / organizationName := "Ocado Technology"
+ThisBuild / licenses := Seq(License.Apache2)
+ThisBuild / developers := List(
+  tlGitHubDev("majk-p", "Michał Pawlik"),
+  tlGitHubDev("matwojcik", "Mateusz Wójcik")
 )
+ThisBuild / versionScheme := Some("early-semver")
+ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
 
 val Versions = new {
   val Log4Cats = "2.2.0"
@@ -30,9 +19,9 @@ lazy val IntegrationTest = config("it") extend Test
 
 lazy val root = (project in file("."))
   .configs(IntegrationTest)
+  .enablePlugins(NoPublishPlugin)
   .settings(
     commonSettings,
-    // noPublishPlease,
     name := "pass4s",
     libraryDependencies ++= Seq(
       "com.disneystreaming" %% "weaver-cats" % "0.7.11",
@@ -158,7 +147,7 @@ lazy val plaintext = module("plaintext", directory = "addons")
   .dependsOn(core, kernel)
 
 lazy val extra = module("extra", directory = "addons")
-  .dependsOn(high, circe) 
+  .dependsOn(high, circe)
 
 lazy val s3Proxy = module("s3proxy", directory = "addons")
   .settings(
@@ -179,6 +168,7 @@ lazy val logging = module("logging", directory = "addons")
 // misc
 
 lazy val demo = module("demo")
+  .enablePlugins(NoPublishPlugin)
   .settings(
     publishArtifact := false,
     // mimaPreviousArtifacts := Set(), // TODO

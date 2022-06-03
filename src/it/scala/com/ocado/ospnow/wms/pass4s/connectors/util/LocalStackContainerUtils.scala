@@ -185,11 +185,11 @@ object LocalStackContainerUtils {
   ): Resource[IO, Unit] =
     Resource.make {
       s3Client.createBucket(bucketName)
-    }{_ =>
-      for { 
-      leftovers <- s3Client.listObjects(bucketName)
-      _         <- leftovers.traverse(key => s3Client.deleteObject(bucketName, key))
-      _         <- s3Client.deleteBucket(bucketName)
+    } { _ =>
+      for {
+        leftovers <- s3Client.listObjects(bucketName)
+        _         <- leftovers.traverse(key => s3Client.deleteObject(bucketName, key))
+        _         <- s3Client.deleteBucket(bucketName)
       } yield ()
     }
 

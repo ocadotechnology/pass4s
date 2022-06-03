@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Martin Krasser
+ * Copyright 2022 Ocado Technology
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.ocadotechnology.pass4s.connectors.activemq
 
 import akka.stream.FlowShape
@@ -54,9 +55,8 @@ private[activemq] object taps {
 
   }
 
-  /**
-    * Converts an Akka Stream [[Graph]] of [[SourceShape]] to an FS2 [[Stream]]. The [[Graph]] is materialized when
-    * the [[Stream]]'s [[F]] in run. The materialized value can be obtained with the `onMaterialization` callback.
+  /** Converts an Akka Stream [[Graph]] of [[SourceShape]] to an FS2 [[Stream]]. The [[Graph]] is materialized when the [[Stream]]'s [[F]]
+    * in run. The materialized value can be obtained with the `onMaterialization` callback.
     */
   private def akkaSourceToFs2Stream[F[_], A, M](
     source: Graph[SourceShape[A], M]
@@ -74,9 +74,8 @@ private[activemq] object taps {
       }
     }
 
-  /**
-    * Converts an Akka Stream [[Graph]] of [[FlowShape]] to an FS2 [[Pipe]]. The [[Graph]] is materialized when
-    * the [[Pipe]]'s [[F]] in run. The materialized value can be obtained with the `onMaterialization` callback.
+  /** Converts an Akka Stream [[Graph]] of [[FlowShape]] to an FS2 [[Pipe]]. The [[Graph]] is materialized when the [[Pipe]]'s [[F]] in run.
+    * The materialized value can be obtained with the `onMaterialization` callback.
     */
   private def akkaFlowToFs2Pipe[F[_], A, B, M](
     flow: Graph[FlowShape[A, B], M]

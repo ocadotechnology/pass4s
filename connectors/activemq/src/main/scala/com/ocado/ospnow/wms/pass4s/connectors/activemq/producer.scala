@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.connectors.activemq
 
 import akka.actor.ActorSystem
@@ -29,7 +45,6 @@ private[activemq] object producer {
   private type Promise[F[_]] = Deferred[F, Attempt]
   private type JmsPayload[F[_]] = alpakka.JmsEnvelope[Promise[F]]
 
-
   def createMessageProducer[F[_]: Async](
     connectionFactory: jms.ConnectionFactory,
     bufferSize: Int = 100
@@ -38,12 +53,11 @@ private[activemq] object producer {
   ): Resource[F, MessageProducer[F]] =
     for {
       queue <- Resource.eval(Queue.bounded[F, JmsPayload[F]](bufferSize))
-      /**
-        * Stream.eval(queue.take) wouldn't work here because it takes only single element and terminates.
-        * In this case we need to take all elements but one by one as long as there's anything in the queue.
-        * Limit is set to one as we only process single message at a time, so that we don't reemit chukns in case of failure.
+      /** Stream.eval(queue.take) wouldn't work here because it takes only single element and terminates. In this case we need to take all
+        * elements but one by one as long as there's anything in the queue. Limit is set to one as we only process single message at a time,
+        * so that we don't reemit chukns in case of failure.
         */
-      _     <- Stream.fromQueueUnterminated(queue, limit = 1).through(sendMessageAndCompletePromise(connectionFactory)).compile.drain.background
+      _ <- Stream.fromQueueUnterminated(queue, limit = 1).through(sendMessageAndCompletePromise(connectionFactory)).compile.drain.background
     } yield enqueueAndWaitForPromise[F](queue.offer)
 
   private def enqueueAndWaitForPromise[F[_]: Concurrent](enqueue: JmsPayload[F] => F[Unit]): MessageProducer[F] =
@@ -72,33 +86,32 @@ private[activemq] object producer {
      * Every operation on `inflightMessages` Ref is guarded by single permit uncancelable semaphore to guarantee
      * that the promise completion and Ref update are atomic
      */
-    Stream.eval((Ref.of[F, Set[JmsPayload[F]]](Set.empty), Semaphore[F](n = 1)).tupled).flatMap {
-      case (inflightMessages, semaphore) =>
-        val jmsProducerSettings = alpakka
-          .JmsProducerSettings(as, connectionFactory)
-          .withTopic("Pass4s.Default") // default destination is obligatory, but always overridden
+    Stream.eval((Ref.of[F, Set[JmsPayload[F]]](Set.empty), Semaphore[F](n = 1)).tupled).flatMap { case (inflightMessages, semaphore) =>
+      val jmsProducerSettings = alpakka
+        .JmsProducerSettings(as, connectionFactory)
+        .withTopic("Pass4s.Default") // default destination is obligatory, but always overridden
 
-        val sendMessagePipe: Pipe[F, JmsPayload[F], JmsPayload[F]] =
-          JmsProducer.flexiFlow[Promise[F]](jmsProducerSettings).named(getClass.getSimpleName).toPipe[F]()
+      val sendMessagePipe: Pipe[F, JmsPayload[F], JmsPayload[F]] =
+        JmsProducer.flexiFlow[Promise[F]](jmsProducerSettings).named(getClass.getSimpleName).toPipe[F]()
 
-        def addMessageToRef(pendingMessage: JmsPayload[F]) =
-          semaphore.permit.surround(inflightMessages.update(_ + pendingMessage))
+      def addMessageToRef(pendingMessage: JmsPayload[F]) =
+        semaphore.permit.surround(inflightMessages.update(_ + pendingMessage))
 
-        def completeMessageAndRemoveFromRef(sentMessage: JmsPayload[F]) =
-          semaphore.permit.surround(sentMessage.passThrough.complete(Right(())).attempt *> inflightMessages.update(_ - sentMessage))
+      def completeMessageAndRemoveFromRef(sentMessage: JmsPayload[F]) =
+        semaphore.permit.surround(sentMessage.passThrough.complete(Right(())).attempt *> inflightMessages.update(_ - sentMessage))
 
-        def failAllAndCleanRef(ex: Throwable) =
-          semaphore
-            .permit
-            .surround(
-              inflightMessages.get.flatMap(_.toList.traverse(_.passThrough.complete(Left(ex)).attempt)) *> inflightMessages.set(Set())
-            )
+      def failAllAndCleanRef(ex: Throwable) =
+        semaphore
+          .permit
+          .surround(
+            inflightMessages.get.flatMap(_.toList.traverse(_.passThrough.complete(Left(ex)).attempt)) *> inflightMessages.set(Set())
+          )
 
-        messages
-          .evalTap(addMessageToRef)
-          .through(sendMessagePipe)
-          .attempts(Stream.constant(jmsProducerSettings.connectionRetrySettings.initialRetry))
-          .evalMap(_.fold(failAllAndCleanRef, completeMessageAndRemoveFromRef))
+      messages
+        .evalTap(addMessageToRef)
+        .through(sendMessagePipe)
+        .attempts(Stream.constant(jmsProducerSettings.connectionRetrySettings.initialRetry))
+        .evalMap(_.fold(failAllAndCleanRef, completeMessageAndRemoveFromRef))
     }
   }
 

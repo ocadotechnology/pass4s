@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.connectors.activemq
 
 import akka.actor.ActorSystem
@@ -75,9 +91,9 @@ object JmsDestination {
 object JmsConnector {
   type JmsConnector[F[_]] = Connector.Aux[F, Jms, ConnectionFactory]
 
-  //these might have to return resources,
-  //we might also have variants that build an Egress directly or have a conversion method on Connector
-  //(probably not, as methods on Connector shouldn't be used by end users)
+  // these might have to return resources,
+  // we might also have variants that build an Egress directly or have a conversion method on Connector
+  // (probably not, as methods on Connector shouldn't be used by end users)
   def singleBroker[F[_]: Logger: Async](
     username: String,
     password: String,

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.demo
 
 import cats.Foldable
@@ -50,7 +66,7 @@ object DemoMain extends IOApp {
     )(
       sender: Sender[F, Message[Jms]]
     )(
-      //this could be made into something like "if there's a lot of traffic, fetch every 10ms, but if there isn't grow exponentially up to 5s"
+      // this could be made into something like "if there's a lot of traffic, fetch every 10ms, but if there isn't grow exponentially up to 5s"
       delay: Pipe[F, C[Message[Jms]], C[Message[Jms]]]
     ): Resource[F, Unit] =
       Stream
@@ -96,7 +112,7 @@ object DemoMain extends IOApp {
     }
 
   object senders {
-    private val writerSender: Sender[AppEffect, Message[Jms]] = (Sender.writer: Sender[AppEffect, Message[Jms]])
+    private val writerSender: Sender[AppEffect, Message[Jms]] = Sender.writer: Sender[AppEffect, Message[Jms]]
 
     implicit val senderInts: Sender[AppEffect, Int] = writerSender.asJsonSender(Destinations.orderUpdates)
     implicit val senderBools: Sender[AppEffect, Boolean] = writerSender.asJsonSender(Destinations.orderEvents)
@@ -113,7 +129,7 @@ object DemoMain extends IOApp {
 
       implicit val service: MyService[AppEffect] = MyService.instance[AppEffect]
 
-      //just in case someone wants to run this in a router, they can mapK as usual (here or on router level)
+      // just in case someone wants to run this in a router, they can mapK as usual (here or on router level)
       val ioService: MyService[IO] = service.mapK(runEffect)
 
       val _ = ioService

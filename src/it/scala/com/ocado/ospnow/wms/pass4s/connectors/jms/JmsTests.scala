@@ -59,18 +59,17 @@ object JmsTests extends MutableIOSuite {
   }
 
   test("consumer should receive messages in parallel if parallelSessions > 1") { broker =>
-    randomDestinationName.product(SignallingRef(0)).flatMap {
-      case (queueName, signallingRef) =>
-        val incrementingQueueConsumer = broker.consumer(JmsSource.queue(queueName, JmsSourceSettings(parallelSessions = 2))).consume { _ =>
-          signallingRef.update(_ + 1) *> IO.sleep(500.millis) *> signallingRef.update(_ - 1)
-        }
-        val listenOnChangesInSignallingRefUntilAllConsumed = signallingRef.discrete.drop(1).takeThrough(_ != 0).compile.toList
-        val sendMessageOnQueue = broker.sender.sendOne(Message(somePayload, JmsDestination.queue(queueName)))
+    randomDestinationName.product(SignallingRef(0)).flatMap { case (queueName, signallingRef) =>
+      val incrementingQueueConsumer = broker.consumer(JmsSource.queue(queueName, JmsSourceSettings(parallelSessions = 2))).consume { _ =>
+        signallingRef.update(_ + 1) *> IO.sleep(500.millis) *> signallingRef.update(_ - 1)
+      }
+      val listenOnChangesInSignallingRefUntilAllConsumed = signallingRef.discrete.drop(1).takeThrough(_ != 0).compile.toList
+      val sendMessageOnQueue = broker.sender.sendOne(Message(somePayload, JmsDestination.queue(queueName)))
 
-        incrementingQueueConsumer
-          .background
-          .surround(listenOnChangesInSignallingRefUntilAllConsumed <& (IO.sleep(200.millis) *> sendMessageOnQueue *> sendMessageOnQueue))
-          .map(changes => expect(changes == List(1, 2, 1, 0)))
+      incrementingQueueConsumer
+        .background
+        .surround(listenOnChangesInSignallingRefUntilAllConsumed <& (IO.sleep(200.millis) *> sendMessageOnQueue *> sendMessageOnQueue))
+        .map(changes => expect(changes == List(1, 2, 1, 0)))
     }
   }
 
