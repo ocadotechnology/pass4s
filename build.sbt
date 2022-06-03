@@ -9,6 +9,8 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
+val Scala213 = "2.13.8"
+ThisBuild / scalaVersion := Scala213
 
 val Versions = new {
   val Log4Cats = "2.2.0"
@@ -183,7 +185,6 @@ lazy val demo = module("demo")
 
 lazy val commonSettings = Seq(
   organization := "com.ocadotechnology",
-  scalaVersion := "2.13.8",
   compilerOptions,
   Test / fork := true,
   libraryDependencies ++= compilerPlugins,

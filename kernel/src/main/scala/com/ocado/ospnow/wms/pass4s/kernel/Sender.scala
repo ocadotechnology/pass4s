@@ -256,7 +256,7 @@ sealed trait SenderInstances extends SenderInstances0 {
     * def demo(ageSender: Sender[IO, Int], nameSender: Sender[IO, String]): Sender[IO, User] = (ageSender, nameSender).contramapN(u =>
     * (u.age, u.name))
     *
-    * }}}
+    *   }}}
     */
   implicit def contravariantMonoidal[F[_]: Applicative]: ContravariantMonoidal[Sender[F, *]] =
     new ContravariantMonoidal[Sender[F, *]] with SenderContravariantSemigroupal[F] {

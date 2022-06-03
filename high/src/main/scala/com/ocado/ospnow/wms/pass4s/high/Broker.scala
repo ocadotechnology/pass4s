@@ -50,7 +50,7 @@ object Broker {
         val toConsumer: Stream[F, List[Resource[F, Payload]]] => Consumer[F, Payload] =
           if (source.maxConcurrent === 1) s => Consumer.sequential(source.cancelableMessageProcessing)(s.flatMap(Stream.emits))
           else s => Consumer.paralleled(source.maxConcurrent, source.cancelableMessageProcessing)(s.flatMap(Stream.emits))
-          // TODO: if we ever figure out how to properly do batched FIFO with retries, add a case here
+        // TODO: if we ever figure out how to properly do batched FIFO with retries, add a case here
 
         val consumer = toConsumer(connector.consumeBatched(source).map(_.map(_.scope)))
         source.messageProcessingTimeout match {
