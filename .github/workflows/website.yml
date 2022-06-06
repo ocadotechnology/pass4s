@@ -1,0 +1,98 @@
+name: Website
+on:
+  push:
+    branches: 
+      - main
+      - docs
+    tags: ["*"]
+jobs:
+  # checks:
+  #   if: github.event_name != 'push'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: '16.x'
+  #     - name: Test Build
+  #       run: |
+  #         cd website
+  #         if [ -e yarn.lock ]; then
+  #         yarn install --frozen-lockfile
+  #         elif [ -e package-lock.json ]; then
+  #         npm ci
+  #         else
+  #         npm i
+  #         fi
+  #         npm run build
+
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v10
+        with:
+          distribution: graalvm
+          java-version: 11
+      - name: Run mdoc
+        run: sbt '++2.13.8 docs/mdoc'
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache-dependency-path: website/package-lock.json
+          cache: yarn
+      - name: Install dependencies
+        working-directory: website
+        run: yarn install --frozen-lockfile
+      - name: Build website
+        working-directory: website
+        run: yarn build
+
+      # Popular action to deploy to GitHub Pages:
+      # Docs: https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-docusaurus
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Build output to publish to the `gh-pages` branch:
+          publish_dir: ./website/build
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+
+  # gh-release:
+  #   if: github.event_name != 'pull_request'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: olafurpg/setup-scala@v10
+  #       with:
+  #         distribution: graalvm
+  #         java-version: 11
+  #     - uses: olafurpg/setup-gpg@v3
+  #     - name: Run mdoc
+  #       run: sbt '++2.13.8 docs/mdoc'
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: '16.x'
+  #     - uses: webfactory/ssh-agent@v0.5.0
+  #       with:
+  #         ssh-private-key: ${{ secrets.GH_PAGES_DEPLOY }}
+  #     - name: Release to GitHub Pages
+  #       env:
+  #         USE_SSH: true
+  #         GIT_USER: git
+  #       run: |
+  #         cd website
+  #         git config --global user.email "actions@github.com"
+  #         git config --global user.name "gh-actions"
+  #         if [ -e yarn.lock ]; then
+  #         yarn install --frozen-lockfile
+  #         elif [ -e package-lock.json ]; then
+  #         npm ci
+  #         else
+  #         npm i
+  #         fi
+  #         npm run deploy

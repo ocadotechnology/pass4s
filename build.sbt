@@ -171,11 +171,14 @@ lazy val logging = module("logging", directory = "addons")
 
 // online documentation
 
-lazy val docs = project       // new documentation project
+lazy val docs = project // new documentation project
   .in(file("mdoc")) // important: it must not be docs/
   .settings(
     mdocVariables := Map(
       "VERSION" -> version.value
+    ),
+    githubWorkflowBuild := Seq(
+      WorkflowStep.Sbt(List("docs/mdoc"))
     )
   )
   .dependsOn(high, activemq, kinesis, sns, sqs, circe, logging, extra, s3Proxy)

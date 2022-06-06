@@ -29,3 +29,6 @@ project/plugins/project/
 .vscode/
 project/metals.sbt
 project/project/
+
+# mdoc
+./mdoc/
