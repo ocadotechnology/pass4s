@@ -56,184 +56,179 @@ object S3ProxyTests extends MutableIOSuite {
 
   test("Sender and consumer should do a full S3 round trip, message should not be deleted afterwards when deleting is disabled").usingRes {
     case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use {
-        case (bucketName, topicArn, queueUrl) =>
-          val senderConfig =
-            S3ProxyConfig
-              .Sender
-              .withSnsDefaults(bucketName)
-              .copy(
-                minPayloadSize = Some(1)
-              )
-          val consumerConfig =
-            S3ProxyConfig
-              .Consumer
-              .withSnsDefaults()
-              .copy(
-                shouldDeleteAfterProcessing = false
-              )
-          val payload = Message.Payload("body", Map("foo" -> "bar"))
-          val consumer: Consumer[IO, Message.Payload] =
-            broker
-              .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings()))
-              .usingS3Proxy(consumerConfig)
-          val consume1MessageFromQueue =
-            Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
-          val sendMessageOnTopic =
-            broker
-              .sender
-              .usingS3Proxy(senderConfig)
-              .sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
+        val senderConfig =
+          S3ProxyConfig
+            .Sender
+            .withSnsDefaults(bucketName)
+            .copy(
+              minPayloadSize = Some(1)
+            )
+        val consumerConfig =
+          S3ProxyConfig
+            .Consumer
+            .withSnsDefaults()
+            .copy(
+              shouldDeleteAfterProcessing = false
+            )
+        val payload = Message.Payload("body", Map("foo" -> "bar"))
+        val consumer: Consumer[IO, Message.Payload] =
+          broker
+            .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings()))
+            .usingS3Proxy(consumerConfig)
+        val consume1MessageFromQueue =
+          Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
+        val sendMessageOnTopic =
+          broker
+            .sender
+            .usingS3Proxy(senderConfig)
+            .sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
 
-          for {
-            _            <- sendMessageOnTopic
-            objects      <- s3Client.listObjects(bucketName)
-            message      <- consume1MessageFromQueue
-            afterObjects <- s3Client.listObjects(bucketName)
-          } yield expect.all(
-            message == payload,
-            objects.size == 1,
-            afterObjects.size == 1
-          )
+        for {
+          _            <- sendMessageOnTopic
+          objects      <- s3Client.listObjects(bucketName)
+          message      <- consume1MessageFromQueue
+          afterObjects <- s3Client.listObjects(bucketName)
+        } yield expect.all(
+          message == payload,
+          objects.size == 1,
+          afterObjects.size == 1
+        )
       }
   }
 
   test("Sender and consumer should do a full S3 round trip, message should be deleted afterwards when deleting is enabled").usingRes {
     case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use {
-        case (bucketName, topicArn, queueUrl) =>
-          val senderConfig =
-            S3ProxyConfig
-              .Sender
-              .withSnsDefaults(bucketName)
-              .copy(
-                minPayloadSize = Some(1)
-              )
-          val consumerConfig =
-            S3ProxyConfig
-              .Consumer
-              .withSnsDefaults()
-              .copy(
-                shouldDeleteAfterProcessing = true
-              )
-          val payload = Message.Payload("body", Map("foo" -> "bar"))
-          val consumer: Consumer[IO, Message.Payload] =
-            broker
-              .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings(cancelableMessageProcessing = false)))
-              .usingS3Proxy(consumerConfig)
-          val consume1MessageFromQueue =
-            Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
-          val sendMessageOnTopic =
-            broker
-              .sender
-              .usingS3Proxy(senderConfig)
-              .sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
+        val senderConfig =
+          S3ProxyConfig
+            .Sender
+            .withSnsDefaults(bucketName)
+            .copy(
+              minPayloadSize = Some(1)
+            )
+        val consumerConfig =
+          S3ProxyConfig
+            .Consumer
+            .withSnsDefaults()
+            .copy(
+              shouldDeleteAfterProcessing = true
+            )
+        val payload = Message.Payload("body", Map("foo" -> "bar"))
+        val consumer: Consumer[IO, Message.Payload] =
+          broker
+            .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings(cancelableMessageProcessing = false)))
+            .usingS3Proxy(consumerConfig)
+        val consume1MessageFromQueue =
+          Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
+        val sendMessageOnTopic =
+          broker
+            .sender
+            .usingS3Proxy(senderConfig)
+            .sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
 
-          for {
-            _            <- sendMessageOnTopic
-            objects      <- s3Client.listObjects(bucketName)
-            message      <- consume1MessageFromQueue
-            afterObjects <- waitUntil(s3Client.listObjects(bucketName))(_.isEmpty)(200.millis, 20)
-          } yield expect.all(
-            message == payload,
-            objects.size == 1,
-            afterObjects.isEmpty
-          )
+        for {
+          _            <- sendMessageOnTopic
+          objects      <- s3Client.listObjects(bucketName)
+          message      <- consume1MessageFromQueue
+          afterObjects <- waitUntil(s3Client.listObjects(bucketName))(_.isEmpty)(200.millis, 20)
+        } yield expect.all(
+          message == payload,
+          objects.size == 1,
+          afterObjects.isEmpty
+        )
       }
   }
 
   test("Round trip should not send to s3 when message is too small").usingRes {
     case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use {
-        case (bucketName, topicArn, queueUrl) =>
-          val senderConfig =
-            S3ProxyConfig
-              .Sender
-              .withSnsDefaults(bucketName)
-              .copy(
-                minPayloadSize = Some(Int.MaxValue)
-              )
-          val consumerConfig =
-            S3ProxyConfig
-              .Consumer
-              .withSnsDefaults()
-          val payload = Message.Payload("body", Map("foo" -> "bar"))
-          val consumer = broker.consumer(SqsEndpoint(SqsUrl(queueUrl))).usingS3Proxy(consumerConfig)
-          val consume1MessageFromQueue =
-            Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
-          val sender = broker.sender.usingS3Proxy(senderConfig)
-          val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
+        val senderConfig =
+          S3ProxyConfig
+            .Sender
+            .withSnsDefaults(bucketName)
+            .copy(
+              minPayloadSize = Some(Int.MaxValue)
+            )
+        val consumerConfig =
+          S3ProxyConfig
+            .Consumer
+            .withSnsDefaults()
+        val payload = Message.Payload("body", Map("foo" -> "bar"))
+        val consumer = broker.consumer(SqsEndpoint(SqsUrl(queueUrl))).usingS3Proxy(consumerConfig)
+        val consume1MessageFromQueue =
+          Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
+        val sender = broker.sender.usingS3Proxy(senderConfig)
+        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
 
-          for {
-            _       <- sendMessageOnTopic
-            objects <- s3Client.listObjects(bucketName)
-            message <- consume1MessageFromQueue
-          } yield expect.all(
-            message == payload,
-            objects.isEmpty
-          )
+        for {
+          _       <- sendMessageOnTopic
+          objects <- s3Client.listObjects(bucketName)
+          message <- consume1MessageFromQueue
+        } yield expect.all(
+          message == payload,
+          objects.isEmpty
+        )
       }
 
   }
 
   test("When large enough message is sent, it lands on S3").usingRes {
     case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use {
-        case (bucketName, topicArn, _) =>
-          val senderConfig =
-            S3ProxyConfig
-              .Sender
-              .withSnsDefaults(bucketName)
-              .copy(
-                minPayloadSize = Some(0)
-              )
-          val payload = Message.Payload("body", Map("foo" -> "bar"))
-          val sender = broker.sender.usingS3Proxy(senderConfig)
-          val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, _) =>
+        val senderConfig =
+          S3ProxyConfig
+            .Sender
+            .withSnsDefaults(bucketName)
+            .copy(
+              minPayloadSize = Some(0)
+            )
+        val payload = Message.Payload("body", Map("foo" -> "bar"))
+        val sender = broker.sender.usingS3Proxy(senderConfig)
+        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
 
-          for {
-            initial <- s3Client.listObjects(bucketName)
-            _       <- sendMessageOnTopic
-            objects <- s3Client.listObjects(bucketName)
-          } yield expect.all(
-            initial.isEmpty,
-            objects.nonEmpty
-          )
+        for {
+          initial <- s3Client.listObjects(bucketName)
+          _       <- sendMessageOnTopic
+          objects <- s3Client.listObjects(bucketName)
+        } yield expect.all(
+          initial.isEmpty,
+          objects.nonEmpty
+        )
       }
   }
 
   test("Objects are persisted when consumer fails to process them").usingRes {
     case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use {
-        case (bucketName, topicArn, queueUrl) =>
-          val senderConfig =
-            S3ProxyConfig
-              .Sender
-              .withSnsDefaults(bucketName)
-              .copy(
-                minPayloadSize = Some(0)
-              )
-          val consumerConfig =
-            S3ProxyConfig
-              .Consumer
-              .withSnsDefaults()
-              .copy(
-                shouldDeleteAfterProcessing = true
-              )
-          val payload = Message.Payload("body", Map("foo" -> "bar"))
-          val sender = broker.sender.usingS3Proxy(senderConfig)
-          val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
-          val consumer = broker.consumer(SqsEndpoint(SqsUrl(queueUrl))).usingS3Proxy(consumerConfig)
+      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
+        val senderConfig =
+          S3ProxyConfig
+            .Sender
+            .withSnsDefaults(bucketName)
+            .copy(
+              minPayloadSize = Some(0)
+            )
+        val consumerConfig =
+          S3ProxyConfig
+            .Consumer
+            .withSnsDefaults()
+            .copy(
+              shouldDeleteAfterProcessing = true
+            )
+        val payload = Message.Payload("body", Map("foo" -> "bar"))
+        val sender = broker.sender.usingS3Proxy(senderConfig)
+        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+        val consumer = broker.consumer(SqsEndpoint(SqsUrl(queueUrl))).usingS3Proxy(consumerConfig)
 
-          for {
-            _       <- consumer.consume(_ => IO.raiseError(new RuntimeException("intentionally failed"))).background.use_
-            initial <- s3Client.listObjects(bucketName)
-            _       <- sendMessageOnTopic
-            objects <- s3Client.listObjects(bucketName)
-          } yield expect.all(
-            initial.isEmpty,
-            objects.nonEmpty
-          )
+        for {
+          _       <- consumer.consume(_ => IO.raiseError(new RuntimeException("intentionally failed"))).background.use_
+          initial <- s3Client.listObjects(bucketName)
+          _       <- sendMessageOnTopic
+          objects <- s3Client.listObjects(bucketName)
+        } yield expect.all(
+          initial.isEmpty,
+          objects.nonEmpty
+        )
       }
   }
 

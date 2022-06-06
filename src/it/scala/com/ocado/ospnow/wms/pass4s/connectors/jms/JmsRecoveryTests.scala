@@ -31,7 +31,7 @@ object JmsRecoveryTests extends SimpleIOSuite {
     for {
       implicit0(as: ActorSystem) <- actorSystemResource
       brokerName                 <- Resource.eval(IO(Random.alphanumeric.take(8).mkString).map(randomSuffix => s"broker-$randomSuffix"))
-      brokerUrl                  <- Resource.eval(Resource.fromAutoCloseable(IO(new ServerSocket(0))).use(p => IO(s"tcp://localhost:${p.getLocalPort}")))
+      brokerUrl <- Resource.eval(Resource.fromAutoCloseable(IO(new ServerSocket(0))).use(p => IO(s"tcp://localhost:${p.getLocalPort}")))
 
       brokerService = brokerServiceResource(brokerName, brokerUrl.some)
       connector <- createJmsConnector(brokerUrl)
@@ -69,39 +69,37 @@ object JmsRecoveryTests extends SimpleIOSuite {
   }
 
   test("when the broker goes down while a message is being sent, then sender should throw exception") {
-    testEnvironment.use {
-      case (broker, brokerService) =>
-        val testQueue = "TestQueue"
-        def sendMessageOnQueue(text: String, queueName: String = testQueue): IO[Unit] =
-          broker.sender.sendOne(Message(Message.Payload(text, Map()), JmsDestination.queue(queueName)))
+    testEnvironment.use { case (broker, brokerService) =>
+      val testQueue = "TestQueue"
+      def sendMessageOnQueue(text: String, queueName: String = testQueue): IO[Unit] =
+        broker.sender.sendOne(Message(Message.Payload(text, Map()), JmsDestination.queue(queueName)))
 
-        val consume2MessagesFromQueue =
-          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(JmsSource.queue(testQueue))).take(2).compile.toList
+      val consume2MessagesFromQueue =
+        Consumer.toStreamBounded(maxSize = 1)(broker.consumer(JmsSource.queue(testQueue))).take(2).compile.toList
 
-        ResourceAccess.fromResource(brokerService).use { brokerService =>
-          (
-            consume2MessagesFromQueue,
-            for {
-              a1Result <- sendMessageOnQueue("A1").attempt
-              a2Result <- sendMessageOnQueue("A2", queueName = "").attempt // empty destination name => exception
-              _        <- brokerService.shutdown
-              a3Result <- sendMessageOnQueue("A3").attempt // producing while broker is down => exception
-              a4Result <- sendMessageOnQueue("A4").attempt
-              _        <- brokerService.start
-              a5Result <- sendMessageOnQueue("A5").attempt
-            } yield (a1Result, a2Result, a3Result, a4Result, a5Result)
-          ).parMapN {
-            case (messagesFromQueue, (a1Result, a2Result, a3Result, a4Result, a5Result)) =>
-              expect.all(
-                a1Result == Right(()),
-                a2Result.leftMap(_.getMessage) == Left("Invalid destination name: a non-empty name is required"),
-                a3Result.leftMap(_.isInstanceOf[ConnectionRetryException]) == Left(true),
-                a4Result.leftMap(_.isInstanceOf[ConnectionRetryException]) == Left(true),
-                a5Result == Right(()),
-                messagesFromQueue.map(_.text) == List("A1", "A5")
-              )
-          }
+      ResourceAccess.fromResource(brokerService).use { brokerService =>
+        (
+          consume2MessagesFromQueue,
+          for {
+            a1Result <- sendMessageOnQueue("A1").attempt
+            a2Result <- sendMessageOnQueue("A2", queueName = "").attempt // empty destination name => exception
+            _        <- brokerService.shutdown
+            a3Result <- sendMessageOnQueue("A3").attempt // producing while broker is down => exception
+            a4Result <- sendMessageOnQueue("A4").attempt
+            _        <- brokerService.start
+            a5Result <- sendMessageOnQueue("A5").attempt
+          } yield (a1Result, a2Result, a3Result, a4Result, a5Result)
+        ).parMapN { case (messagesFromQueue, (a1Result, a2Result, a3Result, a4Result, a5Result)) =>
+          expect.all(
+            a1Result == Right(()),
+            a2Result.leftMap(_.getMessage) == Left("Invalid destination name: a non-empty name is required"),
+            a3Result.leftMap(_.isInstanceOf[ConnectionRetryException]) == Left(true),
+            a4Result.leftMap(_.isInstanceOf[ConnectionRetryException]) == Left(true),
+            a5Result == Right(()),
+            messagesFromQueue.map(_.text) == List("A1", "A5")
+          )
         }
+      }
     }
   }
 

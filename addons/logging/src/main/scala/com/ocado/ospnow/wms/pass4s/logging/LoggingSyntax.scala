@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.logging
 
 import cats.Monad
@@ -86,10 +102,8 @@ object syntax {
                 _.map {
                   _.mapScope {
                     _.flatTap { payload =>
-                      /**
-                        * Note: this logs *after* the resource has been acquired
-                        * (which is the only place where we'll see a message, so it makes sense)
-                        * and *before* the resource is closed.
+                      /** Note: this logs *after* the resource has been acquired (which is the only place where we'll see a message, so it
+                        * makes sense) and *before* the resource is closed.
                         */
                       Resource.eval(logger.debug(s"Received message [$payload] from [$source]")).onFinalizeCase {
                         case ExitCase.Succeeded  => logger.debug(s"Committing message [$payload]")
@@ -114,4 +128,3 @@ object syntax {
   }
 
 }
-

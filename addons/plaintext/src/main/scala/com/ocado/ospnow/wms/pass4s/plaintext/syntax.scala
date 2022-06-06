@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.plaintext
 
 import com.ocadotechnology.pass4s.core.Destination
@@ -39,19 +55,18 @@ object syntax {
 
   implicit final class SendPlaintextMessageSyntax[F[_], P](private val sender: Sender[F, Message[P]]) {
 
-    /** === params: ===
-      * {{{to: Destination[R >: P]}}}
-      * {{{computeMetadata: String => Map[String, String] = _ => Map()}}}
-      * === implicit params: ===
+    /** ===params:===
+      * {{{to: Destination[R >: P]}}} {{{computeMetadata: String => Map[String, String] = _ => Map()}}}
+      * ===implicit params:===
       * {{{noGroupId: GroupIdMeta.Absent[R >: P] // cannot be used for FIFO-aware destinations}}}
       */
     def asPlaintextSender = new AsPlaintextSenderPartiallyApplied[F, P](sender)
 
-    /** === params: ===
+    /** ===params:===
       * {{{to: Destination[R >: P]}}}
       * {{{messageGroup: MessageGroup[String] // explicit! because it doesn't make sense to use one implicit for all Strings}}}
       * {{{computeMetadata: String => Map[String, String] = _ => Map()}}}
-      * === implicit params: ===
+      * ===implicit params:===
       * {{{groupIdMeta: GroupIdMeta[R >: P] // must be used with FIFO-aware destinations}}}
       */
     def asPlaintextSenderWithMessageGroup = new AsPlaintextSenderWithMessageGroupPartiallyApplied[F, P](sender)
