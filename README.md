@@ -1,6 +1,6 @@
 # Pass4s
 
-![icon](./icon/icon-500.png)
+![icon](./icon/icon-200.png)
 
 ## About
 
@@ -47,6 +47,8 @@ See `./demo` project for usage examples.
 ## Contributing
 
 Feel free to submit feature requests and bug reports under Issues.
+
+When making pull requests, make sure to run `prePR` to format the files and adjust headers.
 
 ## License
 
