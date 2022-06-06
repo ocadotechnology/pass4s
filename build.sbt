@@ -50,8 +50,6 @@ lazy val root = (project in file("."))
   .aggregate(core, kernel, high, activemq, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
   .dependsOn(high, activemq, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
 
-excludeFilter.in(headerSources) := HiddenFileFilter || "taps.scala"
-
 def module(name: String, directory: String = ".") = Project(s"pass4s-$name", file(directory) / name).settings(commonSettings)
 
 lazy val core = module("core")
@@ -96,7 +94,8 @@ lazy val activemq = module("activemq", directory = "connectors")
       "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "3.0.4",
       "org.apache.activemq" % "activemq-pool" % "5.17.0",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    )
+    ),
+    headerSources / excludeFilter := HiddenFileFilter || "taps.scala"
   )
   .dependsOn(core)
 
