@@ -76,19 +76,8 @@ const config = {
               {
                 label: 'Documentation',
                 to: '/docs/getting-started',
-              },
-              {
-                label: 'Authorization code grant',
-                to: '/docs/authorization-code',
-              },
-              {
-                label: 'Client credentails grant',
-                to: '/docs/client-credentials',
-              },
-              {
-                label: 'Password grant',
-                to: '/docs/password-grant',
-              },
+              }
+              // TODO - add more pages here
             ],
           },
           // {
