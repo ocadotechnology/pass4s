@@ -36,7 +36,7 @@ object LocalStackContainerUtils {
   private def createContainer(services: Seq[LocalStackV2Container.Service]): IO[LocalStackV2Container] =
     IO {
       val c = LocalStackV2Container(tag = "0.12.20", services = services)
-      c.container.setDockerImageName("mirror-hub.docker.tech.lastmile.com/localstack/localstack:0.12.20")
+      c.container.setDockerImageName("localstack/localstack:0.12.20")
       c
     }
 

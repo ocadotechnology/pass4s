@@ -83,13 +83,8 @@ jobs:
         if: matrix.java == 'graalvm@11'
         run: sbt '++${{ matrix.scala }}' doc
 
-      - run: |
-          pip install localstack awscli-local[ver1]
-          docker pull localstack/localstack
-          localstack start -d
-          localstack wait -t 30
-
-      - run: sbt '++${{ matrix.scala }}' IntegrationTest/test
+      - name: Integration tests
+        run: sbt '++${{ matrix.scala }}' IntegrationTest/test
 
       - name: Make target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
