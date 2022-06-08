@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[463],{5760:function(s){s.exports=JSON.parse('{"label":"hola","permalink":"/pass4s/blog/tags/hola","allTagsPath":"/pass4s/blog/tags","count":1}')}}]);
