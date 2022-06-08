@@ -12,6 +12,12 @@ ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2
 val Scala213 = "2.13.8"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("11"))
+ThisBuild / githubWorkflowBuild ++= Seq(
+  WorkflowStep.Sbt(
+    commands = List("IntegrationTest/test"),
+    name = Some("Integration tests")
+  )
+)
 
 val Versions = new {
   val Log4Cats = "2.2.0"
