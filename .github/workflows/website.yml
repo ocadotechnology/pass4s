@@ -1,0 +1,38 @@
+name: Website
+on:
+  push:
+    branches: 
+      - main
+      - docs
+    tags: ["*"]
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v10
+        with:
+          distribution: graalvm
+          java-version: 11
+      - name: Run mdoc
+        run: sbt '++2.13.8 docs/mdoc'
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache-dependency-path: website/package-lock.json
+          cache: yarn
+      - name: Install dependencies
+        working-directory: website
+        run: yarn install --frozen-lockfile
+      - name: Build website
+        working-directory: website
+        run: yarn build
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Build output to publish to the `gh-pages` branch:
+          publish_dir: ./website/build
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
