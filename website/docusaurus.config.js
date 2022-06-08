@@ -14,8 +14,8 @@ const config = {
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/logo.png',
 
-  organizationName: 'ocadotechnology', // Usually your GitHub org/user name.
-  projectName: 'pass4s', // Usually your repo name.
+  organizationName: 'ocadotechnology',
+  projectName: 'pass4s',
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -31,11 +31,6 @@ const config = {
           editUrl: ({locale, versionDocsDirPath, docPath}) => {
             return `https://github.com/ocadotechnology/pass4s/edit/main/docs/${docPath}`;
           }
-        },
-        blog: {
-          showReadingTime: true,
-          editUrl:
-            'https://github.com/ocadotechnology/pass4s/edit/main/website/blog/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -80,7 +75,7 @@ const config = {
               // TODO - add more pages here
             ],
           },
-          // {
+          // { // TODO
           //   title: 'Community',
           //   items: [
           //     {
@@ -113,10 +108,6 @@ const config = {
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Ocado Technology`,
       },
-      // prism: {
-      //   theme: lightCodeTheme,
-      //   darkTheme: darkCodeTheme,
-      // },
       prism: {
         // Java is here due to https://github.com/facebook/docusaurus/issues/4799
         additionalLanguages: ['java', 'scala'],
