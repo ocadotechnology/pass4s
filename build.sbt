@@ -13,18 +13,6 @@ val Scala213 = "2.13.8"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("11"))
 ThisBuild / githubWorkflowBuild ++= Seq(
-  // WorkflowStep.Run(
-  //   List( // Copied from https://docs.localstack.cloud/ci/github-actions/
-  //     // install LocalStack cli and awslocal
-  //     "pip install localstack awscli-local[ver1]",
-  //     // Make sure to pull the latest version of the image
-  //     "docker pull localstack/localstack",
-  //     // Start LocalStack in the background
-  //     "localstack start -d",
-  //     // Wait 30 seconds for the LocalStack container to become ready before timing out
-  //     "localstack wait -t 30"
-  //   )
-  // ),
   WorkflowStep.Sbt(
     commands = List("IntegrationTest/test"),
     name = Some("Integration tests")
