@@ -34,9 +34,6 @@ See `./demo` project for usage examples.
 // logging middleware
 "com.ocadotechnology" %% "pass4s-logging" % version,
 
-// warehouseId tracing syntax for Consumer
-"com.ocadotechnology" %% "pass4s-tracing-warehouseid" % version,
-
 // high-level MessageProcessor
 "com.ocadotechnology" %% "pass4s-extra" % version,
 
