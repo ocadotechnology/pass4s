@@ -16,3 +16,4 @@ jobs:
         with:
           github-token: ${{ secrets.REPO_GITHUB_TOKEN }}
           author-email: 12345+octocat@users.noreply.github.com
+          author-name: scala-steward
