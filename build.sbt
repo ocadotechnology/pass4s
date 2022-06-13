@@ -63,7 +63,7 @@ lazy val core = module("core")
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "co.fs2" %% "fs2-core" % "3.2.7",
-      "org.typelevel" %% "cats-effect" % "3.3.11"
+      "org.typelevel" %% "cats-effect" % "3.3.12"
     )
   )
 
@@ -73,8 +73,8 @@ lazy val kernel = module("kernel").settings(
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
     "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
-    "org.typelevel" %% "cats-effect-laws" % "3.3.11" % Test,
-    "org.typelevel" %% "cats-effect-testkit" % "3.3.11" % Test,
+    "org.typelevel" %% "cats-effect-laws" % "3.3.12" % Test,
+    "org.typelevel" %% "cats-effect-testkit" % "3.3.12" % Test,
     "com.disneystreaming" %% "weaver-discipline" % "0.7.11" % Test
   )
 )
@@ -82,7 +82,7 @@ lazy val kernel = module("kernel").settings(
 lazy val high = module("high")
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect-laws" % "3.3.11" % Test
+      "org.typelevel" %% "cats-effect-laws" % "3.3.12" % Test
     )
   )
   .dependsOn(core, kernel)
