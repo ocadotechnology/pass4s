@@ -148,7 +148,7 @@ lazy val circe = module("circe", directory = "addons")
 lazy val phobos = module("phobos", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "ru.tinkoff" %% "phobos-core" % "0.14.1"
+      "ru.tinkoff" %% "phobos-core" % "0.15.0"
     )
   )
   .dependsOn(core, kernel)
