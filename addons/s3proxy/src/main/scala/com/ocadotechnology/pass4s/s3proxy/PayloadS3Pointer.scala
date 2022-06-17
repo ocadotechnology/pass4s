@@ -30,8 +30,8 @@ object PayloadS3Pointer {
 
     override final def apply(a: PayloadS3Pointer): Json =
       Json.obj(
-        ("s3BucketName" -> Json.fromString(a.s3BucketName)),
-        ("s3Key" -> Json.fromString(a.s3Key))
+        "s3BucketName" -> Json.fromString(a.s3BucketName),
+        "s3Key" -> Json.fromString(a.s3Key)
       )
 
   }
