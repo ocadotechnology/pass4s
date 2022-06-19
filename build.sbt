@@ -110,7 +110,7 @@ lazy val kinesis = module("kinesis", directory = "connectors")
     name := "pass4s-connector-kinesis",
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-kinesis-tagless" % "5.0.2",
-      "software.amazon.awssdk" % "sts" % "2.17.210"
+      "software.amazon.awssdk" % "sts" % "2.17.214"
     ) ++ awsSnykOverrides
   )
   .dependsOn(core)
