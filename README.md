@@ -1,3 +1,6 @@
+[release]:       https://github.com/ocadotechnology/pass4s/releases/latest
+[release-badge]: https://img.shields.io/github/release/ocadotechnology/pass4s.svg
+
 # Pass4s
 
 ![icon](./icon/icon-200.png)
@@ -13,7 +16,13 @@ Pass4s is a Scala library providing an abstract layer for cross app messaging. I
 
 See `./demo` project for usage examples.
 
+## Documentation
+
+Visit the documentation at https://ocadotechnology.github.io/pass4s.
+
 ## Dependencies
+
+The latest release is: [![release-badge][]][release]
 
 ```
 // Algebraic abstractions (Sender/Consumer)
