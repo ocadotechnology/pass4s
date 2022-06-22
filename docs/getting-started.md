@@ -33,13 +33,13 @@ The library is divided into multiple modules. If you're only interested in the b
 
 ### Connectors
 
-ActiveMq
+[ActiveMq](https://activemq.apache.org/)
 ```scala
 // ActiveMQ connector
 "com.ocadotechnology" %% "pass4s-connector-activemq" % "@VERSION@"
 ```
 
-SNS/SQS
+[SNS/SQS](https://aws.amazon.com/blogs/aws/queues-and-notifications-now-best-friends/)
 ```scala
 // SNS connector
 "com.ocadotechnology" %% "pass4s-connector-sns" % "@VERSION@"
@@ -47,7 +47,7 @@ SNS/SQS
 "com.ocadotechnology" %% "pass4s-connector-sqs" % "@VERSION@"
 ```
 
-Kinesis
+[Kinesis](https://aws.amazon.com/kinesis/)
 ```scala
 // ActiveMQ connector
 "com.ocadotechnology" %% "pass4s-connector-kinesis" % "@VERSION@"
@@ -67,19 +67,19 @@ Extras - provides [`MessageProcessor`](modules/message-processor) for convenient
 "com.ocadotechnology" %% "pass4s-s3proxy" % "@VERSION@"
 
 ```
-Circe - JSON serialization/parsing support
+[Circe](https://circe.github.io/circe/) - JSON serialization/parsing support
 ```scala
 // circe JSON senders/consumers
 "com.ocadotechnology" %% "pass4s-circe" % "@VERSION@"
 ```
 
-Phobos - XML serialization/parsing support
+[Phobos](https://github.com/Tinkoff/phobos) - XML serialization/parsing support
 ```scala
 // phobos XML senders/consumers
 "com.ocadotechnology" %% "pass4s-phobos" % "@VERSION@"
 ```
 
-Logging middleware that uses log4cats
+Logging middleware that uses [log4cats](https://typelevel.org/log4cats/)
 ```scala
 // logging middleware
 "com.ocadotechnology" %% "pass4s-logging" % "@VERSION@"
