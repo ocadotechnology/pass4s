@@ -181,7 +181,7 @@ lazy val docs = project // new documentation project
   .in(file("mdoc")) // important: it must not be docs/
   .settings(
     mdocVariables := Map(
-      "VERSION" -> version.value
+      "VERSION" -> { if (isSnapshot.value) previousStableVersion.value.get else version.value }
     ),
     githubWorkflowBuild := Seq(
       WorkflowStep.Sbt(List("docs/mdoc"))
