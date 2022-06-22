@@ -5,9 +5,6 @@ description: Pass4s documentation page
 
 # Getting started
 
-
-# Getting started
-
 ## About
 
 Pass4s is a Scala library providing an abstract layer for app messaging. It provides implementations for platforms like AWS SQS/SNS and ActiveMQ.
