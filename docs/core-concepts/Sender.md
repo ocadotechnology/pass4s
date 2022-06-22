@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Sender
 
-Sender is a basic abstraction over the possibility to send single message. It's simplified definition looks like this:
+Sender is a basic abstraction over the possibility to send single message. Its simplified definition looks like this:
 
 ```scala
 trait Sender[F[_], -A] extends (A => F[Unit]) with Serializable {

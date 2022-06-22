@@ -19,7 +19,7 @@ val richProcessor =
     .enrich(_.usingS3Proxy(consumerConfig))
     .enrich(_.asJsonConsumer[String])
 ```
-Then depending on your logic you can go either with `transact` if you use different effect or `effectful` if you want to stick to `IO` in our example. After that you bind the broker and provide the message handling logic. Keep in mind that you can resue once prepared processor like in the example below.
+Then depending on your logic you can go either with `transact` if you use different effect or `effectful` if you want to stick to `IO` in our example. After that you bind the broker and provide the message handling logic. Keep in mind that you can reuse once prepared processor like in the example below.
 
 ```scala
 val processor = 

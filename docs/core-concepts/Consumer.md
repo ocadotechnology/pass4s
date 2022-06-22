@@ -4,11 +4,11 @@ sidebar_position: 2
 
 # Consumer
 
-Consumer is an abstraction for continous process of executin logic upon recieving a message.
+Consumer is an abstraction for continuous process of executing logic upon receiving a message.
 
 It's defined as a function in following shape: `(A => F[Unit]) => F[Unit]`. This means a function that:
 - takes an argument of type `A => F[Unit]` - think of it as the processing logic type
-- returns `F[Unit]` means that consuming itself is only a side effect and yiealds no real value
+- returns `F[Unit]` means that consuming itself is only a side effect and yields no real value
 
 ```scala
 trait Consumer[F[_], +A] extends ((A => F[Unit]) => F[Unit]) with Serializable { self =>
@@ -24,7 +24,7 @@ trait Consumer[F[_], +A] extends ((A => F[Unit]) => F[Unit]) with Serializable {
 }
 ```
 
-To start a consumer, you need a function that will handle messages of type `A` and return effects in `F[_]`. As you can see in the example above, the consumer can also be transactional, meaning it can perform an action in one effect and then translate the result to the other. It's especially useful when you wan to perform database operations in `ConnectionIO[_]` while your application effect is `IO[_]`.
+To start a consumer, you need a function that will handle messages of type `A` and return effects in `F[_]`. As you can see in the example above, the consumer can also be transactional, meaning it can perform an action in one effect and then translate the result to the other. It's especially useful when you want to perform database operations in `ConnectionIO[_]` while your application effect is `IO[_]`.
 
 The end user usually doesn't instantiate the `Consumer` directly. Instead they would usually get one from [`Broker`](broker) or [`MessageProcessor`](../modules/message-processor).
 
