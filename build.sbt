@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.1" // current series x.y
+ThisBuild / tlBaseVersion := "0.2" // current series x.y
 
 ThisBuild / organization := "com.ocadotechnology"
 ThisBuild / organizationName := "Ocado Technology"
@@ -103,7 +103,6 @@ lazy val kinesis = module("kinesis", directory = "connectors")
     name := "pass4s-connector-kinesis",
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-kinesis-tagless" % "5.0.2",
-      "software.amazon.awssdk" % "sts" % "2.17.220"
     ) ++ awsSnykOverrides
   )
   .dependsOn(core)
