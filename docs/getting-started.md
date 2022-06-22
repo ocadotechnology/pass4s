@@ -1,11 +1,9 @@
 ---
 sidebar_position: 1
-description: Getting started with pass4s
+description: Pass4s documentation page
 ---
 
 # Getting started
-
-This documentation is work in progress
 
 
 # Getting started
