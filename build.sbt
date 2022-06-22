@@ -175,15 +175,24 @@ lazy val logging = module("logging", directory = "addons")
   )
   .dependsOn(high)
 
+def latestStableVersion = {
+  import scala.sys.process._
+  "git -c versionsort.suffix=- tag --list --sort=-version:refname"
+    .!!
+    .split("\n")
+    .toList
+    .map(_.trim)
+    .filter(_.startsWith("v"))
+    .head
+}
+
 // online documentation
 
 lazy val docs = project // new documentation project
   .in(file("mdoc")) // important: it must not be docs/
   .settings(
     mdocVariables := Map(
-      // TODO this should be last stable version for snapshot builds
-      "VERSION" -> version.value
-      // "VERSION" -> { if (isSnapshot.value) previousStableVersion.value.get else version.value }
+      "VERSION" -> { if (isSnapshot.value) latestStableVersion else version.value }
     ),
     githubWorkflowBuild := Seq(
       WorkflowStep.Sbt(List("docs/mdoc"))
