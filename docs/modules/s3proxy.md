@@ -24,7 +24,7 @@ val consumerConfig =
     .copy(
       shouldDeleteAfterProcessing = true // it doesn't by default, just in case there's more listeners
     )
-val broker = ??? // let's just asume you already instantiated broker
+val broker = ??? // let's just assume you already instantiated broker
 val payload = Message.Payload("body", Map("foo" -> "bar"))
 
 val sender = 
