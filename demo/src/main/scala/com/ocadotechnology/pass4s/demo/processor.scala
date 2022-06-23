@@ -24,9 +24,6 @@ import com.ocadotechnology.pass4s.kernel._
 
 object MyProcessor {
 
-  // this is pure logic, the only "tap" thing here are Senders,
-  // which are actually from the algebraic package and have zero dependencies on anything else in the library.
-  // They can also be created easily with Sender.writer, Sender.testing, Sender.noop etc.
   def instance[F[_]: MyService: Temporal](
     implicit intSender: Sender[F, Int],
     boolSender: Sender[F, Boolean]

@@ -38,7 +38,7 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-scalacheck" % "0.7.12",
       "org.scalatest" %% "scalatest" % "3.2.12", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.4",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.238" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.243" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.4",
       "org.mock-server" % "mockserver-client-java" % "5.13.2",
       "org.apache.activemq" % "activemq-broker" % "5.17.1",
@@ -73,18 +73,11 @@ lazy val kernel = module("kernel").settings(
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
     "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
-    "org.typelevel" %% "cats-effect-laws" % "3.3.12" % Test,
-    "org.typelevel" %% "cats-effect-testkit" % "3.3.12" % Test,
-    "com.disneystreaming" %% "weaver-discipline" % "0.7.12" % Test
+    "com.disneystreaming" %% "weaver-discipline" % "0.7.11" % Test
   )
 )
 
 lazy val high = module("high")
-  .settings(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect-laws" % "3.3.12" % Test
-    )
-  )
   .dependsOn(core, kernel)
 
 // connectors
@@ -110,7 +103,7 @@ lazy val kinesis = module("kinesis", directory = "connectors")
     name := "pass4s-connector-kinesis",
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-kinesis-tagless" % "5.0.2",
-      "software.amazon.awssdk" % "sts" % "2.17.155"
+      "software.amazon.awssdk" % "sts" % "2.17.214"
     ) ++ awsSnykOverrides
   )
   .dependsOn(core)
@@ -175,13 +168,24 @@ lazy val logging = module("logging", directory = "addons")
   )
   .dependsOn(high)
 
+def latestStableVersion = {
+  import scala.sys.process._
+  "git -c versionsort.suffix=- tag --list --sort=-version:refname"
+    .!!
+    .split("\n")
+    .toList
+    .map(_.trim)
+    .filter(_.startsWith("v"))
+    .head
+}
+
 // online documentation
 
 lazy val docs = project // new documentation project
   .in(file("mdoc")) // important: it must not be docs/
   .settings(
     mdocVariables := Map(
-      "VERSION" -> version.value
+      "VERSION" -> { if (isSnapshot.value) latestStableVersion else version.value }
     ),
     githubWorkflowBuild := Seq(
       WorkflowStep.Sbt(List("docs/mdoc"))

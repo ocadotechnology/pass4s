@@ -67,7 +67,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
     final case class PostProcessing(msg: String) extends Message
 
     for {
-      state      <- Ref[IO].of((Chain[Message]()))
+      state      <- Ref[IO].of(Chain[Message]())
       _          <- Consumer
                       .many[IO, Int](1, 2)
                       .afterEach(msg => state.update(_ append PostProcessing(s"First post process $msg")))
