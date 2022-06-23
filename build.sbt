@@ -73,7 +73,7 @@ lazy val kernel = module("kernel").settings(
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
     "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
-    "com.disneystreaming" %% "weaver-discipline" % "0.7.11" % Test
+    "com.disneystreaming" %% "weaver-discipline" % "0.7.12" % Test
   )
 )
 
