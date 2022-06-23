@@ -44,7 +44,7 @@ The library is divided into multiple modules. If you're only interested in the b
 
 [Kinesis](https://aws.amazon.com/kinesis/)
 ```scala
-// ActiveMQ connector
+// Kinesis connector
 "com.ocadotechnology" %% "pass4s-connector-kinesis" % "@VERSION@"
 ```
 
