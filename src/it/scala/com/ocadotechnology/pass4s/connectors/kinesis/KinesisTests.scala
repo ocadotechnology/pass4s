@@ -3,9 +3,9 @@ package com.ocadotechnology.pass4s.connectors.kinesis
 import cats.effect.IO
 import cats.effect.Resource
 import cats.implicits._
-import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
 import io.laserdisc.pure.kinesis.tagless.KinesisAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import software.amazon.awssdk.services.kinesis.model.GetRecordsRequest

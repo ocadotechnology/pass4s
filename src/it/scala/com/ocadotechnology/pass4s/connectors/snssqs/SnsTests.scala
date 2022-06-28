@@ -14,20 +14,20 @@ import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifoEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
-import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.groupId.MessageGroup
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.kernel.Sender
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
 import io.circe.Encoder
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import io.laserdisc.pure.sns.tagless.SnsAsyncClientOp
 import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 
 object SnsTests extends MutableIOSuite {
