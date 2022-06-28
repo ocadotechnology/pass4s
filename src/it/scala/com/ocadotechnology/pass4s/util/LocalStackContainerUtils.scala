@@ -37,9 +37,9 @@ object LocalStackContainerUtils {
 
   private def createContainer(services: Seq[LocalStackV2Container.Service]): IO[LocalStackV2Container] =
     IO {
-      val c = LocalStackV2Container(tag = "0.12.20", services = services)
-      c.container.setDockerImageName("localstack/localstack:0.12.20")
-      c
+      val localStackTag = "1.0.4"
+      LocalStackV2Container(tag = localStackTag, services = services)
+        .configure(_.setDockerImageName(s"localstack/localstack:$localStackTag"))
     }
 
   def containerResource(services: Seq[LocalStackV2Container.Service]): Resource[IO, LocalStackV2Container] =
@@ -83,25 +83,25 @@ object LocalStackContainerUtils {
       container.staticCredentialsProvider
     )
 
+  private val fifoExtraAttributes =
+    Map(
+      QueueAttributeName.DEDUPLICATION_SCOPE -> "messageGroup",
+      QueueAttributeName.CONTENT_BASED_DEDUPLICATION -> true.toString,
+      QueueAttributeName.FIFO_THROUGHPUT_LIMIT -> "perMessageGroupId"
+    )
+
   def queueResource(
     sqsClient: SqsAsyncClientOp[IO]
   )(
     queueName: String,
     additionalParameters: Endo[CreateQueueRequest.Builder] = identity,
-    isFifo: Boolean = false,
-    isDedup: Boolean = false
+    isFifo: Boolean = false
   ): Resource[IO, SqsUrl] =
     Resource
       .make(for {
         randomSuffix <- IO(Random.alphanumeric.take(8).mkString)
         fifoSuffix = if (isFifo) ".fifo" else ""
-        fifoAttrs = Map(QueueAttributeName.FIFO_QUEUE -> isFifo.toString)
-        attrs = if (isDedup)
-                  fifoAttrs ++ Map(
-                    QueueAttributeName.DEDUPLICATION_SCOPE -> "messageGroup",
-                    QueueAttributeName.CONTENT_BASED_DEDUPLICATION -> true.toString
-                  )
-                else fifoAttrs
+        attrs = Map(QueueAttributeName.FIFO_QUEUE -> isFifo.toString) ++ (if (isFifo) fifoExtraAttributes else Map.empty)
         response     <- sqsClient.createQueue(
                           additionalParameters(
                             CreateQueueRequest.builder().queueName(s"$queueName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)
@@ -121,7 +121,7 @@ object LocalStackContainerUtils {
       .make(for {
         randomSuffix <- IO(Random.alphanumeric.take(8).mkString)
         fifoSuffix = if (isFifo) ".fifo" else ""
-        attrs = Map("FifoTopic" -> isFifo.toString)
+        attrs = Map("FifoTopic" -> isFifo.toString) ++ (if (isFifo) Map("ContentBasedDeduplication" -> true.toString) else Map.empty)
         response     <-
           snsClient.createTopic(
             additionalParameters(CreateTopicRequest.builder().name(s"$topicName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)).build()

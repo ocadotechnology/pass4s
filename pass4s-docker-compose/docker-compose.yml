@@ -9,12 +9,9 @@ services:
       - "8161:8161"
 
   localstack:
-    image: localstack/localstack-full:latest
+    image: localstack/localstack:1.0.4
     ports:
       - "4566-4599:4566-4599"
       - "8080:8080"
     environment:
       - SERVICES=sns,sqs,s3
-      - DATA_DIR=/tmp/localstack/data
-      - DEBUG=1
-      - SETUP_IAM=true
