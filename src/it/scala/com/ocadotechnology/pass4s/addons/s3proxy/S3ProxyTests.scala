@@ -5,28 +5,28 @@ import cats.effect.Resource
 import cats.effect.std.UUIDGen
 import com.ocadotechnology.pass4s.connectors.sns.Sns
 import com.ocadotechnology.pass4s.connectors.sns.SnsArn
+import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
 import com.ocadotechnology.pass4s.connectors.sns.SnsDestination
 import com.ocadotechnology.pass4s.connectors.sns.SnsFifo
 import com.ocadotechnology.pass4s.connectors.sqs.Sqs
+import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
 import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
 import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
-import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.s3proxy.S3Client
 import com.ocadotechnology.pass4s.s3proxy.S3ProxyConfig
 import com.ocadotechnology.pass4s.s3proxy.syntax._
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.DurationInt
-import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
-import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
+import scala.concurrent.duration.FiniteDuration
 
 object S3ProxyTests extends MutableIOSuite {
 

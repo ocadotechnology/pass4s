@@ -10,23 +10,23 @@ import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifoEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
-import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
 import fs2.concurrent.SignallingRef
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import weaver.MutableIOSuite
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 
 object SqsTests extends MutableIOSuite {
   override type Res = (Broker[IO, Sqs with SqsFifo], SqsAsyncClientOp[IO])

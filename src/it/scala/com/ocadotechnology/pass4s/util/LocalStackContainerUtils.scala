@@ -1,4 +1,4 @@
-package com.ocadotechnology.pass4s.connectors.util
+package com.ocadotechnology.pass4s.util
 
 import cats.Endo
 import cats.effect.IO
