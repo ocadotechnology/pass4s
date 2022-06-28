@@ -35,9 +35,9 @@ object LocalStackContainerUtils {
 
   private def createContainer(services: Seq[LocalStackV2Container.Service]): IO[LocalStackV2Container] =
     IO {
-      val c = LocalStackV2Container(tag = "0.12.20", services = services)
-      c.container.setDockerImageName("localstack/localstack:0.12.20")
-      c
+      val localStackTag = "0.14.4"
+      LocalStackV2Container(tag = localStackTag, services = services)
+        .configure(_.setDockerImageName(s"localstack/localstack:$localStackTag"))
     }
 
   def containerResource(services: Seq[LocalStackV2Container.Service]): Resource[IO, LocalStackV2Container] =
