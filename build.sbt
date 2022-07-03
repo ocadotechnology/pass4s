@@ -33,9 +33,9 @@ lazy val root = (project in file("."))
     commonSettings,
     name := "pass4s",
     libraryDependencies ++= Seq(
-      "com.disneystreaming" %% "weaver-cats" % "0.7.12",
-      "com.disneystreaming" %% "weaver-framework" % "0.7.12",
-      "com.disneystreaming" %% "weaver-scalacheck" % "0.7.12",
+      "com.disneystreaming" %% "weaver-cats" % "0.7.13",
+      "com.disneystreaming" %% "weaver-framework" % "0.7.13",
+      "com.disneystreaming" %% "weaver-scalacheck" % "0.7.13",
       "org.scalatest" %% "scalatest" % "3.2.12", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.4",
       "com.amazonaws" % "aws-java-sdk-core" % "1.12.249" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
@@ -73,7 +73,7 @@ lazy val kernel = module("kernel").settings(
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
     "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
-    "com.disneystreaming" %% "weaver-discipline" % "0.7.12" % Test
+    "com.disneystreaming" %% "weaver-discipline" % "0.7.13" % Test
   )
 )
 
