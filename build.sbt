@@ -63,7 +63,7 @@ lazy val core = module("core")
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "co.fs2" %% "fs2-core" % "3.2.8",
-      "org.typelevel" %% "cats-effect" % "3.3.12"
+      "org.typelevel" %% "cats-effect" % "3.3.13"
     )
   )
 
