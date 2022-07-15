@@ -143,7 +143,7 @@ object SqsTests extends MutableIOSuite {
             messages.groupMap(_.metadata(SqsFifo.groupIdMetadata))(_.text) == bodiesAndGroups.distinct.groupMap(_._2)(_._1),
             receiveMessageResponse.messages().isEmpty
           )
-        }
+        } *> ignore("This test is flaky and mostly tests the AWS behavior")
     }
 
   test("consumer should receive messages in parallel if maxConcurrent > 1").usingRes { case (broker, client) =>
