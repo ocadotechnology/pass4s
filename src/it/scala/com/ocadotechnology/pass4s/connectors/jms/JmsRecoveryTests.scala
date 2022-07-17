@@ -10,11 +10,11 @@ import cats.implicits._
 import com.ocadotechnology.pass4s.connectors.activemq.Jms
 import com.ocadotechnology.pass4s.connectors.activemq.JmsDestination
 import com.ocadotechnology.pass4s.connectors.activemq.JmsSource
-import com.ocadotechnology.pass4s.connectors.util.EmbeddedJmsBroker._
-import com.ocadotechnology.pass4s.connectors.util.ResourceAccess
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.util.EmbeddedJmsBroker._
+import com.ocadotechnology.pass4s.util.ResourceAccess
 import org.apache.activemq.broker.BrokerService
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
