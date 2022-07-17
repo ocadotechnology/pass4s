@@ -37,9 +37,9 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-framework" % "0.7.13",
       "com.disneystreaming" %% "weaver-scalacheck" % "0.7.13",
       "org.scalatest" %% "scalatest" % "3.2.12", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.4",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.257" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.4",
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.9",
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.261" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.9",
       "org.mock-server" % "mockserver-client-java" % "5.13.2",
       "org.apache.activemq" % "activemq-broker" % "5.17.1",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
@@ -62,14 +62,14 @@ lazy val core = module("core")
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "co.fs2" %% "fs2-core" % "3.2.9",
+      "co.fs2" %% "fs2-core" % "3.2.10",
       "org.typelevel" %% "cats-effect" % "3.3.13"
     )
   )
 
 lazy val kernel = module("kernel").settings(
   libraryDependencies ++= Seq(
-    "co.fs2" %% "fs2-core" % "3.2.9",
+    "co.fs2" %% "fs2-core" % "3.2.10",
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
     "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
