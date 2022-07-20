@@ -4,29 +4,27 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.std.UUIDGen
 import com.ocadotechnology.pass4s.connectors.sns.Sns
-import com.ocadotechnology.pass4s.connectors.sns.SnsArn
+import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
 import com.ocadotechnology.pass4s.connectors.sns.SnsDestination
 import com.ocadotechnology.pass4s.connectors.sns.SnsFifo
 import com.ocadotechnology.pass4s.connectors.sqs.Sqs
+import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
 import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
-import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
-import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.s3proxy.S3Client
 import com.ocadotechnology.pass4s.s3proxy.S3ProxyConfig
 import com.ocadotechnology.pass4s.s3proxy.syntax._
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.DurationInt
-import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
-import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
+import scala.concurrent.duration.FiniteDuration
 
 object S3ProxyTests extends MutableIOSuite {
 
@@ -73,16 +71,11 @@ object S3ProxyTests extends MutableIOSuite {
             )
         val payload = Message.Payload("body", Map("foo" -> "bar"))
         val consumer: Consumer[IO, Message.Payload] =
-          broker
-            .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings()))
-            .usingS3Proxy(consumerConfig)
+          broker.consumer(SqsEndpoint(queueUrl)).usingS3Proxy(consumerConfig)
         val consume1MessageFromQueue =
           Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
         val sendMessageOnTopic =
-          broker
-            .sender
-            .usingS3Proxy(senderConfig)
-            .sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+          broker.sender.usingS3Proxy(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
 
         for {
           _            <- sendMessageOnTopic
@@ -116,17 +109,11 @@ object S3ProxyTests extends MutableIOSuite {
             )
         val payload = Message.Payload("body", Map("foo" -> "bar"))
         val consumer: Consumer[IO, Message.Payload] =
-          broker
-            .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings(cancelableMessageProcessing = false)))
-            .usingS3Proxy(consumerConfig)
+          broker.consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(cancelableMessageProcessing = false))).usingS3Proxy(consumerConfig)
         val consume1MessageFromQueue =
           Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
         val sendMessageOnTopic =
-          broker
-            .sender
-            .usingS3Proxy(senderConfig)
-            .sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
-
+          broker.sender.usingS3Proxy(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
         for {
           _            <- sendMessageOnTopic
           objects      <- s3Client.listObjects(bucketName)
@@ -155,11 +142,11 @@ object S3ProxyTests extends MutableIOSuite {
             .Consumer
             .withSnsDefaults()
         val payload = Message.Payload("body", Map("foo" -> "bar"))
-        val consumer = broker.consumer(SqsEndpoint(SqsUrl(queueUrl))).usingS3Proxy(consumerConfig)
+        val consumer = broker.consumer(SqsEndpoint(queueUrl)).usingS3Proxy(consumerConfig)
         val consume1MessageFromQueue =
           Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
         val sender = broker.sender.usingS3Proxy(senderConfig)
-        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(topicArn)).widen)
 
         for {
           _       <- sendMessageOnTopic
@@ -185,7 +172,7 @@ object S3ProxyTests extends MutableIOSuite {
             )
         val payload = Message.Payload("body", Map("foo" -> "bar"))
         val sender = broker.sender.usingS3Proxy(senderConfig)
-        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
+        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(topicArn)).widen)
 
         for {
           initial <- s3Client.listObjects(bucketName)
@@ -217,8 +204,8 @@ object S3ProxyTests extends MutableIOSuite {
             )
         val payload = Message.Payload("body", Map("foo" -> "bar"))
         val sender = broker.sender.usingS3Proxy(senderConfig)
-        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
-        val consumer = broker.consumer(SqsEndpoint(SqsUrl(queueUrl))).usingS3Proxy(consumerConfig)
+        val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(topicArn)).widen)
+        val consumer = broker.consumer(SqsEndpoint(queueUrl)).usingS3Proxy(consumerConfig)
 
         for {
           _       <- consumer.consume(_ => IO.raiseError(new RuntimeException("intentionally failed"))).background.use_

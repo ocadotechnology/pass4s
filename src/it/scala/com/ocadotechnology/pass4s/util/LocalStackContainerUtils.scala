@@ -1,4 +1,4 @@
-package com.ocadotechnology.pass4s.connectors.util
+package com.ocadotechnology.pass4s.util
 
 import cats.Endo
 import cats.effect.IO
@@ -7,9 +7,11 @@ import cats.implicits._
 import com.dimafeng.testcontainers.LocalStackV2Container
 import com.ocadotechnology.pass4s.connectors.kinesis.KinesisConnector
 import com.ocadotechnology.pass4s.connectors.kinesis.KinesisConnector.KinesisConnector
+import com.ocadotechnology.pass4s.connectors.sns.SnsArn
 import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
 import com.ocadotechnology.pass4s.connectors.sns.SnsConnector.SnsConnector
 import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
+import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
 import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector.SqsConnector
 import com.ocadotechnology.pass4s.s3proxy.S3Client
 import io.laserdisc.pure.kinesis.tagless.KinesisAsyncClientOp
@@ -88,23 +90,25 @@ object LocalStackContainerUtils {
     additionalParameters: Endo[CreateQueueRequest.Builder] = identity,
     isFifo: Boolean = false,
     isDedup: Boolean = false
-  ): Resource[IO, String] =
-    Resource.make(for {
-      randomSuffix <- IO(Random.alphanumeric.take(8).mkString)
-      fifoSuffix = if (isFifo) ".fifo" else ""
-      fifoAttrs = Map(QueueAttributeName.FIFO_QUEUE -> isFifo.toString)
-      attrs = if (isDedup)
-                fifoAttrs ++ Map(
-                  QueueAttributeName.DEDUPLICATION_SCOPE -> "messageGroup",
-                  QueueAttributeName.CONTENT_BASED_DEDUPLICATION -> true.toString
-                )
-              else fifoAttrs
-      response     <- sqsClient.createQueue(
-                        additionalParameters(
-                          CreateQueueRequest.builder().queueName(s"$queueName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)
-                        ).build()
-                      )
-    } yield response.queueUrl())(queueUrl => sqsClient.deleteQueue(DeleteQueueRequest.builder().queueUrl(queueUrl).build()).void)
+  ): Resource[IO, SqsUrl] =
+    Resource
+      .make(for {
+        randomSuffix <- IO(Random.alphanumeric.take(8).mkString)
+        fifoSuffix = if (isFifo) ".fifo" else ""
+        fifoAttrs = Map(QueueAttributeName.FIFO_QUEUE -> isFifo.toString)
+        attrs = if (isDedup)
+                  fifoAttrs ++ Map(
+                    QueueAttributeName.DEDUPLICATION_SCOPE -> "messageGroup",
+                    QueueAttributeName.CONTENT_BASED_DEDUPLICATION -> true.toString
+                  )
+                else fifoAttrs
+        response     <- sqsClient.createQueue(
+                          additionalParameters(
+                            CreateQueueRequest.builder().queueName(s"$queueName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)
+                          ).build()
+                        )
+      } yield response.queueUrl())(queueUrl => sqsClient.deleteQueue(DeleteQueueRequest.builder().queueUrl(queueUrl).build()).void)
+      .map(SqsUrl)
 
   def topicResource(
     snsClient: SnsAsyncClientOp[IO]
@@ -112,50 +116,34 @@ object LocalStackContainerUtils {
     topicName: String,
     additionalParameters: Endo[CreateTopicRequest.Builder] = identity,
     isFifo: Boolean = false
-  ): Resource[IO, String] =
-    Resource.make(for {
-      randomSuffix <- IO(Random.alphanumeric.take(8).mkString)
-      fifoSuffix = if (isFifo) ".fifo" else ""
-      attrs = Map("FifoTopic" -> isFifo.toString)
-      response     <-
-        snsClient.createTopic(
-          additionalParameters(CreateTopicRequest.builder().name(s"$topicName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)).build()
-        )
-    } yield response.topicArn())(topicArn => snsClient.deleteTopic(DeleteTopicRequest.builder().topicArn(topicArn).build()).void)
+  ): Resource[IO, SnsArn] =
+    Resource
+      .make(for {
+        randomSuffix <- IO(Random.alphanumeric.take(8).mkString)
+        fifoSuffix = if (isFifo) ".fifo" else ""
+        attrs = Map("FifoTopic" -> isFifo.toString)
+        response     <-
+          snsClient.createTopic(
+            additionalParameters(CreateTopicRequest.builder().name(s"$topicName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)).build()
+          )
+      } yield response.topicArn())(topicArn => snsClient.deleteTopic(DeleteTopicRequest.builder().topicArn(topicArn).build()).void)
+      .map(SnsArn)
 
   def topicWithSubscriptionResource(
     snsClient: SnsAsyncClientOp[IO],
     sqsClient: SqsAsyncClientOp[IO]
   )(
-    topicName: String
-  ): Resource[IO, (String, String)] =
+    topicName: String,
+    isFifo: Boolean = false
+  ): Resource[IO, (SnsArn, SqsUrl)] =
     for {
-      topicArn <- topicResource(snsClient)(topicName)
-      queueUrl <- queueResource(sqsClient)(s"$topicName-sub")
+      topicArn <- topicResource(snsClient)(topicName, isFifo = isFifo)
+      queueUrl <- queueResource(sqsClient)(s"$topicName-sub", isFifo = isFifo)
       subscribeRequest = SubscribeRequest
                            .builder()
-                           .topicArn(topicArn)
+                           .topicArn(topicArn.value)
                            .protocol("sqs")
-                           .endpoint(queueUrl)
-                           .attributes(Map("RawMessageDelivery" -> "true").asJava)
-                           .build()
-      _        <- Resource.eval(snsClient.subscribe(subscribeRequest))
-    } yield (topicArn, queueUrl)
-
-  def fifoTopicWithSubscriptionResource(
-    snsClient: SnsAsyncClientOp[IO],
-    sqsClient: SqsAsyncClientOp[IO]
-  )(
-    topicName: String
-  ): Resource[IO, (String, String)] =
-    for {
-      topicArn <- topicResource(snsClient)(topicName, isFifo = true)
-      queueUrl <- queueResource(sqsClient)(s"$topicName-sub", isFifo = true)
-      subscribeRequest = SubscribeRequest
-                           .builder()
-                           .topicArn(topicArn)
-                           .protocol("sqs")
-                           .endpoint(queueUrl)
+                           .endpoint(queueUrl.value)
                            .attributes(Map("RawMessageDelivery" -> "true").asJava)
                            .build()
       _        <- Resource.eval(snsClient.subscribe(subscribeRequest))
