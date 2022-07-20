@@ -63,7 +63,7 @@ object SnsTests extends MutableIOSuite {
       val payloads =
         0L.until(numMessages).map(n => Message.Payload(s"body$n", Map(SnsFifo.groupIdMetadata -> (n % 2).toString, "foo" -> "bar"))).toList
 
-      fifoTopicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic")
+      topicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic", isFifo = true)
         .use { case (topicArn, queueUrl) =>
           val consume10MessagesFromQueue =
             Consumer
@@ -92,7 +92,7 @@ object SnsTests extends MutableIOSuite {
 
     val payload = Foo(2137, order = "uśmiechu")
 
-    fifoTopicWithSubscriptionResource(snsClient, sqsClient)("another-fifo-topic")
+    topicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic", isFifo = true)
       .use { case (topicArn, queueUrl) =>
         import com.ocadotechnology.pass4s.circe.syntax._
         val sender: Sender[IO, Foo] = broker.sender.asJsonSenderWithMessageGroup[Foo](SnsFifoDestination(SnsArn(topicArn)))

@@ -127,30 +127,12 @@ object LocalStackContainerUtils {
     snsClient: SnsAsyncClientOp[IO],
     sqsClient: SqsAsyncClientOp[IO]
   )(
-    topicName: String
+    topicName: String,
+    isFifo: Boolean = false
   ): Resource[IO, (String, String)] =
     for {
-      topicArn <- topicResource(snsClient)(topicName)
-      queueUrl <- queueResource(sqsClient)(s"$topicName-sub")
-      subscribeRequest = SubscribeRequest
-                           .builder()
-                           .topicArn(topicArn)
-                           .protocol("sqs")
-                           .endpoint(queueUrl)
-                           .attributes(Map("RawMessageDelivery" -> "true").asJava)
-                           .build()
-      _        <- Resource.eval(snsClient.subscribe(subscribeRequest))
-    } yield (topicArn, queueUrl)
-
-  def fifoTopicWithSubscriptionResource(
-    snsClient: SnsAsyncClientOp[IO],
-    sqsClient: SqsAsyncClientOp[IO]
-  )(
-    topicName: String
-  ): Resource[IO, (String, String)] =
-    for {
-      topicArn <- topicResource(snsClient)(topicName, isFifo = true)
-      queueUrl <- queueResource(sqsClient)(s"$topicName-sub", isFifo = true)
+      topicArn <- topicResource(snsClient)(topicName, isFifo = isFifo)
+      queueUrl <- queueResource(sqsClient)(s"$topicName-sub", isFifo = isFifo)
       subscribeRequest = SubscribeRequest
                            .builder()
                            .topicArn(topicArn)
