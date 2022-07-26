@@ -63,7 +63,9 @@ trait Source[P] extends End[P] {
   def maxConcurrent: Int = 1
 }
 
-trait Destination[P] extends End[P]
+trait Destination[P] extends End[P] {
+  def widen[R <: P]: Destination[R] = this.asInstanceOf[Destination[R]]
+}
 
 trait CommittableMessage[F[_]] { self =>
   def scope: Resource[F, Payload]
