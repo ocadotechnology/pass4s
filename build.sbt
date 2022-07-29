@@ -20,8 +20,9 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 )
 
 val Versions = new {
-  val Log4Cats = "2.2.0"
+  val Log4Cats = "2.3.2"
   val KamonCatsEffect = "16.0.0"
+  val Weaver = "0.7.13"
 }
 
 lazy val IntegrationTest = config("it") extend Test
@@ -33,9 +34,9 @@ lazy val root = (project in file("."))
     commonSettings,
     name := "pass4s",
     libraryDependencies ++= Seq(
-      "com.disneystreaming" %% "weaver-cats" % "0.7.13",
-      "com.disneystreaming" %% "weaver-framework" % "0.7.13",
-      "com.disneystreaming" %% "weaver-scalacheck" % "0.7.13",
+      "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
+      "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
+      "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.12", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.9",
       "com.amazonaws" % "aws-java-sdk-core" % "1.12.267" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
@@ -73,7 +74,7 @@ lazy val kernel = module("kernel").settings(
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
     "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
-    "com.disneystreaming" %% "weaver-discipline" % "0.7.13" % Test
+    "com.disneystreaming" %% "weaver-discipline" % Versions.Weaver % Test
   )
 )
 
@@ -216,9 +217,9 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= compilerPlugins,
   // mimaPreviousArtifacts := Seq(), // TODO
   libraryDependencies ++= Seq(
-    "com.disneystreaming" %% "weaver-cats" % "0.7.11",
-    "com.disneystreaming" %% "weaver-framework" % "0.7.11",
-    "com.disneystreaming" %% "weaver-scalacheck" % "0.7.11"
+    "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
+    "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
+    "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver
   ).map(_ % Test),
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
