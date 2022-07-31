@@ -20,7 +20,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 )
 
 val Versions = new {
-  val Log4Cats = "2.4.0"
+  val Log4Cats = "2.2.0"
   val KamonCatsEffect = "16.0.0"
 }
 
