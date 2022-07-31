@@ -1,9 +1,8 @@
 package com.ocadotechnology.pass4s.connectors.snssqs
 
-import cats.implicits._
 import cats.effect.IO
 import cats.effect.Resource
-import com.ocadotechnology.pass4s.connectors.util.MockServerContainerUtils._
+import cats.implicits._
 import com.ocadotechnology.pass4s.connectors.sqs.Sqs
 import com.ocadotechnology.pass4s.connectors.sqs.SqsClientException
 import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
@@ -11,8 +10,7 @@ import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
+import com.ocadotechnology.pass4s.util.MockServerContainerUtils._
 import org.apache.commons.codec.digest.DigestUtils
 import org.mockserver.client.MockServerClient
 import org.mockserver.matchers.Times
@@ -22,6 +20,8 @@ import org.mockserver.model.HttpResponse
 import org.mockserver.model.HttpResponse.response
 import org.mockserver.model.Parameter.param
 import org.mockserver.model.ParameterBody.params
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
