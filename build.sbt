@@ -72,7 +72,7 @@ lazy val kernel = module("kernel").settings(
     "co.fs2" %% "fs2-core" % "3.2.9",
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
-    "org.typelevel" %% "cats-laws" % "2.8.0" % Test,
+    "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
     "com.disneystreaming" %% "weaver-discipline" % "0.7.13" % Test
   )
 )
