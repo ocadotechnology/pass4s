@@ -10,23 +10,23 @@ import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifoEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
-import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
 import fs2.concurrent.SignallingRef
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import weaver.MutableIOSuite
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 
 object SqsTests extends MutableIOSuite {
   override type Res = (Broker[IO, Sqs with SqsFifo], SqsAsyncClientOp[IO])
@@ -44,15 +44,15 @@ object SqsTests extends MutableIOSuite {
       .use { queueUrl =>
         val sendMessageRequest = SendMessageRequest
           .builder()
-          .queueUrl(queueUrl)
+          .queueUrl(queueUrl.value)
           .messageBody("foo")
           .messageAttributes(messageAttributes("foo" -> "bar").asJava)
           .build()
 
         val consume1MessageFromQueue =
-          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(SqsUrl(queueUrl)))).head.compile.lastOrError
+          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(queueUrl))).head.compile.lastOrError
         val sendMessageOnQueue = client.sendMessage(sendMessageRequest)
-        val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl).build())
+        val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl.value).build())
 
         (consume1MessageFromQueue <& sendMessageOnQueue).product(readCurrentQueueMessages)
       }
@@ -75,7 +75,7 @@ object SqsTests extends MutableIOSuite {
           def sendMessageRequest(body: String, groupId: String) =
             SendMessageRequest
               .builder()
-              .queueUrl(queueUrl)
+              .queueUrl(queueUrl.value)
               .messageBody(body)
               .messageGroupId(groupId) // this would normally be inserted automatically by SQS sender
               .messageAttributes(messageAttributes(SqsFifo.groupIdMetadata -> groupId, "foo" -> "bar").asJava)
@@ -84,13 +84,9 @@ object SqsTests extends MutableIOSuite {
           val requests = bodiesAndGroups.map((sendMessageRequest _).tupled)
 
           val consume10MessagesFromQueue =
-            Consumer
-              .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
-              .take(numMessages)
-              .compile
-              .toList
+            Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(queueUrl))).take(numMessages).compile.toList
           val sendMessagesOnQueue = requests.traverse(client.sendMessage)
-          val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl).build())
+          val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl.value).build())
 
           (consume10MessagesFromQueue <& sendMessagesOnQueue).product(readCurrentQueueMessages)
         }
@@ -119,7 +115,7 @@ object SqsTests extends MutableIOSuite {
           def sendMessageRequest(body: String, groupId: String) =
             SendMessageRequest
               .builder()
-              .queueUrl(queueUrl)
+              .queueUrl(queueUrl.value)
               .messageBody(body)
               .messageGroupId(groupId) // this would normally be inserted automatically by SQS sender
               .messageAttributes(messageAttributes(SqsFifo.groupIdMetadata -> groupId, "foo" -> "bar").asJava)
@@ -128,13 +124,9 @@ object SqsTests extends MutableIOSuite {
           val requests = bodiesAndGroups.map((sendMessageRequest _).tupled)
 
           val consumeMessagesFromQueue =
-            Consumer
-              .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
-              .take(2)
-              .compile
-              .toList
+            Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(queueUrl))).take(2).compile.toList
           val sendMessagesOnQueue = requests.traverse_(client.sendMessage)
-          val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl).build())
+          val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl.value).build())
 
           (consumeMessagesFromQueue <& sendMessagesOnQueue).product(readCurrentQueueMessages)
         }
@@ -151,11 +143,11 @@ object SqsTests extends MutableIOSuite {
       .product(Resource.eval(SignallingRef(0)))
       .use { case (queueUrl, signallingRef) =>
         val incrementingQueueConsumer =
-          broker.consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings(maxConcurrent = 2))).consume { _ =>
+          broker.consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(maxConcurrent = 2))).consume { _ =>
             signallingRef.update(_ + 1) *> IO.sleep(500.millis) *> signallingRef.update(_ - 1)
           }
         val listenOnChangesInSignallingRefUntilAllConsumed = signallingRef.discrete.drop(1).takeThrough(_ != 0).compile.toList
-        val sendMessageOnQueue = client.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody("foo").build())
+        val sendMessageOnQueue = client.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl.value).messageBody("foo").build())
 
         incrementingQueueConsumer
           .background
@@ -166,15 +158,15 @@ object SqsTests extends MutableIOSuite {
 
   test("when consumer is failing message should not be deleted").usingRes { case (broker, client) =>
     queueResource(client)("input-dlq")
-      .mproduct(dlqUrl => queueResource(client)("input-queue", _.attributes(redrivePolicy(dlqUrl).asJava)))
+      .mproduct(dlqUrl => queueResource(client)("input-queue", _.attributes(redrivePolicy(dlqUrl.value).asJava)))
       .use { case (dlqUrl, queueUrl) =>
         val failingQueueConsumer = broker
-          .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings(messageProcessingTimeout = 1.second)))
+          .consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(messageProcessingTimeout = 1.second)))
           .consume(_ => IO.raiseError(new Exception("processing failed")))
         val consume1MessageFromDlq =
-          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(SqsUrl(dlqUrl)))).head.compile.lastOrError
-        val sendMessageOnQueue = client.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody("foo").build())
-        val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl).build())
+          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(dlqUrl))).head.compile.lastOrError
+        val sendMessageOnQueue = client.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl.value).messageBody("foo").build())
+        val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl.value).build())
 
         failingQueueConsumer
           .background
@@ -189,15 +181,15 @@ object SqsTests extends MutableIOSuite {
   test("when consumer is processing message for too long, then processing should be interrupted and message should not be deleted")
     .usingRes { case (broker, client) =>
       queueResource(client)("input-dlq")
-        .mproduct(dlqUrl => queueResource(client)("input-queue", _.attributes(redrivePolicy(dlqUrl).asJava)))
+        .mproduct(dlqUrl => queueResource(client)("input-queue", _.attributes(redrivePolicy(dlqUrl.value).asJava)))
         .use { case (dlqUrl, queueUrl) =>
           val longProcessingQueueConsumer = broker
-            .consumer(SqsEndpoint(SqsUrl(queueUrl), SqsEndpoint.Settings(messageProcessingTimeout = 1.second)))
+            .consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(messageProcessingTimeout = 1.second)))
             .consume(_ => IO.sleep(10.seconds))
           val consume1MessageFromDlq =
-            Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(SqsUrl(dlqUrl)))).head.compile.lastOrError
-          val sendMessageOnQueue = client.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody("foo").build())
-          val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl).build())
+            Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(dlqUrl))).head.compile.lastOrError
+          val sendMessageOnQueue = client.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl.value).messageBody("foo").build())
+          val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl.value).build())
 
           longProcessingQueueConsumer
             .background
@@ -214,9 +206,9 @@ object SqsTests extends MutableIOSuite {
     queueResource(client)("input-output-queue")
       .use { queueUrl =>
         val consume1MessageFromQueue =
-          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(SqsUrl(queueUrl)))).head.compile.lastOrError
-        val sendMessageOnQueue = broker.sender.sendOne(Message(payload, SqsDestination(SqsUrl(queueUrl))))
-        val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl).build())
+          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(queueUrl))).head.compile.lastOrError
+        val sendMessageOnQueue = broker.sender.sendOne(Message(payload, SqsDestination(queueUrl)))
+        val readCurrentQueueMessages = client.receiveMessage(ReceiveMessageRequest.builder().queueUrl(queueUrl.value).build())
 
         (consume1MessageFromQueue <& sendMessageOnQueue).product(readCurrentQueueMessages)
       }
