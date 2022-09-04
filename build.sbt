@@ -42,7 +42,7 @@ lazy val root = (project in file("."))
       "com.amazonaws" % "aws-java-sdk-core" % "1.12.290" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.10",
       "org.mock-server" % "mockserver-client-java" % "5.13.2",
-      "org.apache.activemq" % "activemq-broker" % "5.17.1",
+      "org.apache.activemq" % "activemq-broker" % "5.17.2",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
       "ch.qos.logback" % "logback-classic" % "1.2.11"
@@ -92,7 +92,7 @@ lazy val activemq = module("activemq", directory = "connectors")
     name := "pass4s-connector-activemq",
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "3.0.4",
-      "org.apache.activemq" % "activemq-pool" % "5.17.1",
+      "org.apache.activemq" % "activemq-pool" % "5.17.2",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ),
     headerSources / excludeFilter := HiddenFileFilter || "taps.scala"
