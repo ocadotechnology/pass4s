@@ -45,7 +45,7 @@ lazy val root = (project in file("."))
       "org.apache.activemq" % "activemq-broker" % "5.17.1",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
-      "ch.qos.logback" % "logback-classic" % "1.2.11"
+      "ch.qos.logback" % "logback-classic" % "1.4.0"
     ).map(_ % IntegrationTest),
     Defaults.itSettings,
     inConfig(IntegrationTest) {
@@ -205,7 +205,7 @@ lazy val demo = module("demo")
       "io.circe" %% "circe-generic" % "0.14.2",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
-      "ch.qos.logback" % "logback-classic" % "1.2.11"
+      "ch.qos.logback" % "logback-classic" % "1.4.0"
     )
   )
   .dependsOn(activemq, sns, sqs, extra, logging)
