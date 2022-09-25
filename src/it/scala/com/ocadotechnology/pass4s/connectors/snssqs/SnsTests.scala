@@ -13,21 +13,20 @@ import com.ocadotechnology.pass4s.connectors.sqs.Sqs
 import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
 import com.ocadotechnology.pass4s.connectors.sqs.SqsFifoEndpoint
-import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
-import com.ocadotechnology.pass4s.connectors.util.LocalStackContainerUtils._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.groupId.MessageGroup
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.kernel.Sender
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
 import io.circe.Encoder
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import io.laserdisc.pure.sns.tagless.SnsAsyncClientOp
 import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 
 object SnsTests extends MutableIOSuite {
@@ -49,8 +48,8 @@ object SnsTests extends MutableIOSuite {
     topicWithSubscriptionResource(snsClient, sqsClient)("output-topic")
       .use { case (topicArn, queueUrl) =>
         val consume1MessageFromQueue =
-          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(SqsUrl(queueUrl)))).head.compile.lastOrError
-        val sendMessageOnTopic = broker.sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))))
+          Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsEndpoint(queueUrl))).head.compile.lastOrError
+        val sendMessageOnTopic = broker.sender.sendOne(Message(payload, SnsDestination(topicArn)))
 
         consume1MessageFromQueue <& sendMessageOnTopic
       }
@@ -63,15 +62,11 @@ object SnsTests extends MutableIOSuite {
       val payloads =
         0L.until(numMessages).map(n => Message.Payload(s"body$n", Map(SnsFifo.groupIdMetadata -> (n % 2).toString, "foo" -> "bar"))).toList
 
-      fifoTopicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic")
+      topicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic", isFifo = true)
         .use { case (topicArn, queueUrl) =>
           val consume10MessagesFromQueue =
-            Consumer
-              .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
-              .take(numMessages)
-              .compile
-              .toList
-          val sendMessagesOnTopic = broker.sender[SnsFifo].sendAll(payloads.map(Message(_, SnsFifoDestination(SnsArn(topicArn)))))
+            Consumer.toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(queueUrl))).take(numMessages).compile.toList
+          val sendMessagesOnTopic = broker.sender[SnsFifo].sendAll(payloads.map(Message(_, SnsFifoDestination(topicArn))))
 
           consume10MessagesFromQueue <& sendMessagesOnTopic
         }
@@ -92,13 +87,13 @@ object SnsTests extends MutableIOSuite {
 
     val payload = Foo(2137, order = "uśmiechu")
 
-    fifoTopicWithSubscriptionResource(snsClient, sqsClient)("another-fifo-topic")
+    topicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic", isFifo = true)
       .use { case (topicArn, queueUrl) =>
         import com.ocadotechnology.pass4s.circe.syntax._
-        val sender: Sender[IO, Foo] = broker.sender.asJsonSenderWithMessageGroup[Foo](SnsFifoDestination(SnsArn(topicArn)))
+        val sender: Sender[IO, Foo] = broker.sender.asJsonSenderWithMessageGroup[Foo](SnsFifoDestination(topicArn))
         val consumeMessageFromQueue =
           Consumer
-            .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(SqsUrl(queueUrl))))
+            .toStreamBounded(maxSize = 1)(broker.consumer(SqsFifoEndpoint(queueUrl)))
             .head
             .compile
             .lastOrError
