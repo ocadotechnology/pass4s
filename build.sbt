@@ -37,7 +37,7 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
-      "org.scalatest" %% "scalatest" % "3.2.13", // just for `shouldNot compile`
+      "org.scalatest" %% "scalatest" % "3.2.14", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.10",
       "com.amazonaws" % "aws-java-sdk-core" % "1.12.314" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.10",
