@@ -9,7 +9,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
-val Scala213 = "2.13.8"
+val Scala213 = "2.13.10"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("11"))
 ThisBuild / githubWorkflowBuild ++= Seq(
@@ -37,10 +37,10 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
-      "org.scalatest" %% "scalatest" % "3.2.13", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.10",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.296" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.10",
+      "org.scalatest" %% "scalatest" % "3.2.14", // just for `shouldNot compile`
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.11",
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.319" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.11",
       "org.mock-server" % "mockserver-client-java" % "5.13.2",
       "org.apache.activemq" % "activemq-broker" % "5.17.2",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
@@ -63,14 +63,14 @@ lazy val core = module("core")
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "co.fs2" %% "fs2-core" % "3.2.12",
+      "co.fs2" %% "fs2-core" % "3.2.14",
       "org.typelevel" %% "cats-effect" % "3.3.14"
     )
   )
 
 lazy val kernel = module("kernel").settings(
   libraryDependencies ++= Seq(
-    "co.fs2" %% "fs2-core" % "3.2.12",
+    "co.fs2" %% "fs2-core" % "3.2.14",
     "org.typelevel" %% "cats-effect" % "3.3.9",
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
     "org.typelevel" %% "cats-laws" % "2.7.0" % Test,
@@ -132,7 +132,7 @@ lazy val sqs = module("sqs", directory = "connectors")
 lazy val circe = module("circe", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-parser" % "0.14.2",
+      "io.circe" %% "circe-parser" % "0.14.3",
       "org.typelevel" %% "jawn-parser" % "1.3.2"
     )
   )
@@ -202,7 +202,7 @@ lazy val demo = module("demo")
     publishArtifact := false,
     // mimaPreviousArtifacts := Set(), // TODO
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-generic" % "0.14.2",
+      "io.circe" %% "circe-generic" % "0.14.3",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
       "ch.qos.logback" % "logback-classic" % "1.2.11"
