@@ -9,7 +9,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
-val Scala213 = "2.13.8"
+val Scala213 = "2.13.10"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("11"))
 ThisBuild / githubWorkflowBuild ++= Seq(
@@ -37,10 +37,10 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
-      "org.scalatest" %% "scalatest" % "3.2.13", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.10",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.305" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.10",
+      "org.scalatest" %% "scalatest" % "3.2.14", // just for `shouldNot compile`
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.11",
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.319" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.11",
       "org.mock-server" % "mockserver-client-java" % "5.13.2",
       "org.apache.activemq" % "activemq-broker" % "5.17.2",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
