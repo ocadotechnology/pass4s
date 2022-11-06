@@ -103,7 +103,7 @@ lazy val kinesis = module("kinesis", directory = "connectors")
   .settings(
     name := "pass4s-connector-kinesis",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-kinesis-tagless" % "5.0.2"
+      "io.laserdisc" %% "pure-kinesis-tagless" % "5.1.0"
     ) ++ awsSnykOverrides
   )
   .dependsOn(core)
@@ -112,7 +112,7 @@ lazy val sns = module("sns", directory = "connectors")
   .settings(
     name := "pass4s-connector-sns",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-sns-tagless" % "5.0.2"
+      "io.laserdisc" %% "pure-sns-tagless" % "5.1.0"
     ) ++ awsSnykOverrides
   )
   .dependsOn(core)
@@ -121,7 +121,7 @@ lazy val sqs = module("sqs", directory = "connectors")
   .settings(
     name := "pass4s-connector-sqs",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-sqs-tagless" % "5.0.2",
+      "io.laserdisc" %% "pure-sqs-tagless" % "5.1.0",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ) ++ awsSnykOverrides
   )
@@ -155,7 +155,7 @@ lazy val extra = module("extra", directory = "addons")
 lazy val s3Proxy = module("s3proxy", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-s3-tagless" % "5.0.2"
+      "io.laserdisc" %% "pure-s3-tagless" % "5.1.0"
     ) ++ awsSnykOverrides
   )
   .dependsOn(high, circe)
