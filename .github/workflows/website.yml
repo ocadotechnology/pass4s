@@ -18,7 +18,7 @@ jobs:
           distribution: graalvm
           java-version: 11
       - name: Run mdoc
-        run: sbt '++2.13.8 docs/mdoc'
+        run: sbt '++2.13.10 docs/mdoc'
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
