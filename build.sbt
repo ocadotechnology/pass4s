@@ -133,7 +133,7 @@ lazy val circe = module("circe", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-parser" % "0.14.3",
-      "org.typelevel" %% "jawn-parser" % "1.3.2"
+      "org.typelevel" %% "jawn-parser" % "1.4.0"
     )
   )
   .dependsOn(core, kernel)
