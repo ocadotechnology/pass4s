@@ -21,7 +21,6 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val Log4Cats = "2.3.2"
-  val KamonCatsEffect = "16.0.0"
   val Weaver = "0.7.15"
 }
 
@@ -84,7 +83,8 @@ lazy val high = module("high")
 // connectors
 
 val awsSnykOverrides = Seq(
-  "commons-codec" % "commons-codec" % "1.15"
+  "commons-codec" % "commons-codec" % "1.15",
+  "io.netty" % "netty-codec-http" % "4.1.86.Final"
 )
 
 lazy val activemq = module("activemq", directory = "connectors")
@@ -132,8 +132,7 @@ lazy val sqs = module("sqs", directory = "connectors")
 lazy val circe = module("circe", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-parser" % "0.14.3",
-      "org.typelevel" %% "jawn-parser" % "1.3.2"
+      "io.circe" %% "circe-parser" % "0.14.3"
     )
   )
   .dependsOn(core, kernel)
