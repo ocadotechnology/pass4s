@@ -21,8 +21,8 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val Log4Cats = "2.3.2"
-  val KamonCatsEffect = "16.0.0"
   val Weaver = "0.7.15"
+  val Laserdisc = "5.1.0"
 }
 
 lazy val IntegrationTest = config("it") extend Test
@@ -38,9 +38,9 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.14", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.11",
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.12",
       "com.amazonaws" % "aws-java-sdk-core" % "1.12.336" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.11",
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.12",
       "org.mock-server" % "mockserver-client-java" % "5.13.2",
       "org.apache.activemq" % "activemq-broker" % "5.17.2",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
@@ -84,7 +84,8 @@ lazy val high = module("high")
 // connectors
 
 val awsSnykOverrides = Seq(
-  "commons-codec" % "commons-codec" % "1.15"
+  "commons-codec" % "commons-codec" % "1.15",
+  "software.amazon.awssdk" % "netty-nio-client" % "2.18.41"
 )
 
 lazy val activemq = module("activemq", directory = "connectors")
@@ -103,7 +104,7 @@ lazy val kinesis = module("kinesis", directory = "connectors")
   .settings(
     name := "pass4s-connector-kinesis",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-kinesis-tagless" % "5.0.2"
+      "io.laserdisc" %% "pure-kinesis-tagless" % Versions.Laserdisc
     ) ++ awsSnykOverrides
   )
   .dependsOn(core)
@@ -112,7 +113,7 @@ lazy val sns = module("sns", directory = "connectors")
   .settings(
     name := "pass4s-connector-sns",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-sns-tagless" % "5.0.2"
+      "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc
     ) ++ awsSnykOverrides
   )
   .dependsOn(core)
@@ -121,7 +122,7 @@ lazy val sqs = module("sqs", directory = "connectors")
   .settings(
     name := "pass4s-connector-sqs",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-sqs-tagless" % "5.0.2",
+      "io.laserdisc" %% "pure-sqs-tagless" % Versions.Laserdisc,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ) ++ awsSnykOverrides
   )
@@ -132,8 +133,7 @@ lazy val sqs = module("sqs", directory = "connectors")
 lazy val circe = module("circe", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-parser" % "0.14.3",
-      "org.typelevel" %% "jawn-parser" % "1.3.2"
+      "io.circe" %% "circe-parser" % "0.14.3"
     )
   )
   .dependsOn(core, kernel)
@@ -155,7 +155,7 @@ lazy val extra = module("extra", directory = "addons")
 lazy val s3Proxy = module("s3proxy", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-s3-tagless" % "5.0.2"
+      "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc
     ) ++ awsSnykOverrides
   )
   .dependsOn(high, circe)
