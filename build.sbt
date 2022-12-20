@@ -21,7 +21,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val Log4Cats = "2.3.2"
-  val Weaver = "0.7.15"
+  val Weaver = "0.8.1"
   val Laserdisc = "5.1.0"
 }
 
