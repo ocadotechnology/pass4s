@@ -85,7 +85,7 @@ lazy val high = module("high")
 
 val awsSnykOverrides = Seq(
   "commons-codec" % "commons-codec" % "1.15",
-  "software.amazon.awssdk" % "netty-nio-client" % "2.18.41"
+  "software.amazon.awssdk" % "netty-nio-client" % "2.19.5"
 )
 
 lazy val activemq = module("activemq", directory = "connectors")
