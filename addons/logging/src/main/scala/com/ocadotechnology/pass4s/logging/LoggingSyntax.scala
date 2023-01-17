@@ -59,7 +59,7 @@ object syntax {
         .surroundAll { run =>
           logger.info(s"Starting consumer from [$source]") *> run.guaranteeCase {
             case Outcome.Succeeded(_) => logger.info(s"Stopping consumer from [$source] normally")
-            case Outcome.Canceled()   => logger.info(s"Stopping consumer for [$source] because of cancelation")
+            case Outcome.Canceled()   => logger.warn(s"Stopping consumer for [$source] because of cancelation")
             case Outcome.Errored(e)   => logger.error(e)(s"Stopping consumer for [$source] due to an error")
           }
         }
@@ -67,7 +67,7 @@ object syntax {
           logger.debug(s"Received message [$msg] from [$source]") *>
             handle.guaranteeCase {
               case Outcome.Succeeded(_) => logger.debug(s"Committing message [$msg]")
-              case Outcome.Canceled()   => logger.debug(s"Rolling back message [$msg] because of cancelation")
+              case Outcome.Canceled()   => logger.warn(s"Rolling back message [$msg] because of cancelation")
               case Outcome.Errored(e)   => logger.error(e)(s"Rolling back message [$msg] because of an error")
             }
         }
@@ -107,7 +107,7 @@ object syntax {
                         */
                       Resource.eval(logger.debug(s"Received message [$payload] from [$source]")).onFinalizeCase {
                         case ExitCase.Succeeded  => logger.debug(s"Committing message [$payload]")
-                        case ExitCase.Canceled   => logger.debug(s"Rolling back message [$payload] because of cancelation")
+                        case ExitCase.Canceled   => logger.warn(s"Rolling back message [$payload] because of cancelation")
                         case ExitCase.Errored(e) => logger.error(e)(s"Rolling back message [$payload] because of an error")
                       }
                     }
@@ -116,7 +116,7 @@ object syntax {
               }
               .onFinalizeCase {
                 case ExitCase.Succeeded  => logger.info(s"Stopping connector for [$source] normally")
-                case ExitCase.Canceled   => logger.info(s"Stopping connector for [$source] because of cancelation")
+                case ExitCase.Canceled   => logger.warn(s"Stopping connector for [$source] because of cancelation")
                 case ExitCase.Errored(e) => logger.error(e)(s"Stopping connector for [$source] due to an error")
               }
 
