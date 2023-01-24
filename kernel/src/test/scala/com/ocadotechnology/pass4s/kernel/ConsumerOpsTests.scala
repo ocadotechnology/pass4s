@@ -44,6 +44,25 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
     )
   }
 
+  test("Consumer#evalMapFilter") {
+    for {
+      consumed     <- Sender.testing[IO, Int]
+      ignored      <- Sender.testing[IO, Int]
+      _            <- Consumer
+                        .many[IO, Int](0 until 6: _*)
+                        .evalMapFilter {
+                          case i if i % 2 === 0 => IO.pure(Some(i))
+                          case i                => ignored.sendOne(i).as(None)
+                        }
+                        .forward(consumed)
+      consumedSent <- consumed.sent
+      ignoredSent  <- ignored.sent
+    } yield assert.all(
+      consumedSent == List(0, 2, 4),
+      ignoredSent == List(1, 3, 5)
+    )
+  }
+
   test("Consumer#surroundEachWith") {
     for {
       sender <- Sender.testing[IO, Int]
