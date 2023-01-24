@@ -257,6 +257,13 @@ object Consumer extends ConsumerInstances {
     def mapM[B](f: A => F[B])(implicit F: FlatMap[F]): Consumer[F, B] =
       handler => self.consume(f >=> handler)
 
+    /** Allows to filter certain messages and execute an effect while doing it.
+      *
+      * For filtering without an effect use [[functorFilter]] instance.
+      */
+    def evalMapFilter[B](f: A => F[Option[B]])(implicit F: Monad[F]): Consumer[F, B] =
+      Consumer.fromFunction[F, B](handler => self.consume(f(_).flatMap(_.fold(Applicative[F].unit)(handler))))
+
     /** Similar to [[mapM()]], but discards the result of the tapped effect.
       */
     def contraTapM(f: A => F[Unit])(implicit F: FlatMap[F]): Consumer[F, A] =
