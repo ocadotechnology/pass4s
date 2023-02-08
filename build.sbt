@@ -22,7 +22,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 val Versions = new {
   val Log4Cats = "2.3.2"
   val Weaver = "0.7.15"
-  val Laserdisc = "5.1.0"
+  val Laserdisc = "6.0.0"
 }
 
 lazy val IntegrationTest = config("it") extend Test
