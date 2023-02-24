@@ -34,7 +34,11 @@ object S3ProxyConfig {
   )
 
   object Sender {
-    def withSnsDefaults(bucket: String) = S3ProxyConfig.Sender(bucket, Some("ExtendedPayloadSize"), Some(262144))
+
+    def withSnsDefaults(
+      bucket: String
+    ) = S3ProxyConfig.Sender(bucket, Some("ExtendedPayloadSize"), Some(262144))
+
   }
 
   /** Consumer configuration for S3 proxy
@@ -50,7 +54,8 @@ object S3ProxyConfig {
   )
 
   object Consumer {
-    def withSnsDefaults() = S3ProxyConfig.Consumer(Some("ExtendedPayloadSize"), shouldDeleteAfterProcessing = false)
+    def withSnsDefaults(
+    ) = S3ProxyConfig.Consumer(Some("ExtendedPayloadSize"), shouldDeleteAfterProcessing = false)
   }
 
 }

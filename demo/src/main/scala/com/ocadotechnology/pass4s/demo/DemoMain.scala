@@ -54,7 +54,11 @@ object DemoMain extends IOApp {
     IO(UUID.randomUUID()).map(_.toString()).flatTap(s => IO(println("Transaction ID: " + s))).flatMap(cio.run)
   })
 
-  def runAppEffect[F[_]: Monad](sender: Sender[F, Message[Jms]])(transactor: ConnectionIO ~> F): AppEffect ~> F =
+  def runAppEffect[F[_]: Monad](
+    sender: Sender[F, Message[Jms]]
+  )(
+    transactor: ConnectionIO ~> F
+  ): AppEffect ~> F =
     WriterT
       .liftFunctionK(transactor)
       .andThen(sender.sendWrittenK)
@@ -118,7 +122,9 @@ object DemoMain extends IOApp {
     implicit val senderBools: Sender[AppEffect, Boolean] = writerSender.asJsonSender(Destinations.orderEvents)
   }
 
-  def run(args: List[String]): IO[ExitCode] = {
+  def run(
+    args: List[String]
+  ): IO[ExitCode] = {
     val server = for {
       broker     <- brokerResource
       transactor <- transactorResource

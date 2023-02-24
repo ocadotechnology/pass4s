@@ -24,7 +24,9 @@ import com.ocadotechnology.pass4s.kernel.Sender
 
 object syntax {
 
-  final private[syntax] class AsPlaintextSenderPartiallyApplied[F[_], P](private val sender: Sender[F, Message[P]]) extends AnyVal {
+  final private[syntax] class AsPlaintextSenderPartiallyApplied[F[_], P](
+    private val sender: Sender[F, Message[P]]
+  ) extends AnyVal {
 
     @scala.annotation.nowarn("cat=unused-params")
     def apply[R >: P](
@@ -37,8 +39,9 @@ object syntax {
 
   }
 
-  final private[syntax] class AsPlaintextSenderWithMessageGroupPartiallyApplied[F[_], P](private val sender: Sender[F, Message[P]])
-    extends AnyVal {
+  final private[syntax] class AsPlaintextSenderWithMessageGroupPartiallyApplied[F[_], P](
+    private val sender: Sender[F, Message[P]]
+  ) extends AnyVal {
 
     def apply[R >: P](
       to: Destination[R],
@@ -53,7 +56,9 @@ object syntax {
 
   }
 
-  implicit final class SendPlaintextMessageSyntax[F[_], P](private val sender: Sender[F, Message[P]]) {
+  implicit final class SendPlaintextMessageSyntax[F[_], P](
+    private val sender: Sender[F, Message[P]]
+  ) {
 
     /** ===params:===
       * {{{to: Destination[R >: P]}}} {{{computeMetadata: String => Map[String, String] = _ => Map()}}}

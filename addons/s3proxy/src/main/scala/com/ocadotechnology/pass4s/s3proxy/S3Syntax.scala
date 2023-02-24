@@ -29,9 +29,17 @@ import io.circe.syntax._
 
 object syntax {
 
-  implicit final class ProxiedSenderSyntax[F[_], P](private val underlying: Sender[F, Message[P]]) extends AnyVal {
+  implicit final class ProxiedSenderSyntax[F[_], P](
+    private val underlying: Sender[F, Message[P]]
+  ) extends AnyVal {
 
-    def usingS3Proxy(config: S3ProxyConfig.Sender)(implicit s3Client: S3Client[F], uuid: UUIDGen[F], F: Monad[F]): Sender[F, Message[P]] =
+    def usingS3Proxy(
+      config: S3ProxyConfig.Sender
+    )(
+      implicit s3Client: S3Client[F],
+      uuid: UUIDGen[F],
+      F: Monad[F]
+    ): Sender[F, Message[P]] =
       underlying.contramapM { msg =>
         if (s3.shouldSendToS3(config.minPayloadSize, msg.payload))
           for {
@@ -45,9 +53,16 @@ object syntax {
 
   }
 
-  implicit final class ProxiedConsumerSyntax[F[_], A](private val underlying: Consumer[F, Payload]) extends AnyVal {
+  implicit final class ProxiedConsumerSyntax[F[_], A](
+    private val underlying: Consumer[F, Payload]
+  ) extends AnyVal {
 
-    def usingS3Proxy[P](config: S3ProxyConfig.Consumer)(implicit s3Client: S3Client[F], F: MonadThrow[F]): Consumer[F, Payload] =
+    def usingS3Proxy[P](
+      config: S3ProxyConfig.Consumer
+    )(
+      implicit s3Client: S3Client[F],
+      F: MonadThrow[F]
+    ): Consumer[F, Payload] =
       underlying
         .map(msg => (msg, decode[PayloadS3Pointer](msg.text).toOption))
         .afterEach { case (_, maybePointer) =>
@@ -76,14 +91,22 @@ object syntax {
         message = s3.replacePointerWithPayload(config, msg, payload)
       } yield message
 
-    private def removeDataFromS3(pointer: PayloadS3Pointer)(implicit s3Client: S3Client[F]): F[Unit] =
+    private def removeDataFromS3(
+      pointer: PayloadS3Pointer
+    )(
+      implicit s3Client: S3Client[F]
+    ): F[Unit] =
       s3Client.deleteObject(pointer.s3BucketName, pointer.s3Key)
 
   }
 
   private object s3 {
 
-    def replacePointerWithPayload(config: S3ProxyConfig.Consumer, payload: Message.Payload, payloadText: String): Message.Payload = {
+    def replacePointerWithPayload(
+      config: S3ProxyConfig.Consumer,
+      payload: Message.Payload,
+      payloadText: String
+    ): Message.Payload = {
       val updatedMetadata = config.payloadSizeAttributeName.fold(payload.metadata) { key =>
         payload.metadata - key
       }
@@ -94,7 +117,11 @@ object syntax {
         )
     }
 
-    def replacePayloadWithPointer[P](config: S3ProxyConfig.Sender, msg: Message[P], pointer: PayloadS3Pointer): Message[P] = {
+    def replacePayloadWithPointer[P](
+      config: S3ProxyConfig.Sender,
+      msg: Message[P],
+      pointer: PayloadS3Pointer
+    ): Message[P] = {
       val originalPayloadSize = calculatePayloadBytesSize(msg.payload)
       val updatedMetadata = config.payloadSizeAttributeName.fold(msg.payload.metadata) { key =>
         msg.payload.metadata + (key -> originalPayloadSize.toString())
@@ -108,10 +135,15 @@ object syntax {
       msg.copy(payload = updatedPayload)
     }
 
-    def shouldSendToS3(minPayloadSize: Option[Long], payload: Message.Payload): Boolean =
+    def shouldSendToS3(
+      minPayloadSize: Option[Long],
+      payload: Message.Payload
+    ): Boolean =
       calculatePayloadBytesSize(payload) >= minPayloadSize.getOrElse(0L)
 
-    def calculatePayloadBytesSize(payload: Message.Payload): Long =
+    def calculatePayloadBytesSize(
+      payload: Message.Payload
+    ): Long =
       payload
         .metadata
         .foldLeft(sizeInBytes(payload.text)) { case (acc, (k, v)) =>
@@ -119,7 +151,10 @@ object syntax {
         }
 
     // TODO consider rewriting to something relying on CountingOutputStream https://github.com/awslabs/payload-offloading-java-common-lib-for-aws/blob/7c826fccce39c589d06abffa0c7f912115212dba/src/main/java/software/amazon/payloadoffloading/CountingOutputStream.java
-    private def sizeInBytes(str: String): Long = str.getBytes().length.toLong
+    private def sizeInBytes(
+      str: String
+    ): Long = str.getBytes().length.toLong
+
   }
 
 }

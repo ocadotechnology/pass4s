@@ -46,7 +46,13 @@ import fs2.Stream
   *
   * For transactional processing, see [[Consumer#consumeCommit]] or high-level utilities like MessageProcessor in the `extra` module.
   */
-trait Consumer[F[_], +A] extends ((A => F[Unit]) => F[Unit]) with Serializable { self =>
+trait Consumer[F[_], +A]
+  extends (
+    (
+      A => F[Unit]
+    ) => F[Unit]
+  )
+  with Serializable { self =>
 
   //
   //
@@ -64,27 +70,41 @@ trait Consumer[F[_], +A] extends ((A => F[Unit]) => F[Unit]) with Serializable {
     * There doesn't need to be any error handling in consumers in general, but Consumer.sequential (used in any consumer built from a
     * Connector) handles errors and uses them to rollback messages.
     */
-  def consume(f: A => F[Unit]): F[Unit]
+  def consume(
+    f: A => F[Unit]
+  ): F[Unit]
 
   /** Starts the consumer, but allows the processing function `f` to be in a different effect than that of the consumer's. A `commit`
     * function also needs to be passed - it will be used after every message.
     */
-  def consumeCommit[T[_]](commit: T[Unit] => F[Unit])(f: A => T[Unit]): F[Unit] = self.consume(f andThen commit)
+  def consumeCommit[T[_]](
+    commit: T[Unit] => F[Unit]
+  )(
+    f: A => T[Unit]
+  ): F[Unit] = self.consume(f andThen commit)
 
   /** Like consumeCommit, but takes a FunctionK.
     */
-  def consumeCommitK[T[_]](commitK: T ~> F)(f: A => T[Unit]): F[Unit] = consumeCommit(commitK.apply)(f)
+  def consumeCommitK[T[_]](
+    commitK: T ~> F
+  )(
+    f: A => T[Unit]
+  ): F[Unit] = consumeCommit(commitK.apply)(f)
 
   /** Alias for [[consume]] - thanks to this, you can pass a consumer where a function type is expected.
     */
-  def apply(f: A => F[Unit]): F[Unit] = consume(f)
+  def apply(
+    f: A => F[Unit]
+  ): F[Unit] = consume(f)
 
   /** Uses the given sender as the processing function. Could be useful for creating simple message forwarders between queues, brokers or
     * even distinct platforms.
     *
     * Both [[Consumer]] and [[Sender]] are functions though, so you could just call `apply(sender)` or `consume(sender)` directly.
     */
-  def forward(sender: Sender[F, A]): F[Unit] = consume(sender)
+  def forward(
+    sender: Sender[F, A]
+  ): F[Unit] = consume(sender)
 
   //
   //
@@ -96,26 +116,51 @@ trait Consumer[F[_], +A] extends ((A => F[Unit]) => F[Unit]) with Serializable {
 
   /** Passes every message through the given function before it lands in the processing function passed to the new consumer.
     */
-  def map[B](f: A => B): Consumer[F, B] =
+  def map[B](
+    f: A => B
+  ): Consumer[F, B] =
     handleB => consume(handleB.compose(f))
 
   // Wraps each message's processing effect in `f`.
-  def surroundEach(f: F[Unit] => F[Unit]): Consumer[F, A] = surroundEachWith(_ => f)
-  def surroundEachK(fk: F ~> F): Consumer[F, A] = surroundEach(fk(_))
+  def surroundEach(
+    f: F[Unit] => F[Unit]
+  ): Consumer[F, A] = surroundEachWith(_ => f)
+
+  def surroundEachK(
+    fk: F ~> F
+  ): Consumer[F, A] = surroundEach(fk(_))
 
   // Like `surroundEach`, but also provides the message that caused the effect.
-  def surroundEachWith(f: A => F[Unit] => F[Unit]): Consumer[F, A] = use => self.consume(msg => f(msg)(use(msg)))
-  def surroundEachWithK(fk: A => F ~> F): Consumer[F, A] = surroundEachWith(fk(_).apply)
+  def surroundEachWith(
+    f: A => F[Unit] => F[Unit]
+  ): Consumer[F, A] = use => self.consume(msg => f(msg)(use(msg)))
+
+  def surroundEachWithK(
+    fk: A => F ~> F
+  ): Consumer[F, A] = surroundEachWith(fk(_).apply)
 
   // Wraps the entire consumer's effect in `f` - so `f` will run exactly once per consumer, not once per message.
-  def surroundAll(f: F[Unit] => F[Unit]): Consumer[F, A] = use => f(self.consume(use))
-  def surroundAllK(f: F ~> F): Consumer[F, A] = surroundAll(f.apply)
+  def surroundAll(
+    f: F[Unit] => F[Unit]
+  ): Consumer[F, A] = use => f(self.consume(use))
 
-  def imapK[G[_]](fk: F ~> G)(gk: G ~> F): Consumer[G, A] = f => fk(consume(a => gk(f(a))))
+  def surroundAllK(
+    f: F ~> F
+  ): Consumer[F, A] = surroundAll(f.apply)
+
+  def imapK[G[_]](
+    fk: F ~> G
+  )(
+    gk: G ~> F
+  ): Consumer[G, A] = f => fk(consume(a => gk(f(a))))
+
 }
 
 object Consumer extends ConsumerInstances {
-  def apply[F[_], A](implicit C: Consumer[F, A]): Consumer[F, A] = C
+
+  def apply[F[_], A](
+    implicit C: Consumer[F, A]
+  ): Consumer[F, A] = C
 
   /** A consumer that waits for processing of one message (and finalization of its resources), then takes another message from the stream of
     * resources. Failures that happen in the message handler are caught and used to rollback the message being processed.
@@ -180,16 +225,24 @@ object Consumer extends ConsumerInstances {
   }
 
   // Consumes the message provided here, then completes.
-  def one[F[_], A](message: A): Consumer[F, A] = _.apply(message)
+  def one[F[_], A](
+    message: A
+  ): Consumer[F, A] = _.apply(message)
 
   // Alias for `one`.
-  def pure[F[_], A](message: A): Consumer[F, A] = one(message)
+  def pure[F[_], A](
+    message: A
+  ): Consumer[F, A] = one(message)
 
   // Consumes a finite sequence of messages with the handler given to it, then completes.
-  def finite[F[_]: Applicative, G[_]: Foldable, A](messages: G[A]): Consumer[F, A] = messages.traverse_(_)
+  def finite[F[_]: Applicative, G[_]: Foldable, A](
+    messages: G[A]
+  ): Consumer[F, A] = messages.traverse_(_)
 
   // Like [[finite]], but takes a varargs sequence.
-  def many[F[_]: Applicative, A](messages: A*): Consumer[F, A] = finite(messages.toList)
+  def many[F[_]: Applicative, A](
+    messages: A*
+  ): Consumer[F, A] = finite(messages.toList)
 
   // A consumer that immediately completes handling when used, ignoring all messages.
   def done[F[_]: InvariantMonoidal]: Consumer[F, Nothing] = _ => InvariantMonoidal[F].unit
@@ -198,14 +251,28 @@ object Consumer extends ConsumerInstances {
   def eternal[F[_]: Async]: Consumer[F, Nothing] = _ => Async[F].never
 
   // Builds a consumer from a function that can be used to start it.
-  def fromFunction[F[_], A](f: ((A => F[Unit]) => F[Unit])): Consumer[F, A] = f(_)
+  def fromFunction[F[_], A](
+    f: (
+      (
+        A => F[Unit]
+      ) => F[Unit]
+    )
+  ): Consumer[F, A] = f(_)
 
   /** [[cats.tagless.InvariantK]] instance for Consumer. The effect appears in both covariant and contravariant positions, so we can't get
     * anything stronger like [[cats.tagless.FunctorK]].
     */
   implicit def invariantK[A]: InvariantK[Consumer[*[_], A]] =
     new InvariantK[Consumer[*[_], A]] {
-      def imapK[F[_], G[_]](af: Consumer[F, A])(fk: F ~> G)(gk: G ~> F): Consumer[G, A] = af.imapK(fk)(gk)
+
+      def imapK[F[_], G[_]](
+        af: Consumer[F, A]
+      )(
+        fk: F ~> G
+      )(
+        gk: G ~> F
+      ): Consumer[G, A] = af.imapK(fk)(gk)
+
     }
 
   /** FunctorFilter instance for Consumer - allows ignoring certain messages, so they never reach the processing function passed afterwards.
@@ -214,7 +281,11 @@ object Consumer extends ConsumerInstances {
     new FunctorFilter[Consumer[F, *]] {
       val functor: Functor[Consumer[F, *]] = Consumer.functor[F]
 
-      def mapFilter[A, B](fa: Consumer[F, A])(f: A => Option[B]): Consumer[F, B] =
+      def mapFilter[A, B](
+        fa: Consumer[F, A]
+      )(
+        f: A => Option[B]
+      ): Consumer[F, B] =
         fromFunction { handle =>
           fa.consume {
             f(_).fold(InvariantMonoidal[F].unit)(handle)
@@ -223,22 +294,36 @@ object Consumer extends ConsumerInstances {
 
     }
 
-  def toStreamSynchronous[F[_]: Concurrent, A](consumer: Consumer[F, A]): Stream[F, A] =
+  def toStreamSynchronous[F[_]: Concurrent, A](
+    consumer: Consumer[F, A]
+  ): Stream[F, A] =
     Stream.eval(Queue.synchronous[F, A]).flatMap(toUncancelableStreamUsingQueue(_, consumer))
 
-  def toStreamBounded[F[_]: Concurrent, A](maxSize: Int)(consumer: Consumer[F, A]): Stream[F, A] =
+  def toStreamBounded[F[_]: Concurrent, A](
+    maxSize: Int
+  )(
+    consumer: Consumer[F, A]
+  ): Stream[F, A] =
     Stream.eval(Queue.bounded[F, A](maxSize)).flatMap(toStreamUsingQueue(_, consumer))
 
-  def toStreamUnbounded[F[_]: Concurrent, A](consumer: Consumer[F, A]): Stream[F, A] =
+  def toStreamUnbounded[F[_]: Concurrent, A](
+    consumer: Consumer[F, A]
+  ): Stream[F, A] =
     Stream.eval(Queue.unbounded[F, A]).flatMap(toStreamUsingQueue(_, consumer))
 
-  private def toStreamUsingQueue[F[_]: Concurrent, A](queue: Queue[F, A], consumer: Consumer[F, A]): Stream[F, A] =
+  private def toStreamUsingQueue[F[_]: Concurrent, A](
+    queue: Queue[F, A],
+    consumer: Consumer[F, A]
+  ): Stream[F, A] =
     for {
       _ <- Stream.resource(consumer.consume(queue.offer).attempt.background)
       a <- Stream.fromQueueUnterminated(queue)
     } yield a
 
-  private def toUncancelableStreamUsingQueue[F[_]: Concurrent, A](queue: Queue[F, A], consumer: Consumer[F, A]): Stream[F, A] = {
+  private def toUncancelableStreamUsingQueue[F[_]: Concurrent, A](
+    queue: Queue[F, A],
+    consumer: Consumer[F, A]
+  ): Stream[F, A] = {
     val wrappedConsume = consumer.afterEach(queue.offer(_).uncancelable).consume(_ => ().pure[F])
     for {
       _ <- Stream.resource(wrappedConsume.background)
@@ -248,55 +333,99 @@ object Consumer extends ConsumerInstances {
 
   /** Syntax enrichments for Consumer that can't be implemented directly in the trait due to additional constraints.
     */
-  implicit final class ConsumerOps[F[_], A](private val self: Consumer[F, A]) extends AnyVal {
+  implicit final class ConsumerOps[F[_], A](
+    private val self: Consumer[F, A]
+  ) extends AnyVal {
 
     /** Adds an additional layer of processing before the message is sent to the handler (Kleisli composition before the handler). Errors
       * are reported normally and have the same impact on the consumer's process as usual processing errors would, meaning they also usually
       * trigger a rollback.
       */
-    def mapM[B](f: A => F[B])(implicit F: FlatMap[F]): Consumer[F, B] =
+    def mapM[B](
+      f: A => F[B]
+    )(
+      implicit F: FlatMap[F]
+    ): Consumer[F, B] =
       handler => self.consume(f >=> handler)
 
     /** Allows to filter certain messages and execute an effect while doing it.
       *
       * For filtering without an effect use [[functorFilter]] instance.
       */
-    def evalMapFilter[B](f: A => F[Option[B]])(implicit F: Monad[F]): Consumer[F, B] =
+    def evalMapFilter[B](
+      f: A => F[Option[B]]
+    )(
+      implicit F: Monad[F]
+    ): Consumer[F, B] =
       Consumer.fromFunction[F, B](handler => self.consume(f(_).flatMap(_.fold(Applicative[F].unit)(handler))))
 
     /** Similar to [[mapM()]], but discards the result of the tapped effect.
       */
-    def contraTapM(f: A => F[Unit])(implicit F: FlatMap[F]): Consumer[F, A] =
+    def contraTapM(
+      f: A => F[Unit]
+    )(
+      implicit F: FlatMap[F]
+    ): Consumer[F, A] =
       handler => self.consume(a => f(a).flatTap(_ => handler(a)))
 
     /** For every message, executes provided finalization action that takes the original message as an input. Useful for performing cleanup
       * after the transaction has been completed successfuly. Note that this behaves the same way finalizers would do. The earliest added
       * action is executed the last due to the nature of function composition.
       */
-    def afterEach(f: A => F[Unit])(implicit F: FlatMap[F]): Consumer[F, A] =
+    def afterEach(
+      f: A => F[Unit]
+    )(
+      implicit F: FlatMap[F]
+    ): Consumer[F, A] =
       use => self.consume(msg => use(msg) >> f(msg))
 
     /** For every message, creates an artificial consumer that only handles that one message, and runs it through the given function. This
       * follows [[Consumer#flatMap]] semantics, so while the consumer of `B` is busy processing, no further messages will be received by
       * `self`.
       */
-    def selfProduct[B](f: Consumer[F, A] => Consumer[F, B])(implicit F: Defer[F]): Consumer[F, (A, B)] =
+    def selfProduct[B](
+      f: Consumer[F, A] => Consumer[F, B]
+    )(
+      implicit F: Defer[F]
+    ): Consumer[
+      F,
+      (
+        A,
+        B
+      )
+    ] =
       self.mproduct(f.compose(Consumer.one[F, A]))
 
     /** Uses this consumer as a source until completion, then it switches to the second consumer.
       */
-    def zip(another: Consumer[F, A])(implicit F: Apply[F]): Consumer[F, A] =
+    def zip(
+      another: Consumer[F, A]
+    )(
+      implicit F: Apply[F]
+    ): Consumer[F, A] =
       handleA => self.consume(handleA) *> another.consume(handleA)
 
     /** Merges the two consumers by returning one which will run them concurrently, with the same handler. No synchronization between
       * underlying consumers is involved - they will run completely independently.
       */
-    def parZip(another: Consumer[F, A])(implicit F: NonEmptyParallel[F]): Consumer[F, A] =
+    def parZip(
+      another: Consumer[F, A]
+    )(
+      implicit F: NonEmptyParallel[F]
+    ): Consumer[F, A] =
       handleA => F.parProductR(self.consume(handleA))(another.consume(handleA))
+
   }
 
   // For laws. Mortals probably won't have a usecase for this.
-  implicit def eq[F[_], A](implicit equalFunction: Eq[(A => F[Unit]) => F[Unit]]): Eq[Consumer[F, A]] = equalFunction.narrow
+  implicit def eq[F[_], A](
+    implicit equalFunction: Eq[
+      (
+        A => F[Unit]
+      ) => F[Unit]
+    ]
+  ): Eq[Consumer[F, A]] = equalFunction.narrow
+
 }
 
 // low-priority instances. See Sender companion traits to understand the order they need to be defined in.
@@ -317,16 +446,31 @@ sealed trait ConsumerInstances extends ConsumerInstances1 {
         * Processing a message in the outer consumer will last as long as it takes to deplete the inner consumer. If the inner consumer runs
         * forever, the outer consumer will never see another message.
         */
-      def flatMap[A, B](fa: Consumer[F, A])(f: A => Consumer[F, B]): Consumer[F, B] =
+      def flatMap[A, B](
+        fa: Consumer[F, A]
+      )(
+        f: A => Consumer[F, B]
+      ): Consumer[F, B] =
         handleB => Defer[F].defer(fa.consume(f(_).consume(handleB)))
 
-      def pure[A](x: A): Consumer[F, A] = Consumer.pure(x)
+      def pure[A](
+        x: A
+      ): Consumer[F, A] = Consumer.pure(x)
 
-      override def map[A, B](fa: Consumer[F, A])(f: A => B): Consumer[F, B] =
+      override def map[A, B](
+        fa: Consumer[F, A]
+      )(
+        f: A => B
+      ): Consumer[F, B] =
         super[ConsumerApply].map(fa)(f)
 
-      override def ap[A, B](ff: Consumer[F, A => B])(fa: Consumer[F, A]): Consumer[F, B] =
+      override def ap[A, B](
+        ff: Consumer[F, A => B]
+      )(
+        fa: Consumer[F, A]
+      ): Consumer[F, B] =
         super[ConsumerApply].ap(ff)(fa)
+
     }
 
   // Note: the semigroup/monoid instances aren't implicit because it's hard to choose a "correct" one.
@@ -343,7 +487,11 @@ sealed trait ConsumerInstances extends ConsumerInstances1 {
     new Monoid[Consumer[F, A]] {
       private val sem = zipSemigroup[F, A]
 
-      def combine(x: Consumer[F, A], y: Consumer[F, A]): Consumer[F, A] = sem.combine(x, y)
+      def combine(
+        x: Consumer[F, A],
+        y: Consumer[F, A]
+      ): Consumer[F, A] = sem.combine(x, y)
+
       val empty: Consumer[F, A] = Consumer.done
     }
 
@@ -357,7 +505,11 @@ sealed trait ConsumerInstances extends ConsumerInstances1 {
     new Monoid[Consumer[F, A]] {
       private val sem = parZipSemigroup[F, A]
 
-      def combine(x: Consumer[F, A], y: Consumer[F, A]): Consumer[F, A] = sem.combine(x, y)
+      def combine(
+        x: Consumer[F, A],
+        y: Consumer[F, A]
+      ): Consumer[F, A] = sem.combine(x, y)
+
       val empty: Consumer[F, A] = Consumer.done(Parallel[F].monad)
     }
 
@@ -383,7 +535,11 @@ sealed trait ConsumerInstances0 {
 
 sealed private trait ConsumerApply[F[_]] extends Apply[Consumer[F, *]] with ConsumerFunctor[F] {
 
-  def ap[A, B](ff: Consumer[F, A => B])(fa: Consumer[F, A]): Consumer[F, B] =
+  def ap[A, B](
+    ff: Consumer[F, A => B]
+  )(
+    fa: Consumer[F, A]
+  ): Consumer[F, B] =
     handleB =>
       ff.consume { aToB =>
         fa.consume { a =>
@@ -394,5 +550,11 @@ sealed private trait ConsumerApply[F[_]] extends Apply[Consumer[F, *]] with Cons
 }
 
 sealed private trait ConsumerFunctor[F[_]] extends Functor[Consumer[F, *]] {
-  def map[A, B](fa: Consumer[F, A])(f: A => B): Consumer[F, B] = fa.map(f)
+
+  def map[A, B](
+    fa: Consumer[F, A]
+  )(
+    f: A => B
+  ): Consumer[F, B] = fa.map(f)
+
 }

@@ -27,7 +27,11 @@ object Arbitraries {
     Arbitrary(Gen.resultOf(Sender.fromFunction[F, A] _))
 
   implicit def arbitraryConsumerFromFunction[F[_], A](
-    implicit arb: Arbitrary[(A => F[Unit]) => F[Unit]]
+    implicit arb: Arbitrary[
+      (
+        A => F[Unit]
+      ) => F[Unit]
+    ]
   ): Arbitrary[Consumer[F, A]] =
     Arbitrary(Gen.resultOf(Consumer.fromFunction[F, A] _))
 

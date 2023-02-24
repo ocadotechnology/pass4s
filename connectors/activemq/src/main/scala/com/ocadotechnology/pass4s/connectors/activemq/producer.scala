@@ -60,7 +60,9 @@ private[activemq] object producer {
       _ <- Stream.fromQueueUnterminated(queue, limit = 1).through(sendMessageAndCompletePromise(connectionFactory)).compile.drain.background
     } yield enqueueAndWaitForPromise[F](queue.offer)
 
-  private def enqueueAndWaitForPromise[F[_]: Concurrent](enqueue: JmsPayload[F] => F[Unit]): MessageProducer[F] =
+  private def enqueueAndWaitForPromise[F[_]: Concurrent](
+    enqueue: JmsPayload[F] => F[Unit]
+  ): MessageProducer[F] =
     message =>
       for {
         jmsDestination <- extractJmsDestination[F](message.destination)
@@ -94,13 +96,19 @@ private[activemq] object producer {
       val sendMessagePipe: Pipe[F, JmsPayload[F], JmsPayload[F]] =
         JmsProducer.flexiFlow[Promise[F]](jmsProducerSettings).named(getClass.getSimpleName).toPipe[F]()
 
-      def addMessageToRef(pendingMessage: JmsPayload[F]) =
+      def addMessageToRef(
+        pendingMessage: JmsPayload[F]
+      ) =
         semaphore.permit.surround(inflightMessages.update(_ + pendingMessage))
 
-      def completeMessageAndRemoveFromRef(sentMessage: JmsPayload[F]) =
+      def completeMessageAndRemoveFromRef(
+        sentMessage: JmsPayload[F]
+      ) =
         semaphore.permit.surround(sentMessage.passThrough.complete(Right(())).attempt *> inflightMessages.update(_ - sentMessage))
 
-      def failAllAndCleanRef(ex: Throwable) =
+      def failAllAndCleanRef(
+        ex: Throwable
+      ) =
         semaphore
           .permit
           .surround(
@@ -115,7 +123,9 @@ private[activemq] object producer {
     }
   }
 
-  private def extractJmsDestination[F[_]: ApplicativeThrow](destination: Destination[_]): F[JmsDestination] =
+  private def extractJmsDestination[F[_]: ApplicativeThrow](
+    destination: Destination[_]
+  ): F[JmsDestination] =
     destination match {
       case jmsDestination: JmsDestination => jmsDestination.pure[F]
       case unsupportedDestination         =>

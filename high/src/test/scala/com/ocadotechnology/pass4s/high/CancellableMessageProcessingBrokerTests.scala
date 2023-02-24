@@ -29,7 +29,10 @@ import scala.reflect.runtime.universe._
 object CancellableMessageProcessingBrokerTests extends SimpleIOSuite {
   trait Test
 
-  final case class TestSource(name: String, override val cancelableMessageProcessing: Boolean) extends Source[Test] {
+  final case class TestSource(
+    name: String,
+    override val cancelableMessageProcessing: Boolean
+  ) extends Source[Test] {
     override val capability: Type = typeOf[Test]
   }
 
@@ -37,20 +40,32 @@ object CancellableMessageProcessingBrokerTests extends SimpleIOSuite {
   final object ProcessingStart extends State
   final object ProcessingFinish extends State
   final object MessageCommit extends State
-  final case class MessageRollback(rollbackCause: RollbackCause) extends State
 
-  val createBroker: IO[(Ref[IO, Chain[State]], Broker[IO, Test])] =
+  final case class MessageRollback(
+    rollbackCause: RollbackCause
+  ) extends State
+
+  val createBroker: IO[
+    (
+      Ref[IO, Chain[State]],
+      Broker[IO, Test]
+    )
+  ] =
     Ref[IO].of(Chain.empty[State]).fproduct { stateLog =>
       Broker.fromConnector(new Connector[IO, Test] {
         override type Raw = Unit
         override val underlying: Unit = ()
 
-        override def consumeBatched[R >: Test](source: Source[R]): Stream[IO, List[CommittableMessage[IO]]] =
+        override def consumeBatched[R >: Test](
+          source: Source[R]
+        ): Stream[IO, List[CommittableMessage[IO]]] =
           Stream(Message.Payload("s", Map()))
             .map(CommittableMessage.instance(_, stateLog.update(_ :+ MessageCommit), rc => stateLog.update(_ :+ MessageRollback(rc))))
             .map(List(_))
 
-        override def produce[R >: Test](message: Message[R]): IO[Unit] = ???
+        override def produce[R >: Test](
+          message: Message[R]
+        ): IO[Unit] = ???
       })
     }
 

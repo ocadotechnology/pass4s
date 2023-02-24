@@ -40,7 +40,11 @@ object ImplicitPriorityTests {
     def functorK[A]: FunctorK[Sender[*[_], A]] = implicitly
     def contravariant[F[_]]: Contravariant[Sender[F, *]] = implicitly
     def semigroup[F[_]: Apply, A]: Semigroup[Sender[F, A]] = implicitly
-    def eq[F[_], A](implicit equalFunction: Eq[A => F[Unit]]): Eq[Sender[F, A]] = implicitly
+
+    def eq[F[_], A](
+      implicit equalFunction: Eq[A => F[Unit]]
+    ): Eq[Sender[F, A]] = implicitly
+
   }
 
   class senderLevel1 {
@@ -57,7 +61,15 @@ object ImplicitPriorityTests {
     def invariantK[A]: InvariantK[Consumer[*[_], A]] = implicitly
     def functor[F[_]]: Functor[Consumer[F, *]] = implicitly
     def functorFilter[F[_]: InvariantMonoidal]: FunctorFilter[Consumer[F, *]] = implicitly
-    def eq[F[_], A](implicit equalFunction: Eq[(A => F[Unit]) => F[Unit]]): Eq[Consumer[F, A]] = implicitly
+
+    def eq[F[_], A](
+      implicit equalFunction: Eq[
+        (
+          A => F[Unit]
+        ) => F[Unit]
+      ]
+    ): Eq[Consumer[F, A]] = implicitly
+
   }
 
   class consumerLevel1 {
