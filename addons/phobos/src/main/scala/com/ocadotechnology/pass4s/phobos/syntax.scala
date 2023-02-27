@@ -16,10 +16,12 @@
 
 package com.ocadotechnology.pass4s.phobos
 
+import cats.MonadError
 import cats.MonadThrow
 import cats.syntax.all._
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
 import com.ocadotechnology.pass4s.core.groupId.MessageGroup
 import com.ocadotechnology.pass4s.kernel.Consumer
@@ -98,6 +100,16 @@ object syntax {
   implicit final class ConsumeXmlMessageSyntax[F[_]](private val consumer: Consumer[F, String]) {
     def asXmlConsumer[A: XmlDecoder](implicit F: MonadThrow[F]): Consumer[F, A] =
       consumer.mapM(XmlDecoder[A].decode(_).liftTo[F])
+  }
+
+  implicit final class ConsumeXmlGenericMessageSyntax[F[_], A](private val consumer: Consumer[F, A]) {
+
+    def asXmlConsumer[B: XmlDecoder](
+      implicit M: MonadError[F, _ >: ru.tinkoff.phobos.decoding.DecodingError],
+      ev: A <:< Payload
+    ): Consumer[F, B] =
+      consumer.mapM(msg => XmlDecoder[B].decode(msg.text).liftTo[F])
+
   }
 
 }
