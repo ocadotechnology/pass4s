@@ -133,7 +133,7 @@ lazy val sqs = module("sqs", directory = "connectors")
 lazy val circe = module("circe", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-parser" % "0.14.3"
+      "io.circe" %% "circe-parser" % "0.14.5"
     )
   )
   .dependsOn(core, kernel)
@@ -202,7 +202,7 @@ lazy val demo = module("demo")
     publishArtifact := false,
     // mimaPreviousArtifacts := Set(), // TODO
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-generic" % "0.14.3",
+      "io.circe" %% "circe-generic" % "0.14.5",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
       "ch.qos.logback" % "logback-classic" % "1.2.11"
