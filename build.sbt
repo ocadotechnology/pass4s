@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.2" // current series x.y
+ThisBuild / tlBaseVersion := "0.3" // current series x.y
 
 ThisBuild / organization := "com.ocadotechnology"
 ThisBuild / organizationName := "Ocado Technology"
