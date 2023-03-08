@@ -18,6 +18,7 @@ package com.ocadotechnology.pass4s.phobos
 
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
+import ru.tinkoff.phobos.encoding.EncodingError
 import ru.tinkoff.phobos.encoding.XmlEncoder
 
 object XmlMessage {
@@ -27,7 +28,7 @@ object XmlMessage {
     destination: Destination[P],
     metadata: Map[String, String] = Map(),
     charset: String = "UTF-8"
-  ): Message[P] =
-    Message(Message.Payload(XmlEncoder[A].encode(body, charset), metadata), destination)
+  ): Either[EncodingError, Message[P]] =
+    XmlEncoder[A].encode(body, charset).map(payload => Message(Message.Payload(payload, metadata), destination))
 
 }
