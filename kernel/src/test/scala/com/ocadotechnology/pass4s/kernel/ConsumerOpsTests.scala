@@ -82,12 +82,8 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
 
   test("Consumer#afterEach") {
     sealed trait Message extends Product with Serializable
-    final case class Result[A](
-      value: A
-    ) extends Message
-    final case class PostProcessing(
-      msg: String
-    ) extends Message
+    final case class Result[A](value: A) extends Message
+    final case class PostProcessing(msg: String) extends Message
 
     for {
       state      <- Ref[IO].of(Chain[Message]())
@@ -138,11 +134,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
         messages: List[Int],
         isValid: Int => Boolean
       ) =>
-        def message(
-          i: Int
-        )(
-          implicit sender: Sender[IO, Int]
-        ): Resource[IO, Int] =
+        def message(i: Int)(implicit sender: Sender[IO, Int]): Resource[IO, Int] =
           Resource.make(
             sender.contramap(open).sendOne(i).as(i)
           )(sender.contramap(close).sendOne)

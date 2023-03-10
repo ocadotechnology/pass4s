@@ -33,24 +33,16 @@ import io.circe.parser.decode
 // all of these would be available as extension methods for senders and consumers
 object syntax {
 
-  final private[syntax] class AsJsonSenderPartiallyApplied[F[_], P, A](
-    private val sender: Sender[F, Message[P]]
-  ) extends AnyVal {
+  final private[syntax] class AsJsonSenderPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]]) extends AnyVal {
 
     @scala.annotation.nowarn("cat=unused-params")
-    def apply[R >: P](
-      to: Destination[R]
-    )(
-      implicit encoder: Encoder[A],
-      noGroupId: GroupIdMeta.Absent[R]
-    ): Sender[F, A] =
+    def apply[R >: P](to: Destination[R])(implicit encoder: Encoder[A], noGroupId: GroupIdMeta.Absent[R]): Sender[F, A] =
       sender.contramap(JsonMessage(_, to).widen)
 
   }
 
-  final private[syntax] class AsJsonSenderWithCustomMetadataPartiallyApplied[F[_], P, A](
-    private val sender: Sender[F, Message[P]]
-  ) extends AnyVal {
+  final private[syntax] class AsJsonSenderWithCustomMetadataPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]])
+    extends AnyVal {
 
     @scala.annotation.nowarn("cat=unused-params")
     def apply[R >: P](
@@ -64,9 +56,8 @@ object syntax {
 
   }
 
-  final private[syntax] class AsJsonSenderWithMessageGroupPartiallyApplied[F[_], P, A](
-    private val sender: Sender[F, Message[P]]
-  ) extends AnyVal {
+  final private[syntax] class AsJsonSenderWithMessageGroupPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]])
+    extends AnyVal {
 
     def apply[R >: P](
       to: Destination[R],
@@ -83,9 +74,7 @@ object syntax {
 
   }
 
-  implicit final class SenderCirceExtensions[F[_], P](
-    private val sender: Sender[F, Message[P]]
-  ) extends AnyVal {
+  implicit final class SenderCirceExtensions[F[_], P](private val sender: Sender[F, Message[P]]) extends AnyVal {
 
     /** ===params:===
       * {{{to: Destination[R >: P]}}}
@@ -110,27 +99,16 @@ object syntax {
     def asJsonSenderWithMessageGroup[A] = new AsJsonSenderWithMessageGroupPartiallyApplied[F, P, A](sender)
   }
 
-  implicit final class ConsumerCirceExtensions[F[_], A](
-    private val consumer: Consumer[F, A]
-  ) extends AnyVal {
+  implicit final class ConsumerCirceExtensions[F[_], A](private val consumer: Consumer[F, A]) extends AnyVal {
 
-    def asJsonConsumer[B: Decoder](
-      implicit M: MonadError[F, _ >: io.circe.Error],
-      ev: A <:< Payload
-    ): Consumer[F, B] =
+    def asJsonConsumer[B: Decoder](implicit M: MonadError[F, _ >: io.circe.Error], ev: A <:< Payload): Consumer[F, B] =
       consumer.mapM(msg => decode[B](msg.text).liftTo[F])
 
     def asJsonConsumerWithMessage[B: Decoder](
       implicit M: MonadError[F, _ >: io.circe.Error],
       D: Defer[F],
       ev: A <:< Payload
-    ): Consumer[
-      F,
-      (
-        A,
-        B
-      )
-    ] =
+    ): Consumer[F, (A, B)] =
       consumer.selfProduct(_.asJsonConsumer)
 
   }

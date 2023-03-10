@@ -29,21 +29,11 @@ import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
 object SqsTests extends MutableIOSuite {
-
-  override type Res = (
-    Broker[IO, Sqs with SqsFifo],
-    SqsAsyncClientOp[IO]
-  )
+  override type Res = (Broker[IO, Sqs with SqsFifo], SqsAsyncClientOp[IO])
 
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger
 
-  override def sharedResource: Resource[
-    IO,
-    (
-      Broker[IO, Sqs with SqsFifo],
-      SqsAsyncClientOp[IO]
-    )
-  ] =
+  override def sharedResource: Resource[IO, (Broker[IO, Sqs with SqsFifo], SqsAsyncClientOp[IO])] =
     for {
       container    <- containerResource(Seq(Service.SQS))
       sqsConnector <- createSqsConnector(container)
@@ -82,10 +72,7 @@ object SqsTests extends MutableIOSuite {
 
       queueResource(client)("fifo-queue", isFifo = true)
         .use { queueUrl =>
-          def sendMessageRequest(
-            body: String,
-            groupId: String
-          ) =
+          def sendMessageRequest(body: String, groupId: String) =
             SendMessageRequest
               .builder()
               .queueUrl(queueUrl.value)
@@ -125,10 +112,7 @@ object SqsTests extends MutableIOSuite {
 
       queueResource(client)("dedup-queue", isFifo = true, isDedup = true)
         .use { queueUrl =>
-          def sendMessageRequest(
-            body: String,
-            groupId: String
-          ) =
+          def sendMessageRequest(body: String, groupId: String) =
             SendMessageRequest
               .builder()
               .queueUrl(queueUrl.value)
@@ -243,12 +227,7 @@ object SqsTests extends MutableIOSuite {
   private val redrivePolicy: String => Map[QueueAttributeName, String] =
     dlqUrl => Map(QueueAttributeName.REDRIVE_POLICY -> s"""{"deadLetterTargetArn":"$dlqUrl","maxReceiveCount":"1"}""")
 
-  private def messageAttributes(
-    args: (
-      String,
-      String
-    )*
-  ): Map[String, MessageAttributeValue] =
+  private def messageAttributes(args: (String, String)*): Map[String, MessageAttributeValue] =
     args.toMap.view.mapValues(value => MessageAttributeValue.builder().dataType("String").stringValue(value).build()).toMap
 
 }

@@ -35,18 +35,14 @@ import scala.util.Random
 
 object LocalStackContainerUtils {
 
-  private def createContainer(
-    services: Seq[LocalStackV2Container.Service]
-  ): IO[LocalStackV2Container] =
+  private def createContainer(services: Seq[LocalStackV2Container.Service]): IO[LocalStackV2Container] =
     IO {
       val c = LocalStackV2Container(tag = "0.12.20", services = services)
       c.container.setDockerImageName("localstack/localstack:0.12.20")
       c
     }
 
-  def containerResource(
-    services: Seq[LocalStackV2Container.Service]
-  ): Resource[IO, LocalStackV2Container] =
+  def containerResource(services: Seq[LocalStackV2Container.Service]): Resource[IO, LocalStackV2Container] =
     TestContainersUtils.containerResource(createContainer(services))
 
   def createKinesisConnector(
@@ -139,13 +135,7 @@ object LocalStackContainerUtils {
   )(
     topicName: String,
     isFifo: Boolean = false
-  ): Resource[
-    IO,
-    (
-      SnsArn,
-      SqsUrl
-    )
-  ] =
+  ): Resource[IO, (SnsArn, SqsUrl)] =
     for {
       topicArn <- topicResource(snsClient)(topicName, isFifo = isFifo)
       queueUrl <- queueResource(sqsClient)(s"$topicName-sub", isFifo = isFifo)

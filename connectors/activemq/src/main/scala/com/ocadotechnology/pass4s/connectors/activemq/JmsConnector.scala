@@ -47,11 +47,7 @@ object Jms {
 
 }
 
-final case class JmsSource private (
-  name: String,
-  sourceType: Jms.Type,
-  settings: JmsSourceSettings
-) extends Source[Jms] {
+final case class JmsSource private (name: String, sourceType: Jms.Type, settings: JmsSourceSettings) extends Source[Jms] {
   override val capability: Type = typeOf[Jms]
 
   override val messageProcessingTimeout: Option[FiniteDuration] = Some(settings.messageProcessingTimeout)
@@ -71,48 +67,25 @@ object JmsSource {
     restartSettings: RestartSettings = RestartSettings(minBackoff = 2.second, maxBackoff = 30.seconds, randomFactor = 0.2)
   )
 
-  final case class RestartSettings(
-    minBackoff: FiniteDuration,
-    maxBackoff: FiniteDuration,
-    randomFactor: Double
-  ) {
+  final case class RestartSettings(minBackoff: FiniteDuration, maxBackoff: FiniteDuration, randomFactor: Double) {
     val toAkka: AkkaRestartSettings = AkkaRestartSettings(minBackoff, maxBackoff, randomFactor)
   }
 
-  def queue(
-    name: String,
-    settings: JmsSourceSettings = JmsSourceSettings()
-  ): JmsSource = JmsSource(name, Jms.Type.Queue, settings)
+  def queue(name: String, settings: JmsSourceSettings = JmsSourceSettings()): JmsSource = JmsSource(name, Jms.Type.Queue, settings)
 
-  def topic(
-    name: String,
-    settings: JmsSourceSettings = JmsSourceSettings()
-  ): JmsSource = JmsSource(name, Jms.Type.Topic, settings)
-
+  def topic(name: String, settings: JmsSourceSettings = JmsSourceSettings()): JmsSource = JmsSource(name, Jms.Type.Topic, settings)
 }
 
-final case class JmsDestination private (
-  name: String,
-  destinationType: Jms.Type
-) extends Destination[Jms] {
+final case class JmsDestination private (name: String, destinationType: Jms.Type) extends Destination[Jms] {
   override val capability: Type = typeOf[Jms]
 
-  def toSource(
-    settings: JmsSourceSettings = JmsSourceSettings()
-  ): JmsSource = JmsSource(name, destinationType, settings)
-
+  def toSource(settings: JmsSourceSettings = JmsSourceSettings()): JmsSource = JmsSource(name, destinationType, settings)
 }
 
 object JmsDestination {
+  def queue(name: String): JmsDestination = JmsDestination(name, Jms.Type.Queue)
 
-  def queue(
-    name: String
-  ): JmsDestination = JmsDestination(name, Jms.Type.Queue)
-
-  def topic(
-    name: String
-  ): JmsDestination = JmsDestination(name, Jms.Type.Topic)
-
+  def topic(name: String): JmsDestination = JmsDestination(name, Jms.Type.Topic)
 }
 
 object JmsConnector {
@@ -142,14 +115,10 @@ object JmsConnector {
       type Raw = ConnectionFactory
       override val underlying: ConnectionFactory = connectionFactory
 
-      override def consumeBatched[R >: Jms](
-        source: Source[R]
-      ): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: Jms](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
         consumeAndReconnectOnErrors(connectionFactory)(source).map(List(_))
 
-      override def produce[R >: Jms](
-        message: Message[R]
-      ): F[Unit] =
+      override def produce[R >: Jms](message: Message[R]): F[Unit] =
         producer(message)
 
     }

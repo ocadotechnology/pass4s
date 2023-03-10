@@ -46,11 +46,7 @@ object groupId {
   }
 
   trait MessageGroup[A] {
-
-    def groupId(
-      a: A
-    ): String
-
+    def groupId(a: A): String
   }
 
 }

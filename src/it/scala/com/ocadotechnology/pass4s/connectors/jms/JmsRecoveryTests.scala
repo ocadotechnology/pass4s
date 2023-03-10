@@ -27,13 +27,7 @@ object JmsRecoveryTests extends SimpleIOSuite {
 
   private implicit val logger: Logger[IO] = Slf4jLogger.getLogger
 
-  def testEnvironment: Resource[
-    IO,
-    (
-      Broker[IO, Jms],
-      Resource[IO, BrokerService]
-    )
-  ] =
+  def testEnvironment: Resource[IO, (Broker[IO, Jms], Resource[IO, BrokerService])] =
     for {
       implicit0(as: ActorSystem) <- actorSystemResource
       brokerName                 <- Resource.eval(IO(Random.alphanumeric.take(8).mkString).map(randomSuffix => s"broker-$randomSuffix"))
@@ -50,10 +44,7 @@ object JmsRecoveryTests extends SimpleIOSuite {
       case ((broker, brokerService), (messageProcessingReleaser, startOfMessageProcessingHolder)) =>
         val mainQueue = "MainQueue"
         val feedbackQueue = "FeedbackQueue"
-        def sendMessageOnQueue(
-          queueName: String,
-          text: String
-        ): IO[Unit] =
+        def sendMessageOnQueue(queueName: String, text: String): IO[Unit] =
           broker.sender.sendOne(Message(Message.Payload(text, Map()), JmsDestination.queue(queueName)))
 
         val controlledConsumerMainQueue = broker.consumer(JmsSource.queue(mainQueue)).consume { message =>
@@ -80,10 +71,7 @@ object JmsRecoveryTests extends SimpleIOSuite {
   test("when the broker goes down while a message is being sent, then sender should throw exception") {
     testEnvironment.use { case (broker, brokerService) =>
       val testQueue = "TestQueue"
-      def sendMessageOnQueue(
-        text: String,
-        queueName: String = testQueue
-      ): IO[Unit] =
+      def sendMessageOnQueue(text: String, queueName: String = testQueue): IO[Unit] =
         broker.sender.sendOne(Message(Message.Payload(text, Map()), JmsDestination.queue(queueName)))
 
       val consume2MessagesFromQueue =

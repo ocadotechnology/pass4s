@@ -38,22 +38,13 @@ import fs2.Stream
 // Copied from https://github.com/krasserm/streamz due to the lack of CE3 support. https://github.com/krasserm/streamz/issues/85
 private[activemq] object taps {
 
-  implicit class AkkaSourceDsl[A, M](
-    source: Graph[SourceShape[A], M]
-  ) {
+  implicit class AkkaSourceDsl[A, M](source: Graph[SourceShape[A], M]) {
 
-    def toStream[F[_]: Async](
-      onMaterialization: M => Unit = _ => ()
-    )(
-      implicit materializer: Materializer
-    ): Stream[F, A] =
+    def toStream[F[_]: Async](onMaterialization: M => Unit = _ => ())(implicit materializer: Materializer): Stream[F, A] =
       akkaSourceToFs2Stream(source)(onMaterialization)
-
   }
 
-  implicit class AkkaFlowDsl[A, B, M](
-    flow: Graph[FlowShape[A, B], M]
-  ) {
+  implicit class AkkaFlowDsl[A, B, M](flow: Graph[FlowShape[A, B], M]) {
 
     def toPipe[F[_]: Async](
       onMaterialization: M => Unit = _ => ()
@@ -118,9 +109,7 @@ private[activemq] object taps {
   )(
     implicit F: Async[F]
   ): Stream[F, Unit] = {
-    def publish(
-      a: A
-    ): F[Option[Unit]] =
+    def publish(a: A): F[Option[Unit]] =
       Async[F]
         .fromFuture(F.delay(publisher.offer(a)))
         .flatMap {
@@ -139,9 +128,7 @@ private[activemq] object taps {
         }
 
     def watchCompletion: F[Unit] = Async[F].fromFuture(F.delay(publisher.watchCompletion())).void
-    def fail(
-      e: Throwable
-    ): F[Unit] = F.delay(publisher.fail(e)) >> watchCompletion
+    def fail(e: Throwable): F[Unit] = F.delay(publisher.fail(e)) >> watchCompletion
     def complete: F[Unit] = F.delay(publisher.complete()) >> watchCompletion
 
     stream
@@ -154,11 +141,7 @@ private[activemq] object taps {
       }
   }
 
-  private def subscriberStream[F[_], A](
-    subscriber: SinkQueueWithCancel[A]
-  )(
-    implicit F: Async[F]
-  ): Stream[F, A] = {
+  private def subscriberStream[F[_], A](subscriber: SinkQueueWithCancel[A])(implicit F: Async[F]): Stream[F, A] = {
     val pull = Async[F].fromFuture(F.delay(subscriber.pull()))
     val cancel = F.delay(subscriber.cancel())
     Stream.repeatEval(pull).unNoneTerminate.onFinalize(cancel)

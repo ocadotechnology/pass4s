@@ -22,10 +22,7 @@ object EmbeddedJmsBroker {
       IO.fromFuture(IO(actorSystem.terminate())).void
     }
 
-  def brokerServiceResource(
-    brokerName: String,
-    address: Option[String] = None
-  ): Resource[IO, BrokerService] =
+  def brokerServiceResource(brokerName: String, address: Option[String] = None): Resource[IO, BrokerService] =
     Resource.make {
       IO {
         val brokerService = new BrokerService()
@@ -56,9 +53,7 @@ object EmbeddedJmsBroker {
     JmsConnector.singleBroker[IO](embeddedAMQConnectionFactory)
   }
 
-  def createBrokerAndConnectToIt(
-    implicit logger: Logger[IO]
-  ): Resource[IO, JmsConnector[IO]] =
+  def createBrokerAndConnectToIt(implicit logger: Logger[IO]): Resource[IO, JmsConnector[IO]] =
     for {
       implicit0(as: ActorSystem) <- actorSystemResource
       brokerName                 <- Resource.eval(IO(Random.alphanumeric.take(8).mkString)).map(randomSuffix => s"broker-$randomSuffix")

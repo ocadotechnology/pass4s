@@ -47,9 +47,7 @@ import scala.util.Try
 
 private object util {
 
-  def niceName(
-    url: SqsUrl
-  ): String =
+  def niceName(url: SqsUrl): String =
     Try(URI.create(url.value))
       .map(_.getPath)
       .map {
@@ -75,9 +73,7 @@ object SqsFifo {
 
 }
 
-final case class SqsUrl(
-  value: String
-) extends AnyVal
+final case class SqsUrl(value: String) extends AnyVal
 
 sealed trait SqsSource[T >: Sqs with SqsFifo] extends Source[T] {
   def url: SqsUrl
@@ -90,15 +86,7 @@ sealed trait SqsSource[T >: Sqs with SqsFifo] extends Source[T] {
 }
 
 object SqsSource {
-
-  def unapply(
-    src: SqsSource[_]
-  ): Option[
-    (
-      SqsUrl,
-      Settings
-    )
-  ] = Some((src.url, src.settings))
+  def unapply(src: SqsSource[_]): Option[(SqsUrl, Settings)] = Some((src.url, src.settings))
 
   sealed trait Settings {
     def messageProcessingTimeout: FiniteDuration
@@ -110,17 +98,7 @@ object SqsSource {
 
   object Settings {
 
-    def unapply(
-      settings: Settings
-    ): Option[
-      (
-        FiniteDuration,
-        Boolean,
-        Int,
-        Int,
-        Int
-      )
-    ] =
+    def unapply(settings: Settings): Option[(FiniteDuration, Boolean, Int, Int, Int)] =
       Some(
         (
           settings.messageProcessingTimeout,
@@ -135,10 +113,7 @@ object SqsSource {
 
 }
 
-final case class SqsEndpoint(
-  url: SqsUrl,
-  settings: SqsEndpoint.Settings = SqsEndpoint.Settings()
-) extends SqsSource[Sqs] {
+final case class SqsEndpoint(url: SqsUrl, settings: SqsEndpoint.Settings = SqsEndpoint.Settings()) extends SqsSource[Sqs] {
   if (url.value.endsWith(".fifo")) throw new IllegalArgumentException("For fifo queues use SqsFifoEndpoint")
   override def capability: Type = typeOf[Sqs]
   def toDestination: SqsDestination = SqsDestination(url)
@@ -158,10 +133,7 @@ object SqsEndpoint {
 
 }
 
-final case class SqsFifoEndpoint(
-  url: SqsUrl,
-  settings: SqsFifoEndpoint.Settings = SqsFifoEndpoint.Settings()
-) extends SqsSource[SqsFifo] {
+final case class SqsFifoEndpoint(url: SqsUrl, settings: SqsFifoEndpoint.Settings = SqsFifoEndpoint.Settings()) extends SqsSource[SqsFifo] {
   if (!url.value.endsWith(".fifo")) throw new IllegalArgumentException("For non-fifo queues use SqsEndpoint")
   override def capability: Type = typeOf[SqsFifo]
   def toDestination: SqsFifoDestination = SqsFifoDestination(url)
@@ -181,69 +153,38 @@ object SqsFifoEndpoint {
 
 }
 
-final case class SqsDestination(
-  url: SqsUrl
-) extends Destination[Sqs] {
+final case class SqsDestination(url: SqsUrl) extends Destination[Sqs] {
   override val capability: Type = typeOf[Sqs]
   override val name: String = util.niceName(url)
-
-  def toSource(
-    settings: SqsEndpoint.Settings = SqsEndpoint.Settings()
-  ): SqsEndpoint = SqsEndpoint(url, settings)
-
+  def toSource(settings: SqsEndpoint.Settings = SqsEndpoint.Settings()): SqsEndpoint = SqsEndpoint(url, settings)
 }
 
-final case class SqsFifoDestination(
-  url: SqsUrl
-) extends Destination[SqsFifo] {
+final case class SqsFifoDestination(url: SqsUrl) extends Destination[SqsFifo] {
   override val capability: Type = typeOf[SqsFifo]
   override val name: String = util.niceName(url)
-
-  def toSource(
-    settings: SqsFifoEndpoint.Settings = SqsFifoEndpoint.Settings()
-  ): SqsFifoEndpoint = SqsFifoEndpoint(url, settings)
-
+  def toSource(settings: SqsFifoEndpoint.Settings = SqsFifoEndpoint.Settings()): SqsFifoEndpoint = SqsFifoEndpoint(url, settings)
 }
 
 trait SqsAttributesProvider[F[_]] {
-
-  def getGroupId(
-    payload: Payload,
-    destination: SqsFifoDestination
-  ): F[String]
-
-  def getDedupId(
-    payload: Payload,
-    destination: SqsFifoDestination
-  ): F[Option[String]]
-
+  def getGroupId(payload: Payload, destination: SqsFifoDestination): F[String]
+  def getDedupId(payload: Payload, destination: SqsFifoDestination): F[Option[String]]
 }
 
 object SqsAttributesProvider {
-
-  def apply[F[_]](
-    implicit ev: SqsAttributesProvider[F]
-  ): SqsAttributesProvider[F] = ev
+  def apply[F[_]](implicit ev: SqsAttributesProvider[F]): SqsAttributesProvider[F] = ev
 
   def default[F[_]: MonadThrow]: SqsAttributesProvider[F] =
     new SqsAttributesProvider[F] {
 
-      override def getGroupId(
-        payload: Payload,
-        destination: SqsFifoDestination
-      ) =
+      override def getGroupId(payload: Payload, destination: SqsFifoDestination) =
         MonadThrow[F].catchNonFatal {
           Payload
             .getHeader(SqsFifo.groupIdMetadata)(payload)
             .getOrElse(throw new IllegalStateException("sqs fifo payloads must include group id metadata"))
         }
 
-      override def getDedupId(
-        payload: Payload,
-        destination: SqsFifoDestination
-      ) =
+      override def getDedupId(payload: Payload, destination: SqsFifoDestination) =
         Monad[F].pure(Payload.getHeader(SqsFifo.dedupIdMetadata)(payload))
-
     }
 
 }
@@ -298,17 +239,13 @@ object SqsConnector {
     usingBuilder(sqsBuilder)
   }
 
-  def usingPureClient[F[_]: SqsAttributesProvider: Async: Logger](
-    sqsAsyncClientOp: SqsAsyncClientOp[F]
-  ): SqsConnector[F] =
+  def usingPureClient[F[_]: SqsAttributesProvider: Async: Logger](sqsAsyncClientOp: SqsAsyncClientOp[F]): SqsConnector[F] =
     new Connector[F, Sqs with SqsFifo] {
 
       type Raw = SqsAsyncClientOp[F]
       val underlying: SqsAsyncClientOp[F] = sqsAsyncClientOp
 
-      override def consumeBatched[R >: Sqs with SqsFifo](
-        source: Source[R]
-      ): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: Sqs with SqsFifo](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
         source match {
           case sqsEndpoint: SqsSource[_] =>
             Stream
@@ -360,10 +297,7 @@ object SqsConnector {
             .build()
       }
 
-      private def makeRequest(
-        destination: SqsDestination,
-        payload: Payload
-      ) =
+      private def makeRequest(destination: SqsDestination, payload: Payload) =
         SendMessageRequest
           .builder()
           .queueUrl(destination.url.value)
@@ -373,10 +307,7 @@ object SqsConnector {
           )
           .build()
 
-      private def makeFifoRequest(
-        destination: SqsFifoDestination,
-        payload: Payload
-      ) =
+      private def makeFifoRequest(destination: SqsFifoDestination, payload: Payload) =
         for {
           initialRequest <- Monad[F].pure(
                               SendMessageRequest
@@ -393,9 +324,7 @@ object SqsConnector {
                               .getOrElse(withGroupId)
         } yield withDedupId.build()
 
-      override def produce[R >: Sqs with SqsFifo](
-        message: Message[R]
-      ): F[Unit] =
+      override def produce[R >: Sqs with SqsFifo](message: Message[R]): F[Unit] =
         for {
           (request, d) <- message match {
                             case Message(payload, d: SqsDestination)     =>
@@ -416,7 +345,4 @@ object SqsConnector {
 
 }
 
-final case class SqsClientException(
-  message: String,
-  e: Throwable
-) extends Exception(message, e)
+final case class SqsClientException(message: String, e: Throwable) extends Exception(message, e)

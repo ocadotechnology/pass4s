@@ -35,22 +35,15 @@ object BrokerTests extends SimpleIOSuite {
   trait Bar
   trait Baz
 
-  final case class FooDestination(
-    name: String
-  ) extends Source[Foo]
-    with Destination[Foo] {
+  final case class FooDestination(name: String) extends Source[Foo] with Destination[Foo] {
     override val capability: Type = typeOf[Foo]
   }
 
-  final case class BarDestination(
-    name: String
-  ) extends Source[Bar] {
+  final case class BarDestination(name: String) extends Source[Bar] {
     override val capability: Type = typeOf[Bar]
   }
 
-  final case class BazDestination(
-    name: String
-  ) extends Destination[Baz] {
+  final case class BazDestination(name: String) extends Destination[Baz] {
     override val capability: Type = typeOf[Baz]
   }
 
@@ -188,50 +181,23 @@ object BrokerTests extends SimpleIOSuite {
     )
   }
 
-  private def createBroker[P](
-    id: String
-  ): IO[
-    (
-      Broker[IO, P],
-      RefSender[
-        IO,
-        (
-          String,
-          Payload
-        )
-      ]
-    )
-  ] =
-    Sender
-      .testing[
-        IO,
-        (
-          String,
-          Payload
-        )
-      ]
-      .fproductLeft { refSender =>
-        new Broker[IO, P] {
-          override def consumer[R >: P](
-            source: Source[R]
-          ): Consumer[IO, Payload] =
-            Consumer.one(payload(id))
+  private def createBroker[P](id: String): IO[(Broker[IO, P], RefSender[IO, (String, Payload)])] =
+    Sender.testing[IO, (String, Payload)].fproductLeft { refSender =>
+      new Broker[IO, P] {
+        override def consumer[R >: P](source: Source[R]): Consumer[IO, Payload] =
+          Consumer.one(payload(id))
 
-          override def sender[R >: P]: Sender[IO, Message[R]] =
-            refSender.contramap[Message[R]](m => (id, m.payload))
-        }
+        override def sender[R >: P]: Sender[IO, Message[R]] =
+          refSender.contramap[Message[R]](m => (id, m.payload))
       }
+    }
 
-  private def consumeOne[A](
-    consumer: Consumer[IO, A]
-  ): IO[A] =
+  private def consumeOne[A](consumer: Consumer[IO, A]): IO[A] =
     for {
       deferred <- Deferred[IO, A]
       result   <- IO.race(consumer.consume(deferred.complete(_).void) *> deferred.get, deferred.get)
     } yield result.merge
 
-  private def payload(
-    text: String
-  ): Payload = Payload(text, Map())
+  private def payload(text: String): Payload = Payload(text, Map())
 
 }

@@ -42,13 +42,9 @@ import scala.reflect.runtime.universe._
 
 trait Sns
 
-final case class SnsArn(
-  value: String
-) extends AnyVal
+final case class SnsArn(value: String) extends AnyVal
 
-final case class SnsDestination(
-  arn: SnsArn
-) extends Destination[Sns] {
+final case class SnsDestination(arn: SnsArn) extends Destination[Sns] {
   if (arn.value.endsWith(".fifo")) throw new IllegalArgumentException("For FIFO topics use SnsFifoDestination")
 
   override val capability: Type = typeOf[Sns]
@@ -72,9 +68,7 @@ object SnsFifo {
 
 }
 
-final case class SnsFifoDestination(
-  arn: SnsArn
-) extends Destination[SnsFifo] {
+final case class SnsFifoDestination(arn: SnsArn) extends Destination[SnsFifo] {
   if (!arn.value.endsWith(".fifo")) throw new IllegalArgumentException("For non-FIFO topics use SnsDestination")
 
   override val capability: Type = typeOf[Sns]
@@ -87,44 +81,25 @@ final case class SnsFifoDestination(
 }
 
 trait SnsAttributesProvider[F[_]] {
-
-  def getGroupId(
-    payload: Payload,
-    destination: SnsFifoDestination
-  ): F[String]
-
-  def getDedupId(
-    payload: Payload,
-    destination: SnsFifoDestination
-  ): F[Option[String]]
-
+  def getGroupId(payload: Payload, destination: SnsFifoDestination): F[String]
+  def getDedupId(payload: Payload, destination: SnsFifoDestination): F[Option[String]]
 }
 
 object SnsAttributesProvider {
-
-  def apply[F[_]](
-    implicit ev: SnsAttributesProvider[F]
-  ): SnsAttributesProvider[F] = ev
+  def apply[F[_]](implicit ev: SnsAttributesProvider[F]): SnsAttributesProvider[F] = ev
 
   def default[F[_]: MonadThrow]: SnsAttributesProvider[F] =
     new SnsAttributesProvider[F] {
 
-      override def getGroupId(
-        payload: Payload,
-        destination: SnsFifoDestination
-      ) =
+      override def getGroupId(payload: Payload, destination: SnsFifoDestination) =
         MonadThrow[F].catchNonFatal {
           Payload
             .getHeader(SnsFifo.groupIdMetadata)(payload)
             .getOrElse(throw new IllegalStateException("sns fifo payloads must include group id metadata"))
         }
 
-      override def getDedupId(
-        payload: Payload,
-        destination: SnsFifoDestination
-      ) =
+      override def getDedupId(payload: Payload, destination: SnsFifoDestination) =
         Monad[F].pure(Payload.getHeader(SnsFifo.dedupIdMetadata)(payload))
-
     }
 
 }
@@ -180,23 +155,16 @@ object SnsConnector {
     usingBuilder(snsBuilder)
   }
 
-  def usingPureClient[F[_]: SnsAttributesProvider: MonadThrow](
-    snsAsyncClientOp: SnsAsyncClientOp[F]
-  ): SnsConnector[F] =
+  def usingPureClient[F[_]: SnsAttributesProvider: MonadThrow](snsAsyncClientOp: SnsAsyncClientOp[F]): SnsConnector[F] =
     new Connector[F, AllSns] {
 
       type Raw = SnsAsyncClientOp[F]
       override val underlying: SnsAsyncClientOp[F] = snsAsyncClientOp
 
-      override def consumeBatched[R >: AllSns](
-        source: Source[R]
-      ): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: AllSns](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
         Stream.raiseError[F](new UnsupportedOperationException("Amazon SNS topic can't be consumed directly"))
 
-      private def makeRequest(
-        destination: SnsDestination,
-        payload: Payload
-      ) =
+      private def makeRequest(destination: SnsDestination, payload: Payload) =
         PublishRequest
           .builder()
           .topicArn(destination.arn.value)
@@ -206,10 +174,7 @@ object SnsConnector {
           )
           .build()
 
-      private def makeFifoRequest(
-        destination: SnsFifoDestination,
-        payload: Payload
-      ) =
+      private def makeFifoRequest(destination: SnsFifoDestination, payload: Payload) =
         for {
           initialRequest <- Monad[F].pure(
                               PublishRequest
@@ -227,9 +192,7 @@ object SnsConnector {
                            .getOrElse(withGroupId)
         } yield withDedupId.build()
 
-      override def produce[R >: AllSns](
-        message: Message[R]
-      ): F[Unit] =
+      override def produce[R >: AllSns](message: Message[R]): F[Unit] =
         for {
           (request, d) <- message match {
                             case Message(payload, d: SnsDestination)     =>
@@ -250,7 +213,4 @@ object SnsConnector {
 
 }
 
-final case class SnsClientException(
-  message: String,
-  e: Throwable
-) extends Exception(message, e)
+final case class SnsClientException(message: String, e: Throwable) extends Exception(message, e)

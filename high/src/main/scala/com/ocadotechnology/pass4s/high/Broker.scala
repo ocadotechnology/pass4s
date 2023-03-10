@@ -34,28 +34,19 @@ import fs2.Stream
 import scala.reflect.runtime.universe._
 
 trait Broker[F[_], +P] {
-
-  def consumer[R >: P](
-    source: Source[R]
-  ): Consumer[F, Payload]
+  def consumer[R >: P](source: Source[R]): Consumer[F, Payload]
 
   def sender[R >: P]: Sender[F, Message[R]]
 }
 
 object Broker {
 
-  def apply[F[_], P](
-    implicit ev: Broker[F, P]
-  ): ev.type = ev
+  def apply[F[_], P](implicit ev: Broker[F, P]): ev.type = ev
 
-  def fromConnector[F[_]: Async, P](
-    connector: Connector[F, P]
-  ): Broker[F, P] =
+  def fromConnector[F[_]: Async, P](connector: Connector[F, P]): Broker[F, P] =
     new Broker[F, P] {
 
-      override def consumer[R >: P](
-        source: Source[R]
-      ): Consumer[F, Payload] = {
+      override def consumer[R >: P](source: Source[R]): Consumer[F, Payload] = {
         val toConsumer: Stream[F, List[Resource[F, Payload]]] => Consumer[F, Payload] =
           if (source.maxConcurrent === 1) s => Consumer.sequential(source.cancelableMessageProcessing)(s.flatMap(Stream.emits))
           else s => Consumer.paralleled(source.maxConcurrent, source.cancelableMessageProcessing)(s.flatMap(Stream.emits))
@@ -72,14 +63,9 @@ object Broker {
         Sender.fromFunction(connector.produce[R])
     }
 
-  def routed[F[_], P](
-    chooseBroker: End[P] => Broker[F, P]
-  ): Broker[F, P] =
+  def routed[F[_], P](chooseBroker: End[P] => Broker[F, P]): Broker[F, P] =
     new Broker[F, P] {
-
-      override def consumer[R >: P](
-        source: Source[R]
-      ): Consumer[F, Payload] =
+      override def consumer[R >: P](source: Source[R]): Consumer[F, Payload] =
         chooseBroker(source.asInstanceOf[Source[P]]).consumer(source)
 
       override def sender[R >: P]: Sender[F, Message[R]] =
@@ -103,9 +89,7 @@ object Broker {
       )
     else
       new Broker[F, P1 with P2] {
-        override def consumer[R >: P1 with P2](
-          source: Source[R]
-        ): Consumer[F, Payload] =
+        override def consumer[R >: P1 with P2](source: Source[R]): Consumer[F, Payload] =
           source.capability match {
             case p1 if typeOf[P1] <:< p1 => broker1.asInstanceOf[Broker[F, R]].consumer(source)
             case p2 if typeOf[P2] <:< p2 => broker2.asInstanceOf[Broker[F, R]].consumer(source)

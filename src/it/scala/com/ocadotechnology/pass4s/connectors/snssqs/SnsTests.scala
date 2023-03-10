@@ -30,23 +30,12 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 
 object SnsTests extends MutableIOSuite {
-
-  override type Res = (
-    Broker[IO, Sns with SnsFifo with Sqs with SqsFifo],
-    SnsAsyncClientOp[IO],
-    SqsAsyncClientOp[IO]
-  )
+  override type Res = (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], SnsAsyncClientOp[IO], SqsAsyncClientOp[IO])
 
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger
 
-  override def sharedResource: Resource[
-    IO,
-    (
-      Broker[IO, Sns with SnsFifo with Sqs with SqsFifo],
-      SnsAsyncClientOp[IO],
-      SqsAsyncClientOp[IO]
-    )
-  ] =
+  override def sharedResource
+    : Resource[IO, (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], SnsAsyncClientOp[IO], SqsAsyncClientOp[IO])] =
     for {
       container    <- containerResource(Seq(Service.SNS, Service.SQS))
       snsConnector <- createSnsConnector(container)
@@ -90,10 +79,7 @@ object SnsTests extends MutableIOSuite {
   }
 
   test("sending a message through using a convenient sender works properly").usingRes { case (broker, snsClient, sqsClient) =>
-    final case class Foo(
-      bar: Int,
-      order: String
-    )
+    final case class Foo(bar: Int, order: String)
     object Foo {
       implicit val encoder: Encoder[Foo] = foo => Json.obj("bar" -> Json.fromInt(foo.bar), "order" -> Json.fromString(foo.order))
       implicit val messageGroup: MessageGroup[Foo] = _.order
