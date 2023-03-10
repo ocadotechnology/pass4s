@@ -23,7 +23,9 @@ object SqsConnectorTest extends SimpleIOSuite {
   val urlWithoutPath = "https://sqs.eu-west-1.amazonaws.com"
   val invalidUrl = "some-name"
 
-  def nameOfSqsEndpoint(url: String) = SqsEndpoint(SqsUrl(url)).name
+  def nameOfSqsEndpoint(
+    url: String
+  ) = SqsEndpoint(SqsUrl(url)).name
 
   pureTest("SQS Url") {
     expect(nameOfSqsEndpoint(sqsUrl) == "some-name")

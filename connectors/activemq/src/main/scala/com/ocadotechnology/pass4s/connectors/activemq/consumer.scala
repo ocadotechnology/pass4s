@@ -56,14 +56,18 @@ private[activemq] object consumer {
                               .withDestination(common.toAlpakkaDestination(name, sourceType))
 
       txEnvelope         <- RestartSource
-                              .withBackoff(settings.restartSettings.toAkka) { () =>
-                                JmsConsumer.txSource(jmsConsumerSettings).named(getClass.getSimpleName)
+                              .withBackoff(settings.restartSettings.toAkka) {
+                                (
+                                ) =>
+                                  JmsConsumer.txSource(jmsConsumerSettings).named(getClass.getSimpleName)
                               }
                               .toStream[F]()
       committableMessage <- Stream.eval(toCommittableMessage(txEnvelope)).unNone
     } yield committableMessage
 
-  private def extractJmsSource[F[_]: ApplicativeThrow](source: Source[_]): F[JmsSource] =
+  private def extractJmsSource[F[_]: ApplicativeThrow](
+    source: Source[_]
+  ): F[JmsSource] =
     source match {
       case jmsSource: JmsSource   => jmsSource.pure[F]
       case unsupportedDestination =>
@@ -72,7 +76,9 @@ private[activemq] object consumer {
         )
     }
 
-  private def toCommittableMessage[F[_]: Sync: Logger](txEnvelope: alpakka.TxEnvelope): F[Option[CommittableMessage[F]]] = {
+  private def toCommittableMessage[F[_]: Sync: Logger](
+    txEnvelope: alpakka.TxEnvelope
+  ): F[Option[CommittableMessage[F]]] = {
     val commit = Sync[F].delay(txEnvelope.commit())
     val rollback = Sync[F].delay(txEnvelope.rollback())
     txEnvelope.message match {
@@ -84,7 +90,9 @@ private[activemq] object consumer {
   }
 
   // fixme: add headers/properties from underlying message - need to double check if all properties are returned by getPropertyNames
-  private def getHeaders(msg: jms.Message): Map[String, String] =
+  private def getHeaders(
+    msg: jms.Message
+  ): Map[String, String] =
     Try {
       msg
         .getPropertyNames

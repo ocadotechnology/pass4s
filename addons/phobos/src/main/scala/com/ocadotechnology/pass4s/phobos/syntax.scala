@@ -32,7 +32,9 @@ import ru.tinkoff.phobos.encoding.XmlEncoder
 
 object syntax {
 
-  final private[syntax] class AsXmlSenderPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]]) extends AnyVal {
+  final private[syntax] class AsXmlSenderPartiallyApplied[F[_], P, A](
+    private val sender: Sender[F, Message[P]]
+  ) extends AnyVal {
 
     @scala.annotation.nowarn("cat=unused-params")
     def apply[R >: P](
@@ -46,8 +48,9 @@ object syntax {
 
   }
 
-  final private[syntax] class AsXmlSenderWithCustomMetadataPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]])
-    extends AnyVal {
+  final private[syntax] class AsXmlSenderWithCustomMetadataPartiallyApplied[F[_], P, A](
+    private val sender: Sender[F, Message[P]]
+  ) extends AnyVal {
 
     @scala.annotation.nowarn("cat=unused-params")
     def apply[R >: P](
@@ -62,8 +65,9 @@ object syntax {
 
   }
 
-  final private[syntax] class AsXmlSenderWithMessageGroupPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]])
-    extends AnyVal {
+  final private[syntax] class AsXmlSenderWithMessageGroupPartiallyApplied[F[_], P, A](
+    private val sender: Sender[F, Message[P]]
+  ) extends AnyVal {
 
     def apply[R >: P](
       to: Destination[R],
@@ -82,7 +86,9 @@ object syntax {
 
   }
 
-  implicit final class SendXmlMessageSyntax[F[_], P](private val sender: Sender[F, Message[P]]) {
+  implicit final class SendXmlMessageSyntax[F[_], P](
+    private val sender: Sender[F, Message[P]]
+  ) {
 
     /** ===params:===
       * {{{to: Destination[R >: P]}}}
@@ -107,12 +113,20 @@ object syntax {
     def asXmlSenderWithMessageGroup[A] = new AsXmlSenderWithMessageGroupPartiallyApplied[F, P, A](sender)
   }
 
-  implicit final class ConsumeXmlMessageSyntax[F[_]](private val consumer: Consumer[F, String]) {
-    def asXmlConsumer[A: XmlDecoder](implicit M: MonadError[F, _ >: DecodingError]): Consumer[F, A] =
+  implicit final class ConsumeXmlMessageSyntax[F[_]](
+    private val consumer: Consumer[F, String]
+  ) {
+
+    def asXmlConsumer[A: XmlDecoder](
+      implicit M: MonadError[F, _ >: DecodingError]
+    ): Consumer[F, A] =
       consumer.mapM(XmlDecoder[A].decode(_).liftTo[F])
+
   }
 
-  implicit final class ConsumeXmlGenericMessageSyntax[F[_], A](private val consumer: Consumer[F, A]) {
+  implicit final class ConsumeXmlGenericMessageSyntax[F[_], A](
+    private val consumer: Consumer[F, A]
+  ) {
 
     def asXmlConsumer[B: XmlDecoder](
       implicit M: MonadError[F, _ >: DecodingError],

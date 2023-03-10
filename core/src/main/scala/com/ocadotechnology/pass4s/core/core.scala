@@ -34,7 +34,10 @@ final case class Message[P](
 
 object Message {
 
-  def addHeader[P](key: String, value: String): Message[P] => Message[P] =
+  def addHeader[P](
+    key: String,
+    value: String
+  ): Message[P] => Message[P] =
     msg => msg.copy(payload = Payload.addHeader(key, value)(msg.payload))
 
   final case class Payload(
@@ -45,8 +48,15 @@ object Message {
   )
 
   object Payload {
-    def addHeader(key: String, value: String): Payload => Payload = p => p.copy(metadata = p.metadata + (key -> value))
-    def getHeader(key: String): Payload => Option[String] = _.metadata.get(key)
+
+    def addHeader(
+      key: String,
+      value: String
+    ): Payload => Payload = p => p.copy(metadata = p.metadata + (key -> value))
+
+    def getHeader(
+      key: String
+    ): Payload => Option[String] = _.metadata.get(key)
 
   }
 
@@ -70,7 +80,9 @@ trait Destination[P] extends End[P] {
 trait CommittableMessage[F[_]] { self =>
   def scope: Resource[F, Payload]
 
-  def mapScope(f: Resource[F, Payload] => Resource[F, Payload]): CommittableMessage[F] =
+  def mapScope(
+    f: Resource[F, Payload] => Resource[F, Payload]
+  ): CommittableMessage[F] =
     new CommittableMessage[F] {
       val scope: Resource[F, Payload] = f(self.scope)
     }
@@ -90,7 +102,9 @@ object CommittableMessage {
       }
     }
 
-  def just[F[_]](payload: Payload): CommittableMessage[F] =
+  def just[F[_]](
+    payload: Payload
+  ): CommittableMessage[F] =
     new CommittableMessage[F] {
       val scope: Resource[F, Payload] = Resource.pure(payload)
     }
@@ -99,7 +113,10 @@ object CommittableMessage {
 
 sealed trait RollbackCause extends Product with Serializable {
 
-  def fold[A](thrown: Throwable => A, canceled: => A): A =
+  def fold[A](
+    thrown: Throwable => A,
+    canceled: => A
+  ): A =
     this match {
       case RollbackCause.Thrown(e) => thrown(e)
       case RollbackCause.Canceled  => canceled
@@ -108,7 +125,11 @@ sealed trait RollbackCause extends Product with Serializable {
 }
 
 object RollbackCause {
-  final case class Thrown(e: Throwable) extends RollbackCause
+
+  final case class Thrown(
+    e: Throwable
+  ) extends RollbackCause
+
   case object Canceled extends RollbackCause
 
   val fromExitCase: ExitCase => Either[RollbackCause, Unit] = {
@@ -123,11 +144,18 @@ trait Connector[F[_], P] {
   type Raw
   def underlying: Raw
 
-  def consumeBatched[R >: P](source: Source[R]): Stream[F, List[CommittableMessage[F]]]
+  def consumeBatched[R >: P](
+    source: Source[R]
+  ): Stream[F, List[CommittableMessage[F]]]
 
-  def consume[R >: P](source: Source[R]): Stream[F, CommittableMessage[F]] = consumeBatched(source).flatMap(Stream.emits)
+  def consume[R >: P](
+    source: Source[R]
+  ): Stream[F, CommittableMessage[F]] = consumeBatched(source).flatMap(Stream.emits)
 
-  def produce[R >: P](message: Message[R]): F[Unit]
+  def produce[R >: P](
+    message: Message[R]
+  ): F[Unit]
+
 }
 
 object Connector {

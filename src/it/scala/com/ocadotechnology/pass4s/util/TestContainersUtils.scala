@@ -6,7 +6,9 @@ import com.dimafeng.testcontainers.SingleContainer
 
 object TestContainersUtils {
 
-  def containerResource[T <: SingleContainer[_]](container: IO[T]): Resource[IO, T] =
+  def containerResource[T <: SingleContainer[_]](
+    container: IO[T]
+  ): Resource[IO, T] =
     Resource.fromAutoCloseable(container.flatTap(c => IO(c.start())))
 
 }

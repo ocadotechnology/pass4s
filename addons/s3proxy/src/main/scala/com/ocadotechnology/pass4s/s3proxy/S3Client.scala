@@ -33,17 +33,43 @@ import java.net.URI
 import scala.jdk.CollectionConverters._
 
 trait S3Client[F[_]] {
-  def getObject(bucket: String, key: String): F[Option[String]]
-  def putObject(bucket: String, key: String)(payload: String): F[Unit]
-  def deleteObject(bucket: String, key: String): F[Unit]
-  def createBucket(bucket: String): F[Unit]
-  def deleteBucket(bucket: String): F[Unit]
-  def listObjects(bucket: String): F[List[String]]
+
+  def getObject(
+    bucket: String,
+    key: String
+  ): F[Option[String]]
+
+  def putObject(
+    bucket: String,
+    key: String
+  )(
+    payload: String
+  ): F[Unit]
+
+  def deleteObject(
+    bucket: String,
+    key: String
+  ): F[Unit]
+
+  def createBucket(
+    bucket: String
+  ): F[Unit]
+
+  def deleteBucket(
+    bucket: String
+  ): F[Unit]
+
+  def listObjects(
+    bucket: String
+  ): F[List[String]]
+
 }
 
 object S3Client {
 
-  def apply[F[_]](implicit ev: S3Client[F]): S3Client[F] = ev
+  def apply[F[_]](
+    implicit ev: S3Client[F]
+  ): S3Client[F] = ev
 
   def usingBuilder[F[_]: Async](
     s3Builder: S3AsyncClientBuilder
@@ -68,10 +94,15 @@ object S3Client {
       endpointOverride.fold(builder)(builder.endpointOverride)
     }
 
-  def usingPureClient[F[_]: Async](client: S3AsyncClientOp[F]): S3Client[F] =
+  def usingPureClient[F[_]: Async](
+    client: S3AsyncClientOp[F]
+  ): S3Client[F] =
     new S3Client[F] {
 
-      override def getObject(bucket: String, key: String): F[Option[String]] =
+      override def getObject(
+        bucket: String,
+        key: String
+      ): F[Option[String]] =
         client
           .getObject(
             GetObjectRequest.builder().bucket(bucket).key(key).build(),
@@ -80,7 +111,12 @@ object S3Client {
           .map(_.asUtf8String().some)
           .recover { case _: NoSuchKeyException => none }
 
-      override def putObject(bucket: String, key: String)(payload: String): F[Unit] =
+      override def putObject(
+        bucket: String,
+        key: String
+      )(
+        payload: String
+      ): F[Unit] =
         client
           .putObject(
             PutObjectRequest.builder().bucket(bucket).key(key).build(),
@@ -88,28 +124,37 @@ object S3Client {
           )
           .void
 
-      override def deleteObject(bucket: String, key: String): F[Unit] =
+      override def deleteObject(
+        bucket: String,
+        key: String
+      ): F[Unit] =
         client
           .deleteObject(
             DeleteObjectRequest.builder().bucket(bucket).key(key).build()
           )
           .void
 
-      override def createBucket(bucket: String): F[Unit] =
+      override def createBucket(
+        bucket: String
+      ): F[Unit] =
         client
           .createBucket(
             CreateBucketRequest.builder().bucket(bucket).build()
           )
           .void
 
-      override def deleteBucket(bucket: String): F[Unit] =
+      override def deleteBucket(
+        bucket: String
+      ): F[Unit] =
         client
           .deleteBucket(
             DeleteBucketRequest.builder().bucket(bucket).build()
           )
           .void
 
-      override def listObjects(bucket: String): F[List[String]] =
+      override def listObjects(
+        bucket: String
+      ): F[List[String]] =
         client
           .listObjects(
             ListObjectsRequest.builder().bucket(bucket).build()

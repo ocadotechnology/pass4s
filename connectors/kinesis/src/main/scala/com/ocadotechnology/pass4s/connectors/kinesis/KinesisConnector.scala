@@ -47,19 +47,32 @@ object Kinesis {
   val partitionKeyMetadata = "pass4s.kinesis.partitionKey"
 }
 
-final case class KinesisDestination(name: String) extends Destination[Kinesis] {
+final case class KinesisDestination(
+  name: String
+) extends Destination[Kinesis] {
   override val capability: Type = typeOf[Kinesis]
 }
 
 trait KinesisAttributesProvider[F[_]] {
-  def getPartitionKey(payload: Payload, kinesisDestination: KinesisDestination): F[String]
+
+  def getPartitionKey(
+    payload: Payload,
+    kinesisDestination: KinesisDestination
+  ): F[String]
+
 }
 
 object KinesisAttributesProvider {
-  def apply[F[_]](implicit ev: KinesisAttributesProvider[F]): KinesisAttributesProvider[F] = ev
+
+  def apply[F[_]](
+    implicit ev: KinesisAttributesProvider[F]
+  ): KinesisAttributesProvider[F] = ev
 
   def default[F[_]: Sync]: KinesisAttributesProvider[F] =
-    (payload: Payload, _: KinesisDestination) =>
+    (
+      payload: Payload,
+      _: KinesisDestination
+    ) =>
       Payload.getHeader(Kinesis.partitionKeyMetadata)(payload) match {
         case Some(partitionKey) => partitionKey.pure[F]
         case None               => Sync[F].delay(UUID.randomUUID().toString)
@@ -117,16 +130,22 @@ object KinesisConnector {
     usingBuilder(kinesisBuilder)
   }
 
-  def usingPureClient[F[_]: Sync: KinesisAttributesProvider](kinesisAsyncClientOp: KinesisAsyncClientOp[F]): KinesisConnector[F] =
+  def usingPureClient[F[_]: Sync: KinesisAttributesProvider](
+    kinesisAsyncClientOp: KinesisAsyncClientOp[F]
+  ): KinesisConnector[F] =
     new Connector[F, Kinesis] {
 
       type Raw = KinesisAsyncClientOp[F]
       override val underlying: KinesisAsyncClientOp[F] = kinesisAsyncClientOp
 
-      override def consumeBatched[R >: Kinesis](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: Kinesis](
+        source: Source[R]
+      ): Stream[F, List[CommittableMessage[F]]] =
         Stream.raiseError[F](new UnsupportedOperationException("Amazon Kinesis topic can't be consumed directly"))
 
-      override def produce[R >: Kinesis](message: Message[R]): F[Unit] =
+      override def produce[R >: Kinesis](
+        message: Message[R]
+      ): F[Unit] =
         message match {
           case Message(payload, dest @ KinesisDestination(name)) =>
             for {
@@ -152,4 +171,7 @@ object KinesisConnector {
 
 }
 
-final case class KinesisClientException(message: String, e: Throwable) extends Exception(message, e)
+final case class KinesisClientException(
+  message: String,
+  e: Throwable
+) extends Exception(message, e)

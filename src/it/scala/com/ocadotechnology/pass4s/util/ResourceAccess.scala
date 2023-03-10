@@ -11,7 +11,9 @@ trait ResourceAccess { self =>
   def shutdown: IO[Unit]
   def start: IO[Unit]
 
-  def mapK(f: IO ~> IO): ResourceAccess =
+  def mapK(
+    f: IO ~> IO
+  ): ResourceAccess =
     new ResourceAccess {
       def shutdown: IO[Unit] = f(self.shutdown)
       val start: IO[Unit] = f(self.start)
@@ -22,7 +24,9 @@ trait ResourceAccess { self =>
 object ResourceAccess {
 
   // the cleanup of this resource ensures that the underlying one has been shut down
-  def fromResource[A](resource: Resource[IO, A]): Resource[IO, ResourceAccess] =
+  def fromResource[A](
+    resource: Resource[IO, A]
+  ): Resource[IO, ResourceAccess] =
     Resource.suspend {
       // lock is necessary to make sure `start` is atomic
       Semaphore[IO](1).flatMap { lock =>

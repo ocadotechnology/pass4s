@@ -9,10 +9,13 @@ object MockServerContainerUtils {
 
   val actualVersion: String = classOf[MockServerClient].getPackage.getImplementationVersion
 
-  def containerResource(): Resource[IO, MockServerContainer] =
+  def containerResource(
+  ): Resource[IO, MockServerContainer] =
     TestContainersUtils.containerResource(IO(MockServerContainer.Def(version = actualVersion).createContainer()))
 
-  def createClient(mockServerContainer: MockServerContainer): MockServerClient =
+  def createClient(
+    mockServerContainer: MockServerContainer
+  ): MockServerClient =
     new MockServerClient(mockServerContainer.host, mockServerContainer.serverPort)
 
 }

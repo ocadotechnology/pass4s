@@ -29,13 +29,23 @@ import scala.concurrent.duration.FiniteDuration
 object S3ProxyTests extends MutableIOSuite {
 
   override type Res =
-    (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], S3Client[IO], SnsConnector.SnsConnector[IO], SqsConnector.SqsConnector[IO])
+    (
+      Broker[IO, Sns with SnsFifo with Sqs with SqsFifo],
+      S3Client[IO],
+      SnsConnector.SnsConnector[IO],
+      SqsConnector.SqsConnector[IO]
+    )
 
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger
 
   override def sharedResource: Resource[
     IO,
-    (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], S3Client[IO], SnsConnector.SnsConnector[IO], SqsConnector.SqsConnector[IO])
+    (
+      Broker[IO, Sns with SnsFifo with Sqs with SqsFifo],
+      S3Client[IO],
+      SnsConnector.SnsConnector[IO],
+      SqsConnector.SqsConnector[IO]
+    )
   ] =
     for {
       container    <- containerResource(Seq(Service.SNS, Service.SQS, Service.S3))
@@ -45,7 +55,11 @@ object S3ProxyTests extends MutableIOSuite {
       broker       <- Resource.eval(Broker.mergeByCapabilities(Broker.fromConnector(snsConnector), Broker.fromConnector(sqsConnector)))
     } yield (broker, s3Client, snsConnector, sqsConnector)
 
-  def bucketAndTopics(s3Client: S3Client[IO], snsConnector: SnsConnector.SnsConnector[IO], sqsConnector: SqsConnector.SqsConnector[IO]) =
+  def bucketAndTopics(
+    s3Client: S3Client[IO],
+    snsConnector: SnsConnector.SnsConnector[IO],
+    sqsConnector: SqsConnector.SqsConnector[IO]
+  ) =
     for {
       bucketName     <- Resource.eval(UUIDGen[IO].randomUUID.map(_.toString()))
       _              <- s3BucketResource(s3Client)(bucketName)
@@ -219,7 +233,14 @@ object S3ProxyTests extends MutableIOSuite {
       }
   }
 
-  def waitUntil[A](action: => IO[A])(predicate: A => Boolean)(sleepDuration: FiniteDuration, attempts: Int): IO[A] = {
+  def waitUntil[A](
+    action: => IO[A]
+  )(
+    predicate: A => Boolean
+  )(
+    sleepDuration: FiniteDuration,
+    attempts: Int
+  ): IO[A] = {
     assert(attempts > 0, "Attempts must be positive")
     fs2
       .Stream

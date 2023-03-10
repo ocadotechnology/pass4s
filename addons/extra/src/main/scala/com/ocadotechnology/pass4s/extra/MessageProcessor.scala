@@ -30,23 +30,45 @@ object MessageProcessor {
 
   def init[F[_]]: ConsumerModifier[F, Message.Payload, Message.Payload] = ConsumerModifier[F]()
 
-  final class ConsumerModifier[F[_], A, B] private (f: Consumer[F, A] => Consumer[F, B]) {
-    private[MessageProcessor] def execute(c: Consumer[F, A]): Consumer[F, B] = f(c)
-    private[MessageProcessor] def map[C](g: Consumer[F, B] => Consumer[F, C]): ConsumerModifier[F, A, C] =
+  final class ConsumerModifier[F[_], A, B] private (
+    f: Consumer[F, A] => Consumer[F, B]
+  ) {
+
+    private[MessageProcessor] def execute(
+      c: Consumer[F, A]
+    ): Consumer[F, B] = f(c)
+
+    private[MessageProcessor] def map[C](
+      g: Consumer[F, B] => Consumer[F, C]
+    ): ConsumerModifier[F, A, C] =
       new ConsumerModifier(f andThen g)
+
   }
 
   object ConsumerModifier {
     private def id[F[_], A]: ConsumerModifier[F, A, A] = new ConsumerModifier(identity)
-    def apply[F[_]](): ConsumerModifier[F, Message.Payload, Message.Payload] = id[F, Message.Payload]
+    def apply[F[_]](
+    ): ConsumerModifier[F, Message.Payload, Message.Payload] = id[F, Message.Payload]
 
-    implicit class ConsumerModifierSyntax[F[_], A, B](modifier: ConsumerModifier[F, A, B]) {
-      def enrich[C](f: Consumer[F, B] => Consumer[F, C]): ConsumerModifier[F, A, C] =
+    implicit class ConsumerModifierSyntax[F[_], A, B](
+      modifier: ConsumerModifier[F, A, B]
+    ) {
+
+      def enrich[C](
+        f: Consumer[F, B] => Consumer[F, C]
+      ): ConsumerModifier[F, A, C] =
         modifier.map(f)
+
     }
 
-    implicit class BaseConsumerModifierSyntax[F[_], A](modifier: ConsumerModifier[F, Message.Payload, A]) {
-      def transacted[T[_]](transact: T ~> F) = new ModifierWithTransaction(modifier, transact)
+    implicit class BaseConsumerModifierSyntax[F[_], A](
+      modifier: ConsumerModifier[F, Message.Payload, A]
+    ) {
+
+      def transacted[T[_]](
+        transact: T ~> F
+      ) = new ModifierWithTransaction(modifier, transact)
+
       def effectful = new ModifierWithTransaction(modifier, FunctionK.id[F])
     }
 
@@ -59,8 +81,14 @@ object MessageProcessor {
 
   object ModifierWithTransaction {
 
-    implicit class ModifierWithTransactionSyntax[F[_]: Concurrent, T[_], A, P](modifierWithTransaction: ModifierWithTransaction[F, T, A]) {
-      def bindBroker(broker: Broker[F, P]) = new MessageHandler(modifierWithTransaction.modifier, modifierWithTransaction.transact, broker)
+    implicit class ModifierWithTransactionSyntax[F[_]: Concurrent, T[_], A, P](
+      modifierWithTransaction: ModifierWithTransaction[F, T, A]
+    ) {
+
+      def bindBroker(
+        broker: Broker[F, P]
+      ) = new MessageHandler(modifierWithTransaction.modifier, modifierWithTransaction.transact, broker)
+
     }
 
   }
@@ -71,7 +99,9 @@ object MessageProcessor {
     broker: Broker[F, P]
   ) {
 
-    def enrich[B](f: Consumer[F, A] => Consumer[F, B]): MessageHandler[F, T, B, P] =
+    def enrich[B](
+      f: Consumer[F, A] => Consumer[F, B]
+    ): MessageHandler[F, T, B, P] =
       new MessageHandler(
         modifier.map(f),
         transact,

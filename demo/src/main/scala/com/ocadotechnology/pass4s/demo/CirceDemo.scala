@@ -39,24 +39,37 @@ import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object CirceDemo extends IOApp {
-  def msg(i: Int) = s"""{"s": $i}"""
-  final case class Foo(s: Int)
 
-  def makeMessage[F[_]: Sync](msg: String, console: String => F[Unit]): CommittableMessage[F] =
+  def msg(
+    i: Int
+  ) = s"""{"s": $i}"""
+
+  final case class Foo(
+    s: Int
+  )
+
+  def makeMessage[F[_]: Sync](
+    msg: String,
+    console: String => F[Unit]
+  ): CommittableMessage[F] =
     CommittableMessage.instance(
       Payload(msg, Map.empty),
       console(s"Committing $msg"),
       cause => console(s"Rolling back $msg with cause $cause")
     )
 
-  def rawMessages[F[_]: Sync](console: String => F[Unit]): Stream[Pure, CommittableMessage[F]] =
+  def rawMessages[F[_]: Sync](
+    console: String => F[Unit]
+  ): Stream[Pure, CommittableMessage[F]] =
     Stream
       .iterate(0)(_ + 1)
       .map { i =>
         makeMessage(msg(i), console)
       }
 
-  def runDemo[F[_]: Async](console: String => F[Unit]): F[ExitCode] = {
+  def runDemo[F[_]: Async](
+    console: String => F[Unit]
+  ): F[ExitCode] = {
 
     import io.circe.generic.auto._
 
@@ -65,10 +78,14 @@ object CirceDemo extends IOApp {
 
       override def underlying: Unit = ()
 
-      override def consumeBatched[R >: Jms](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: Jms](
+        source: Source[R]
+      ): Stream[F, List[CommittableMessage[F]]] =
         rawMessages[F](console).take(10).map(List(_))
 
-      override def produce[R >: Jms](message: Message[R]): F[Unit] = ???
+      override def produce[R >: Jms](
+        message: Message[R]
+      ): F[Unit] = ???
     }
     Broker
       .fromConnector(connector)
@@ -80,22 +97,30 @@ object CirceDemo extends IOApp {
       .as(ExitCode.Success)
   }
 
-  def runDemoConcurrent[F[_]: Async](console: String => F[Unit]): F[ExitCode] = {
+  def runDemoConcurrent[F[_]: Async](
+    console: String => F[Unit]
+  ): F[ExitCode] = {
     import cats.effect.implicits._
 
     import scala.concurrent.duration._
 
-    def msg(i: Int) = s"""{"s": $i}"""
+    def msg(
+      i: Int
+    ) = s"""{"s": $i}"""
 
     val connector: Connector.Aux[F, Jms, Unit] = new Connector[F, Jms] {
       override type Raw = Unit
 
       override def underlying: Unit = ()
 
-      override def consumeBatched[R >: Jms](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: Jms](
+        source: Source[R]
+      ): Stream[F, List[CommittableMessage[F]]] =
         Stream.iterate(0)(_ + 1).map(i => List(makeMessage(msg(i), console)))
 
-      override def produce[R >: Jms](message: Message[R]): F[Unit] = ???
+      override def produce[R >: Jms](
+        message: Message[R]
+      ): F[Unit] = ???
     }
 
     implicit val logger: Logger[F] = Slf4jLogger.getLogger[F]
@@ -111,7 +136,9 @@ object CirceDemo extends IOApp {
       .as(ExitCode.Success)
   }
 
-  def run(args: List[String]): IO[ExitCode] =
+  def run(
+    args: List[String]
+  ): IO[ExitCode] =
     // runDemo[IO](a => IO(println(a)))
     runDemoConcurrent[IO](a => IO(println(a)))
 

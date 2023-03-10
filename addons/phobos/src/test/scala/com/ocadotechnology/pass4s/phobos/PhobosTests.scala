@@ -34,7 +34,10 @@ object PhobosTests extends SimpleIOSuite {
 
   object UnitEnd extends Destination[Unit] { override def name: String = "unit"; override def capability: Type = typeOf[Unit] }
 
-  case class MyEvent(foo: Int, bar: String)
+  case class MyEvent(
+    foo: Int,
+    bar: String
+  )
 
   object MyEvent {
     implicit val xmlEncoder: XmlEncoder[MyEvent] = deriveXmlEncoder("journey")

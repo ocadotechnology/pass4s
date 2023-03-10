@@ -31,19 +31,29 @@ object ConnectionFactories {
     *
     * Use raw `tcp://address` to make send operation able to fail. This may be useful when working with outbox pattern
     */
-  def pooled[F[_]: Sync](username: String, password: String, url: String): Resource[F, PooledConnectionFactory] =
+  def pooled[F[_]: Sync](
+    username: String,
+    password: String,
+    url: String
+  ): Resource[F, PooledConnectionFactory] =
     Resource.suspend {
       unpooled[F](username, password, url).map(makePooled[F](_))
     }
 
   /** Creates an ActiveMQ connection factory.
     */
-  def unpooled[F[_]: Sync](username: String, password: String, url: String): F[ActiveMQConnectionFactory] =
+  def unpooled[F[_]: Sync](
+    username: String,
+    password: String,
+    url: String
+  ): F[ActiveMQConnectionFactory] =
     Sync[F].delay(new ActiveMQConnectionFactory(username, password, url))
 
   /** Wraps the base factory in a connection pool.
     */
-  def makePooled[F[_]: Sync](baseFactory: ActiveMQConnectionFactory): Resource[F, PooledConnectionFactory] =
+  def makePooled[F[_]: Sync](
+    baseFactory: ActiveMQConnectionFactory
+  ): Resource[F, PooledConnectionFactory] =
     Resource.make(Sync[F].delay(new PooledConnectionFactory(baseFactory)))(pcf => Sync[F].delay(pcf.stop()))
 
 }

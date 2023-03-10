@@ -30,11 +30,21 @@ import weaver.MutableIOSuite
 import java.net.URI
 
 object SqsRecoveryTests extends MutableIOSuite {
-  override type Res = (Broker[IO, Sqs], MockServerClient)
+
+  override type Res = (
+    Broker[IO, Sqs],
+    MockServerClient
+  )
 
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger
 
-  override def sharedResource: Resource[IO, (Broker[IO, Sqs], MockServerClient)] =
+  override def sharedResource: Resource[
+    IO,
+    (
+      Broker[IO, Sqs],
+      MockServerClient
+    )
+  ] =
     for {
       container <- containerResource()
       connector <- SqsConnector.usingLocalAwsWithDefaultAttributesProvider(
@@ -72,13 +82,17 @@ object SqsRecoveryTests extends MutableIOSuite {
       } yield expect(result.leftMap(_.getClass) == Left(classOf[SqsClientException]))
   }
 
-  def sqsReceiveMessageRequest(queueUrl: String): HttpRequest =
+  def sqsReceiveMessageRequest(
+    queueUrl: String
+  ): HttpRequest =
     request("/")
       .withMethod("POST")
       .withHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
       .withBody(params(param("Action", "ReceiveMessage"), param("QueueUrl", queueUrl)))
 
-  def sqsReceiveMessageResponseSuccess(body: String): HttpResponse = {
+  def sqsReceiveMessageResponseSuccess(
+    body: String
+  ): HttpResponse = {
     val md5OfBody = DigestUtils.md5Hex(body)
     response(s"""
       <ReceiveMessageResponse>
