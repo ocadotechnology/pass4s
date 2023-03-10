@@ -19,6 +19,7 @@ import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
@@ -110,7 +111,7 @@ object SqsTests extends MutableIOSuite {
         ("bar", "2")
       )
 
-      queueResource(client)("dedup-queue", isFifo = true, isDedup = true)
+      queueResource(client)("dedup-queue", isFifo = true)
         .use { queueUrl =>
           def sendMessageRequest(body: String, groupId: String) =
             SendMessageRequest
@@ -157,9 +158,8 @@ object SqsTests extends MutableIOSuite {
   }
 
   test("when consumer is failing message should not be deleted").usingRes { case (broker, client) =>
-    queueResource(client)("input-dlq")
-      .mproduct(dlqUrl => queueResource(client)("input-queue", _.attributes(redrivePolicy(dlqUrl.value).asJava)))
-      .use { case (dlqUrl, queueUrl) =>
+    createQueueWithDlq(client, "input-queue", "input-dlq")
+      .use { case (queueUrl, dlqUrl) =>
         val failingQueueConsumer = broker
           .consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(messageProcessingTimeout = 1.second)))
           .consume(_ => IO.raiseError(new Exception("processing failed")))
@@ -180,9 +180,8 @@ object SqsTests extends MutableIOSuite {
 
   test("when consumer is processing message for too long, then processing should be interrupted and message should not be deleted")
     .usingRes { case (broker, client) =>
-      queueResource(client)("input-dlq")
-        .mproduct(dlqUrl => queueResource(client)("input-queue", _.attributes(redrivePolicy(dlqUrl.value).asJava)))
-        .use { case (dlqUrl, queueUrl) =>
+      createQueueWithDlq(client, "input-queue", "input-dlq")
+        .use { case (queueUrl, dlqUrl) =>
           val longProcessingQueueConsumer = broker
             .consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(messageProcessingTimeout = 1.second)))
             .consume(_ => IO.sleep(10.seconds))
@@ -223,6 +222,15 @@ object SqsTests extends MutableIOSuite {
       expect(res.leftMap(_.getClass) == Left(classOf[SqsClientException]))
     }
   }
+
+  private def createQueueWithDlq(client: SqsAsyncClientOp[IO], queueName: String, dlqName: String): Resource[IO, (SqsUrl, SqsUrl)] =
+    for {
+      dlqUrl   <- queueResource(client)(dlqName)
+      queueAttributesRequest =
+        GetQueueAttributesRequest.builder().queueUrl(dlqUrl.value).attributeNames(QueueAttributeName.QUEUE_ARN).build()
+      dlqArn   <- Resource.eval(client.getQueueAttributes(queueAttributesRequest)).map(_.attributes().get(QueueAttributeName.QUEUE_ARN))
+      queueUrl <- queueResource(client)(queueName, _.attributes(redrivePolicy(dlqArn).asJava))
+    } yield (queueUrl, dlqUrl)
 
   private val redrivePolicy: String => Map[QueueAttributeName, String] =
     dlqUrl => Map(QueueAttributeName.REDRIVE_POLICY -> s"""{"deadLetterTargetArn":"$dlqUrl","maxReceiveCount":"1"}""")

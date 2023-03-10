@@ -16,15 +16,18 @@
 
 package com.ocadotechnology.pass4s.phobos
 
-import cats.MonadThrow
+import cats.MonadError
 import cats.syntax.all._
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
 import com.ocadotechnology.pass4s.core.groupId.MessageGroup
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.kernel.Sender
+import ru.tinkoff.phobos.decoding.DecodingError
 import ru.tinkoff.phobos.decoding.XmlDecoder
+import ru.tinkoff.phobos.encoding.EncodingError
 import ru.tinkoff.phobos.encoding.XmlEncoder
 
 object syntax {
@@ -32,8 +35,14 @@ object syntax {
   final private[syntax] class AsXmlSenderPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]]) extends AnyVal {
 
     @scala.annotation.nowarn("cat=unused-params")
-    def apply[R >: P](to: Destination[R])(implicit encoder: XmlEncoder[A], noGroupId: GroupIdMeta.Absent[R]): Sender[F, A] =
-      sender.contramap(XmlMessage(_, to).widen)
+    def apply[R >: P](
+      to: Destination[R]
+    )(
+      implicit M: MonadError[F, _ >: EncodingError],
+      encoder: XmlEncoder[A],
+      noGroupId: GroupIdMeta.Absent[R]
+    ): Sender[F, A] =
+      sender.contramapM(XmlMessage(_, to).liftTo[F].map(_.widen))
 
   }
 
@@ -45,10 +54,11 @@ object syntax {
       to: Destination[R],
       computeMetadata: A => Map[String, String]
     )(
-      implicit encoder: XmlEncoder[A],
+      implicit M: MonadError[F, _ >: EncodingError],
+      encoder: XmlEncoder[A],
       noGroupId: GroupIdMeta.Absent[R]
     ): Sender[F, A] =
-      sender.contramap(a => XmlMessage(a, to, computeMetadata(a)).widen)
+      sender.contramapM(a => XmlMessage(a, to, computeMetadata(a)).liftTo[F].map(_.widen))
 
   }
 
@@ -59,11 +69,13 @@ object syntax {
       to: Destination[R],
       computeMetadata: A => Map[String, String] = _ => Map()
     )(
-      implicit encoder: XmlEncoder[A],
+      implicit M: MonadError[F, _ >: EncodingError],
+      encoder: XmlEncoder[A],
       groupIdMeta: GroupIdMeta[R],
       messageGroup: MessageGroup[A]
     ): Sender[F, A] =
       sender.asXmlSenderWithCustomMetadata[A](to, a => Map(groupIdMeta.groupIdKey -> messageGroup.groupId(a)) ++ computeMetadata(a))(
+        M,
         encoder,
         GroupIdMeta.Absent.iKnowWhatImDoing
       )
@@ -96,8 +108,18 @@ object syntax {
   }
 
   implicit final class ConsumeXmlMessageSyntax[F[_]](private val consumer: Consumer[F, String]) {
-    def asXmlConsumer[A: XmlDecoder](implicit F: MonadThrow[F]): Consumer[F, A] =
+    def asXmlConsumer[A: XmlDecoder](implicit M: MonadError[F, _ >: DecodingError]): Consumer[F, A] =
       consumer.mapM(XmlDecoder[A].decode(_).liftTo[F])
+  }
+
+  implicit final class ConsumeXmlGenericMessageSyntax[F[_], A](private val consumer: Consumer[F, A]) {
+
+    def asXmlConsumer[B: XmlDecoder](
+      implicit M: MonadError[F, _ >: DecodingError],
+      ev: A <:< Payload
+    ): Consumer[F, B] =
+      consumer.mapM(msg => XmlDecoder[B].decode(msg.text).liftTo[F])
+
   }
 
 }
