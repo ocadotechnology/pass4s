@@ -85,7 +85,7 @@ object SnsTests extends MutableIOSuite {
       implicit val messageGroup: MessageGroup[Foo] = _.order
     }
 
-    val payload = Foo(2137, order = "uśmiechu")
+    val payload = Foo(2137, order = "some-order")
 
     topicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic", isFifo = true)
       .use { case (topicArn, queueUrl) =>

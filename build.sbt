@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.2" // current series x.y
+ThisBuild / tlBaseVersion := "0.3" // current series x.y
 
 ThisBuild / organization := "com.ocadotechnology"
 ThisBuild / organizationName := "Ocado Technology"
@@ -20,9 +20,13 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 )
 
 val Versions = new {
-  val Log4Cats = "2.3.2"
-  val Weaver = "0.7.15"
-  val Laserdisc = "5.1.0"
+  val ActiveMq = "5.17.4"
+  val CatsEffect = "3.4.8"
+  val Fs2 = "3.6.1"
+  val Logback = "1.4.6"
+  val Log4Cats = "2.5.0"
+  val Weaver = "0.8.1"
+  val Laserdisc = "6.0.0"
 }
 
 lazy val IntegrationTest = config("it") extend Test
@@ -37,15 +41,15 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
-      "org.scalatest" %% "scalatest" % "3.2.14", // just for `shouldNot compile`
+      "org.scalatest" %% "scalatest" % "3.2.15", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.12",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.336" exclude ("*", "*"), // fixme after https://github.com/testcontainers/testcontainers-java/issues/4279
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.421" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.12",
-      "org.mock-server" % "mockserver-client-java" % "5.13.2",
-      "org.apache.activemq" % "activemq-broker" % "5.17.2",
+      "org.mock-server" % "mockserver-client-java" % "5.15.0",
+      "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
-      "ch.qos.logback" % "logback-classic" % "1.2.11"
+      "ch.qos.logback" % "logback-classic" % Versions.Logback
     ).map(_ % IntegrationTest),
     Defaults.itSettings,
     inConfig(IntegrationTest) {
@@ -63,17 +67,17 @@ lazy val core = module("core")
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "co.fs2" %% "fs2-core" % "3.3.0",
-      "org.typelevel" %% "cats-effect" % "3.3.14"
+      "co.fs2" %% "fs2-core" % Versions.Fs2,
+      "org.typelevel" %% "cats-effect" % Versions.CatsEffect
     )
   )
 
 lazy val kernel = module("kernel").settings(
   libraryDependencies ++= Seq(
-    "co.fs2" %% "fs2-core" % "3.3.0",
-    "org.typelevel" %% "cats-effect" % "3.3.9",
+    "co.fs2" %% "fs2-core" % Versions.Fs2,
+    "org.typelevel" %% "cats-effect" % Versions.CatsEffect,
     "org.typelevel" %% "cats-tagless-core" % "0.14.0",
-    "org.typelevel" %% "cats-laws" % "2.8.0" % Test,
+    "org.typelevel" %% "cats-laws" % "2.9.0" % Test,
     "com.disneystreaming" %% "weaver-discipline" % Versions.Weaver % Test
   )
 )
@@ -84,16 +88,15 @@ lazy val high = module("high")
 // connectors
 
 val awsSnykOverrides = Seq(
-  "commons-codec" % "commons-codec" % "1.15",
-  "software.amazon.awssdk" % "netty-nio-client" % "2.18.41"
+  "commons-codec" % "commons-codec" % "1.15"
 )
 
 lazy val activemq = module("activemq", directory = "connectors")
   .settings(
     name := "pass4s-connector-activemq",
     libraryDependencies ++= Seq(
-      "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "3.0.4",
-      "org.apache.activemq" % "activemq-pool" % "5.17.2",
+      "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "4.0.0", // 5.x.x contains akka-streams +2.7.x which is licensed under BUSL 1.1
+      "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ),
     headerSources / excludeFilter := HiddenFileFilter || "taps.scala"
@@ -133,7 +136,7 @@ lazy val sqs = module("sqs", directory = "connectors")
 lazy val circe = module("circe", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-parser" % "0.14.3"
+      "io.circe" %% "circe-parser" % "0.14.5"
     )
   )
   .dependsOn(core, kernel)
@@ -141,7 +144,7 @@ lazy val circe = module("circe", directory = "addons")
 lazy val phobos = module("phobos", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "ru.tinkoff" %% "phobos-core" % "0.14.1"
+      "ru.tinkoff" %% "phobos-core" % "0.20.0"
     )
   )
   .dependsOn(core, kernel)
@@ -202,10 +205,10 @@ lazy val demo = module("demo")
     publishArtifact := false,
     // mimaPreviousArtifacts := Set(), // TODO
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-generic" % "0.14.3",
+      "io.circe" %% "circe-generic" % "0.14.5",
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
-      "ch.qos.logback" % "logback-classic" % "1.2.11"
+      "ch.qos.logback" % "logback-classic" % Versions.Logback
     )
   )
   .dependsOn(activemq, sns, sqs, extra, logging)
