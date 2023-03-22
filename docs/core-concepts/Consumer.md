@@ -93,4 +93,4 @@ object BaseConsumer extends IOApp {
 }
 ```
 
-This is a rather raw way of using consumer, you might want to use [MessageProcessor](modules/message-processor) for more elasticity and enrichment syntax.
+This is a rather raw way of using consumer, you might want to use [MessageProcessor](modules/message-processor) for more elasticity and enriched syntax.
