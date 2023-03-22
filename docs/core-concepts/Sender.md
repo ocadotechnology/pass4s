@@ -32,10 +32,10 @@ Here's a simple sender implementation configured to use with our [localstack set
 
 ```scala
 //> using scala "2.13"
-//> using lib "com.ocadotechnology::pass4s-kernel:0.2.2"
-//> using lib "com.ocadotechnology::pass4s-core:0.2.2"
-//> using lib "com.ocadotechnology::pass4s-high:0.2.2"
-//> using lib "com.ocadotechnology::pass4s-connector-sns:0.2.2"
+//> using lib "com.ocadotechnology::pass4s-kernel:0.3.1"
+//> using lib "com.ocadotechnology::pass4s-core:0.3.1"
+//> using lib "com.ocadotechnology::pass4s-high:0.3.1"
+//> using lib "com.ocadotechnology::pass4s-connector-sns:0.3.1"
 //> using lib "org.typelevel::log4cats-noop:2.5.0"
 
 import cats.effect.ExitCode
