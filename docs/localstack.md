@@ -66,4 +66,4 @@ This setup comes with batteries included, meaning it not only does set up the se
  - Subscription between the two, making the messages from `local_sns` to be pushed to `local_queue`
  - Bucket `large-messages` in case you want to use [s3 proxy](modules/s3proxy)
 
-Please notice how for queue creation we use `--attributes 'RawMessageDelivery=true'`. This is done intentionally, make sure to use this attribute with your production setup to avoid communication issues.
+Please notice how for queue creation we use `--attributes 'RawMessageDelivery=true'`. This is done intentionally, make sure to use this attribute with your production setup to avoid communication issues. We add this because we don't want AWS to try interpreting our JSON message contents. To find out more check out https://docs.aws.amazon.com/sns/latest/dg/sns-large-payload-raw-message-delivery.html
