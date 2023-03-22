@@ -24,11 +24,11 @@ As you can see `Sender` is basically a type of function of `A => F[Unit]` shape.
 
 Please refer to [`Sender.scala` sources](https://github.com/ocadotechnology/pass4s/blob/main/kernel/src/main/scala/com/ocadotechnology/pass4s/kernel/Sender.scala) and the scaladocs.
 
-The typical way of obtaining a `Sender` instance is by instantiating the [Broker](core-concepts/Broker) first.
+The typical way of obtaining a `Sender` instance is by instantiating the [Broker](Broker) first.
 
 # Basic example
 
-Here's a simple sender implementation configured to use with our [localstack setup](localstack). If you want to run it locally, simply save the file somewhere and run it using [scala-cli](https://scala-cli.virtuslab.org/install) using `scala-cli run filename.scala`
+Here's a simple sender implementation configured to use with our [localstack setup](../localstack). If you want to run it locally, simply save the file somewhere and run it using [scala-cli](https://scala-cli.virtuslab.org/install) using `scala-cli run filename.scala`
 
 ```scala
 //> using scala "2.13"

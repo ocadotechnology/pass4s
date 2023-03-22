@@ -24,4 +24,4 @@ import com.ocadotechnology.pass4s.circe.syntax._
 
 The syntax allows you to use `.asJsonSender[T]` on the senders and `.asJsonConsumer[T]` on consumers. Please note that for this to work, you need to provide `io.circe.Encoder[T]` in case of `Sender` and `io.circe.Decoder[T]` for `Consumer`. Please refer to this section https://circe.github.io/circe/codec.html in Circe documentation for more detailed info on how encoders and decoders work.
 
-When applying the syntax to consumer, consider using [MessageProcessor](modules/message-processor).
+When applying the syntax to consumer, consider using [MessageProcessor](message-processor).

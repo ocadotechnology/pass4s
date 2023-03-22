@@ -33,7 +33,7 @@ This abstraction comes with a lot of useful manipulators as well as `Semigroup`,
 
 # Basic usage
 
-Here's a simple consumer implementation configured to use with our [localstack setup](localstack). If you want to run it locally, simply save the file somewhere and run it using [scala-cli](https://scala-cli.virtuslab.org/install) using `scala-cli run filename.scala`
+Here's a simple consumer implementation configured to use with our [localstack setup](../localstack). If you want to run it locally, simply save the file somewhere and run it using [scala-cli](https://scala-cli.virtuslab.org/install) using `scala-cli run filename.scala`
 
 ```scala
 //> using scala "2.13"
@@ -93,4 +93,4 @@ object BaseConsumer extends IOApp {
 }
 ```
 
-This is a rather raw way of using consumer, you might want to use [MessageProcessor](modules/message-processor) for more elasticity and enriched syntax.
+This is a rather raw way of using consumer, you might want to use [MessageProcessor](../modules/message-processor) for more elasticity and enriched syntax.

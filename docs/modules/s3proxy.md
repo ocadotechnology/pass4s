@@ -40,6 +40,6 @@ val consumer =
 val sendMessageOnTopic = sender.sendOne(Message(payload, SnsDestination(SnsArn(topicArn))).widen)
 ```
 
-Please note that for this to work you need to have an existing s3 bucket, pass4s doesn't create any AWS resources on it's own. If you are using the [provided localstack setup](localstack) you can use the `s3://large-messages` bucket as a playground.
+Please note that for this to work you need to have an existing s3 bucket, pass4s doesn't create any AWS resources on it's own. If you are using the [provided localstack setup](../localstack) you can use the `s3://large-messages` bucket as a playground.
 
 For more detailed examples on s3 proxy, you might want to check out the following article https://blog.michalp.net/posts/scala/pass4s-s3-proxy/

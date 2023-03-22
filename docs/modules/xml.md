@@ -41,4 +41,4 @@ object XmlMessage {
 Please refer to the project repository https://github.com/Tinkoff/phobos for more detailed guide on using Phobos.
 
 
-When applying the syntax to consumer, consider using [MessageProcessor](modules/message-processor).
+When applying the syntax to consumer, consider using [MessageProcessor](message-processor).
