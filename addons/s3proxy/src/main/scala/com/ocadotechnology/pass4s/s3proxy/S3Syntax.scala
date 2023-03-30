@@ -31,7 +31,13 @@ object syntax {
 
   implicit final class ProxiedSenderSyntax[F[_], P](private val underlying: Sender[F, Message[P]]) extends AnyVal {
 
-    def usingS3Proxy(config: S3ProxyConfig.Sender)(implicit s3Client: S3Client[F], uuid: UUIDGen[F], F: Monad[F]): Sender[F, Message[P]] =
+    def usingS3Proxy(
+      config: S3ProxyConfig.Sender
+    )(
+      implicit s3Client: S3Client[F],
+      uuid: UUIDGen[F],
+      F: Monad[F]
+    ): Sender[F, Message[P]] =
       underlying.contramapM { msg =>
         if (s3.shouldSendToS3(config.minPayloadSize, msg.payload))
           for {
@@ -47,7 +53,12 @@ object syntax {
 
   implicit final class ProxiedConsumerSyntax[F[_], A](private val underlying: Consumer[F, Payload]) extends AnyVal {
 
-    def usingS3Proxy[P](config: S3ProxyConfig.Consumer)(implicit s3Client: S3Client[F], F: MonadThrow[F]): Consumer[F, Payload] =
+    def usingS3Proxy[P](
+      config: S3ProxyConfig.Consumer
+    )(
+      implicit s3Client: S3Client[F],
+      F: MonadThrow[F]
+    ): Consumer[F, Payload] =
       underlying
         .map(msg => (msg, decode[PayloadS3Pointer](msg.text).toOption))
         .afterEach { case (_, maybePointer) =>
@@ -76,7 +87,11 @@ object syntax {
         message = s3.replacePointerWithPayload(config, msg, payload)
       } yield message
 
-    private def removeDataFromS3(pointer: PayloadS3Pointer)(implicit s3Client: S3Client[F]): F[Unit] =
+    private def removeDataFromS3(
+      pointer: PayloadS3Pointer
+    )(
+      implicit s3Client: S3Client[F]
+    ): F[Unit] =
       s3Client.deleteObject(pointer.s3BucketName, pointer.s3Key)
 
   }
