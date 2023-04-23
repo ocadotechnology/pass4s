@@ -24,7 +24,7 @@ val Versions = new {
   val CatsEffect = "3.4.9"
   val Fs2 = "3.6.1"
   val Logback = "1.4.7"
-  val Log4Cats = "2.5.0"
+  val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
   val Laserdisc = "6.0.0"
 }
