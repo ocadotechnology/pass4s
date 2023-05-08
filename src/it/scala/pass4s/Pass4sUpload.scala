@@ -27,7 +27,7 @@ object Pass4sUpload extends IOApp.Simple {
     sqsConnector <- SqsConnector.usingRegionWithDefaultAttributesProvider[IO](region, Some(endpointOverride))
     s3Client     <- S3Client.usingRegion[IO](region, Some(endpointOverride))
   } yield (Broker.fromConnector(sqsConnector), s3Client)).use { case (broker, implicit0(s3Client: S3Client[IO])) =>
-    val body = "This message is stored in S3 as it exceeds the threshold of 32 bytes set above."
+    val body = "Pass4s S3Proxy"
     val message = Message(Payload(body, Map.empty), SqsDestination(SqsUrl("http://localhost:4566/000000000000/queue")))
     val config = S3ProxyConfig.Sender.withSnsDefaults("bucket").copy(minPayloadSize = None)
     broker.sender.usingS3Proxy(config).sendOne(message.widen)
