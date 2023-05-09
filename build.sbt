@@ -22,6 +22,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 val Versions = new {
   val ActiveMq = "5.17.4"
   val CatsEffect = "3.4.10"
+  val Circe = "0.14.5"
   val Fs2 = "3.6.1"
   val Logback = "1.4.7"
   val Log4Cats = "2.5.0"
@@ -137,7 +138,7 @@ lazy val sqs = module("sqs", directory = "connectors")
 lazy val circe = module("circe", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-parser" % "0.14.5"
+      "io.circe" %% "circe-parser" % Versions.Circe
     )
   )
   .dependsOn(core, kernel)
@@ -159,7 +160,8 @@ lazy val extra = module("extra", directory = "addons")
 lazy val s3Proxy = module("s3proxy", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc
+      "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc,
+      "io.circe" %% "circe-literal" % Versions.Circe % Test
     ) ++ awsSnykOverrides
   )
   .dependsOn(high, circe)
@@ -206,7 +208,7 @@ lazy val demo = module("demo")
     publishArtifact := false,
     // mimaPreviousArtifacts := Set(), // TODO
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-generic" % "0.14.5",
+      "io.circe" %% "circe-generic" % Versions.Circe,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
       "ch.qos.logback" % "logback-classic" % Versions.Logback
