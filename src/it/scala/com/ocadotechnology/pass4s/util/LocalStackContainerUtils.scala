@@ -169,11 +169,13 @@ object LocalStackContainerUtils {
   def s3BucketResource(
     s3Client: S3Client[IO]
   )(
-    bucketName: String
-  ): Resource[IO, Unit] =
+    bucketNamePrefix: String
+  ): Resource[IO, String] =
     Resource.make {
-      s3Client.createBucket(bucketName)
-    } { _ =>
+      IO(Random.alphanumeric.take(8).mkString.toLowerCase)
+        .map(randomSuffix => s"$bucketNamePrefix-$randomSuffix")
+        .flatTap(s3Client.createBucket)
+    } { bucketName =>
       for {
         leftovers <- s3Client.listObjects(bucketName)
         _         <- leftovers.traverse(key => s3Client.deleteObject(bucketName, key))

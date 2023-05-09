@@ -2,14 +2,8 @@ package com.ocadotechnology.pass4s.addons.s3proxy
 
 import cats.effect.IO
 import cats.effect.Resource
-import com.ocadotechnology.pass4s.connectors.sns.Sns
-import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
-import com.ocadotechnology.pass4s.connectors.sns.SnsDestination
-import com.ocadotechnology.pass4s.connectors.sns.SnsFifo
-import com.ocadotechnology.pass4s.connectors.sqs.Sqs
-import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
-import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
-import com.ocadotechnology.pass4s.connectors.sqs.SqsFifo
+import com.ocadotechnology.pass4s.connectors.sns._
+import com.ocadotechnology.pass4s.connectors.sqs._
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
@@ -23,20 +17,15 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 import fs2.Stream
 
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
 object S3ProxyTests extends MutableIOSuite {
 
-  override type Res =
-    (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], S3Client[IO], SnsConnector.SnsConnector[IO], SqsConnector.SqsConnector[IO])
+  override type Res = (Broker[IO, Sns with Sqs], S3Client[IO], SnsConnector.SnsConnector[IO], SqsConnector.SqsConnector[IO])
 
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger
 
-  override def sharedResource: Resource[
-    IO,
-    (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], S3Client[IO], SnsConnector.SnsConnector[IO], SqsConnector.SqsConnector[IO])
-  ] =
+  override def sharedResource: Resource[IO, Res] =
     for {
       container    <- containerResource(Seq(Service.SNS, Service.SQS, Service.S3))
       s3Client     <- createS3Client(container)
@@ -47,8 +36,7 @@ object S3ProxyTests extends MutableIOSuite {
 
   def bucketAndTopics(s3Client: S3Client[IO], snsConnector: SnsConnector.SnsConnector[IO], sqsConnector: SqsConnector.SqsConnector[IO]) =
     for {
-      bucketName     <- Resource.eval(UUIDGen[IO].randomUUID.map(_.toString()))
-      _              <- s3BucketResource(s3Client)(bucketName)
+      bucketName     <- s3BucketResource(s3Client)("bucket")
       (topic, queue) <- topicWithSubscriptionResource(snsConnector.underlying, sqsConnector.underlying)("output-topic")
     } yield (bucketName, topic, queue)
 

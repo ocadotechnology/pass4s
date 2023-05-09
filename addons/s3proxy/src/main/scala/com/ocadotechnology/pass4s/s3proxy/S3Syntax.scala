@@ -102,7 +102,7 @@ object syntax {
       val updatedPayload = msg
         .payload
         .copy(
-          text = pointer.asJson.toString(),
+          text = pointer.asJson.noSpaces,
           metadata = updatedMetadata
         )
       msg.copy(payload = updatedPayload)
