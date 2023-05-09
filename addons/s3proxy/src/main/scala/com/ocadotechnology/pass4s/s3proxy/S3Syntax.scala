@@ -24,6 +24,8 @@ import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.kernel.Sender
+import io.circe.Decoder
+import io.circe.Encoder
 import io.circe.parser.decode
 import io.circe.syntax._
 
@@ -31,11 +33,35 @@ object syntax {
 
   implicit final class ProxiedSenderSyntax[F[_], P](private val underlying: Sender[F, Message[P]]) extends AnyVal {
 
-    def usingS3Proxy(config: S3ProxyConfig.Sender)(implicit s3Client: S3Client[F], uuid: UUIDGen[F], F: Monad[F]): Sender[F, Message[P]] =
+    @deprecated(
+      "This method is deprecated, because it uses `legacyFormatEncoder`. Switch to the new format using " +
+        "`usingS3ProxyForBigPayload`, but before make sure that the consumer is using pass4s +0.4.0. " +
+        "In some future release legacy formats will be removed.",
+      "0.4.0"
+    )
+    def usingS3ProxyLegacyEncoding(
+      config: S3ProxyConfig.Sender
+    )(
+      implicit s3Client: S3Client[F],
+      uuid: UUIDGen[F],
+      F: Monad[F]
+    ): Sender[F, Message[P]] = {
+      implicit val pointerEncoder: Encoder[PayloadS3Pointer] = PayloadS3Pointer.legacyFormatEncoder
+      usingS3ProxyForBigPayload(config)
+    }
+
+    def usingS3ProxyForBigPayload(
+      config: S3ProxyConfig.Sender
+    )(
+      implicit s3Client: S3Client[F],
+      uuid: UUIDGen[F],
+      F: Monad[F],
+      pointerEncoder: Encoder[PayloadS3Pointer]
+    ): Sender[F, Message[P]] =
       underlying.contramapM { msg =>
         if (s3.shouldSendToS3(config.minPayloadSize, msg.payload))
           for {
-            s3Key <- uuid.randomUUID.map(_.toString())
+            s3Key <- UUIDGen.randomString
             _     <- s3Client.putObject(config.bucket, s3Key)(msg.payload.text)
             pointer = PayloadS3Pointer(config.bucket, s3Key)
             updatedMsg = s3.replacePayloadWithPointer(config, msg, pointer)
@@ -45,9 +71,15 @@ object syntax {
 
   }
 
-  implicit final class ProxiedConsumerSyntax[F[_], A](private val underlying: Consumer[F, Payload]) extends AnyVal {
+  implicit final class ProxiedConsumerSyntax[F[_]](private val underlying: Consumer[F, Payload]) extends AnyVal {
 
-    def usingS3Proxy[P](config: S3ProxyConfig.Consumer)(implicit s3Client: S3Client[F], F: MonadThrow[F]): Consumer[F, Payload] =
+    def usingS3ProxyForBigPayload(
+      config: S3ProxyConfig.Consumer
+    )(
+      implicit s3Client: S3Client[F],
+      F: MonadThrow[F],
+      pointerDecoder: Decoder[PayloadS3Pointer]
+    ): Consumer[F, Payload] =
       underlying
         .map(msg => (msg, decode[PayloadS3Pointer](msg.text).toOption))
         .afterEach { case (_, maybePointer) =>
@@ -94,10 +126,16 @@ object syntax {
         )
     }
 
-    def replacePayloadWithPointer[P](config: S3ProxyConfig.Sender, msg: Message[P], pointer: PayloadS3Pointer): Message[P] = {
+    def replacePayloadWithPointer[P](
+      config: S3ProxyConfig.Sender,
+      msg: Message[P],
+      pointer: PayloadS3Pointer
+    )(
+      implicit pointerEncoder: Encoder[PayloadS3Pointer]
+    ): Message[P] = {
       val originalPayloadSize = calculatePayloadBytesSize(msg.payload)
       val updatedMetadata = config.payloadSizeAttributeName.fold(msg.payload.metadata) { key =>
-        msg.payload.metadata + (key -> originalPayloadSize.toString())
+        msg.payload.metadata + (key -> originalPayloadSize.toString)
       }
       val updatedPayload = msg
         .payload

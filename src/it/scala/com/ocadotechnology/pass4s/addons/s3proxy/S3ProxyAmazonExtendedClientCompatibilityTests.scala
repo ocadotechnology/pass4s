@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.addons.s3proxy
 
 import cats.effect.IO
@@ -6,7 +22,6 @@ import cats.implicits._
 import com.amazon.sqs.javamessaging._
 import com.ocadotechnology.pass4s.connectors.sqs._
 import com.ocadotechnology.pass4s.core.Message
-import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.s3proxy.S3Client
@@ -71,10 +86,11 @@ object S3ProxyAmazonExtendedClientCompatibilityTests extends MutableIOSuite {
       }
     } yield (amazonSqsExtendedClient, bucketName, queue)
 
+  val payload: Message.Payload = Message.Payload("body", Map("foo" -> "bar"))
+
   test("message sent from Amazon SQS Extended Client can be handled by Consumer using S3Proxy addon") { env =>
     bucketAndTopics(env).use { case (amazonSqsExtendedClient, bucketName, queueUrl) =>
       implicit val s3Client: S3Client[IO] = env.s3Client
-      val payload = Payload("body", Map("foo" -> "bar"))
 
       val amazonClientSendMessage = {
         val metadata = payload.metadata.fmap(MessageAttributeValue.builder().dataType("String").stringValue(_).build()).asJava
@@ -84,7 +100,7 @@ object S3ProxyAmazonExtendedClientCompatibilityTests extends MutableIOSuite {
 
       val pass4sConsume = {
         val config = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = false)
-        val consumer = env.broker.consumer(SqsEndpoint(queueUrl)).usingS3Proxy(config)
+        val consumer = env.broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(config)
         Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
       }
 
@@ -103,11 +119,10 @@ object S3ProxyAmazonExtendedClientCompatibilityTests extends MutableIOSuite {
   test("message sent from Sender using S3Proxy addon can be handled by Amazon SQS Extended Client") { env =>
     bucketAndTopics(env).use { case (amazonSqsExtendedClient, bucketName, queueUrl) =>
       implicit val s3Client: S3Client[IO] = env.s3Client
-      val payload = Payload("body", Map("foo" -> "bar"))
 
       val pass4sSendMessage = {
         val config = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = None)
-        env.broker.sender.usingS3Proxy(config).sendOne(Message(payload, SqsDestination(queueUrl)))
+        env.broker.sender.usingS3ProxyForBigPayload(config).sendOne(Message(payload, SqsDestination(queueUrl)))
       }
 
       val amazonClientReceiveMessage = {
