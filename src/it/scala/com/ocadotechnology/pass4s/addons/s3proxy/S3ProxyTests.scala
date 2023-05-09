@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 Ocado Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ocadotechnology.pass4s.addons.s3proxy
 
 import cats.effect.IO
@@ -42,17 +58,43 @@ object S3ProxyTests extends MutableIOSuite {
 
   val payload: Message.Payload = Message.Payload("body", Map("foo" -> "bar"))
 
+  test("Sender and consumer should do a full S3 round trip. Legacy format.").usingRes {
+    case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
+      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
+        val consume1MessageFromQueue = {
+          val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = false)
+          val consumer: Consumer[IO, Message.Payload] = broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
+          Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
+        }
+        val sendMessageOnTopic = {
+          val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = None)
+          broker.sender.usingS3ProxyLegacyEncoding(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
+        }
+
+        for {
+          _            <- sendMessageOnTopic
+          objects      <- s3Client.listObjects(bucketName)
+          message      <- consume1MessageFromQueue
+          afterObjects <- s3Client.listObjects(bucketName)
+        } yield expect.all(
+          message == payload,
+          objects.size == 1,
+          afterObjects.size == 1
+        )
+      }
+  }
+
   test("Sender and consumer should do a full S3 round trip, message should not be deleted afterwards when deleting is disabled").usingRes {
     case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
       bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
         val consume1MessageFromQueue = {
           val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = false)
-          val consumer: Consumer[IO, Message.Payload] = broker.consumer(SqsEndpoint(queueUrl)).usingS3Proxy(consumerConfig)
+          val consumer: Consumer[IO, Message.Payload] = broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
           Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
         }
         val sendMessageOnTopic = {
           val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = None)
-          broker.sender.usingS3Proxy(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
+          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
         }
         for {
           _            <- sendMessageOnTopic
@@ -73,13 +115,15 @@ object S3ProxyTests extends MutableIOSuite {
         val consume1MessageFromQueue = {
           val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = true)
           val consumer: Consumer[IO, Message.Payload] =
-            broker.consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(cancelableMessageProcessing = false))).usingS3Proxy(consumerConfig)
+            broker
+              .consumer(SqsEndpoint(queueUrl, SqsEndpoint.Settings(cancelableMessageProcessing = false)))
+              .usingS3ProxyForBigPayload(consumerConfig)
           Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
         }
 
         val sendMessageOnTopic = {
           val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = Some(1))
-          broker.sender.usingS3Proxy(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
+          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
         }
 
         for {
@@ -100,13 +144,13 @@ object S3ProxyTests extends MutableIOSuite {
       bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
         val consume1MessageFromQueue = {
           val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults()
-          val consumer = broker.consumer(SqsEndpoint(queueUrl)).usingS3Proxy(consumerConfig)
+          val consumer = broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
           Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
         }
 
         val sendMessageOnTopic = {
           val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = Some(Int.MaxValue))
-          broker.sender.usingS3Proxy(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
+          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
         }
 
         for {
@@ -126,7 +170,7 @@ object S3ProxyTests extends MutableIOSuite {
       bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, _) =>
         val sendMessageOnTopic = {
           val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = None)
-          broker.sender.usingS3Proxy(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
+          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
         }
 
         for {
@@ -145,12 +189,12 @@ object S3ProxyTests extends MutableIOSuite {
       bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
         val sendMessageOnTopic = {
           val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = Some(0))
-          broker.sender.usingS3Proxy(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
+          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
         }
 
         val consumer = {
           val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = true)
-          broker.consumer(SqsEndpoint(queueUrl)).usingS3Proxy(consumerConfig)
+          broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
         }
 
         for {
