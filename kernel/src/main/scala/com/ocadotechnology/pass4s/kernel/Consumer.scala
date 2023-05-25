@@ -115,10 +115,7 @@ trait Consumer[F[_], +A] extends ((A => F[Unit]) => F[Unit]) with Serializable {
 }
 
 object Consumer extends ConsumerInstances {
-
-  def apply[F[_], A](
-    implicit C: Consumer[F, A]
-  ): Consumer[F, A] = C
+  def apply[F[_], A](implicit C: Consumer[F, A]): Consumer[F, A] = C
 
   /** A consumer that waits for processing of one message (and finalization of its resources), then takes another message from the stream of
     * resources. Failures that happen in the message handler are caught and used to rollback the message being processed.
@@ -257,81 +254,49 @@ object Consumer extends ConsumerInstances {
       * are reported normally and have the same impact on the consumer's process as usual processing errors would, meaning they also usually
       * trigger a rollback.
       */
-    def mapM[B](
-      f: A => F[B]
-    )(
-      implicit F: FlatMap[F]
-    ): Consumer[F, B] =
+    def mapM[B](f: A => F[B])(implicit F: FlatMap[F]): Consumer[F, B] =
       handler => self.consume(f >=> handler)
 
     /** Allows to filter certain messages and execute an effect while doing it.
       *
       * For filtering without an effect use [[functorFilter]] instance.
       */
-    def evalMapFilter[B](
-      f: A => F[Option[B]]
-    )(
-      implicit F: Monad[F]
-    ): Consumer[F, B] =
+    def evalMapFilter[B](f: A => F[Option[B]])(implicit F: Monad[F]): Consumer[F, B] =
       Consumer.fromFunction[F, B](handler => self.consume(f(_).flatMap(_.fold(Applicative[F].unit)(handler))))
 
     /** Similar to [[mapM()]], but discards the result of the tapped effect.
       */
-    def contraTapM(
-      f: A => F[Unit]
-    )(
-      implicit F: FlatMap[F]
-    ): Consumer[F, A] =
+    def contraTapM(f: A => F[Unit])(implicit F: FlatMap[F]): Consumer[F, A] =
       handler => self.consume(a => f(a).flatTap(_ => handler(a)))
 
     /** For every message, executes provided finalization action that takes the original message as an input. Useful for performing cleanup
       * after the transaction has been completed successfuly. Note that this behaves the same way finalizers would do. The earliest added
       * action is executed the last due to the nature of function composition.
       */
-    def afterEach(
-      f: A => F[Unit]
-    )(
-      implicit F: FlatMap[F]
-    ): Consumer[F, A] =
+    def afterEach(f: A => F[Unit])(implicit F: FlatMap[F]): Consumer[F, A] =
       use => self.consume(msg => use(msg) >> f(msg))
 
     /** For every message, creates an artificial consumer that only handles that one message, and runs it through the given function. This
       * follows [[Consumer#flatMap]] semantics, so while the consumer of `B` is busy processing, no further messages will be received by
       * `self`.
       */
-    def selfProduct[B](
-      f: Consumer[F, A] => Consumer[F, B]
-    )(
-      implicit F: Defer[F]
-    ): Consumer[F, (A, B)] =
+    def selfProduct[B](f: Consumer[F, A] => Consumer[F, B])(implicit F: Defer[F]): Consumer[F, (A, B)] =
       self.mproduct(f.compose(Consumer.one[F, A]))
 
     /** Uses this consumer as a source until completion, then it switches to the second consumer.
       */
-    def zip(
-      another: Consumer[F, A]
-    )(
-      implicit F: Apply[F]
-    ): Consumer[F, A] =
+    def zip(another: Consumer[F, A])(implicit F: Apply[F]): Consumer[F, A] =
       handleA => self.consume(handleA) *> another.consume(handleA)
 
     /** Merges the two consumers by returning one which will run them concurrently, with the same handler. No synchronization between
       * underlying consumers is involved - they will run completely independently.
       */
-    def parZip(
-      another: Consumer[F, A]
-    )(
-      implicit F: NonEmptyParallel[F]
-    ): Consumer[F, A] =
+    def parZip(another: Consumer[F, A])(implicit F: NonEmptyParallel[F]): Consumer[F, A] =
       handleA => F.parProductR(self.consume(handleA))(another.consume(handleA))
-
   }
 
   // For laws. Mortals probably won't have a usecase for this.
-  implicit def eq[F[_], A](
-    implicit equalFunction: Eq[(A => F[Unit]) => F[Unit]]
-  ): Eq[Consumer[F, A]] = equalFunction.narrow
-
+  implicit def eq[F[_], A](implicit equalFunction: Eq[(A => F[Unit]) => F[Unit]]): Eq[Consumer[F, A]] = equalFunction.narrow
 }
 
 // low-priority instances. See Sender companion traits to understand the order they need to be defined in.

@@ -91,9 +91,7 @@ object Sender extends SenderInstances {
   /** A helper that brings in the implicit Sender[F, A] in scope. The type is more precise than just Sender[F, A], so that it can keep the
     * type of e.g. [[RefSender]].
     */
-  def apply[F[_], A](
-    implicit S: Sender[F, A]
-  ): S.type = S
+  def apply[F[_], A](implicit S: Sender[F, A]): S.type = S
 
   /** Helper for defining senders from a function that performs the send.
     */
@@ -148,29 +146,17 @@ object Sender extends SenderInstances {
     /** Adds an additional layer of processing before the mesage is sent - for example, logging. The result of `f` is the message that'll be
       * sent using the underlying sender.
       */
-    def contramapM[B](
-      f: B => F[A]
-    )(
-      implicit F: FlatMap[F]
-    ): Sender[F, B] =
+    def contramapM[B](f: B => F[A])(implicit F: FlatMap[F]): Sender[F, B] =
       fromFunction(f(_).flatMap(self.sendOne))
 
     /** Alias for [[contramapM]].
       */
-    def prepareF[B](
-      f: B => F[A]
-    )(
-      implicit F: FlatMap[F]
-    ): Sender[F, B] =
+    def prepareF[B](f: B => F[A])(implicit F: FlatMap[F]): Sender[F, B] =
       contramapM(f)
 
     /** Sends all messages in a traversable/foldable instance.
       */
-    def sendAll[G[_]: Foldable](
-      messages: G[A]
-    )(
-      implicit F: Applicative[F]
-    ): F[Unit] =
+    def sendAll[G[_]: Foldable](messages: G[A])(implicit F: Applicative[F]): F[Unit] =
       messages.traverse_(self.sendOne)
 
     /** This can be used together with [[Sender.writer]] or [[Sender.chainWriter]]: After you've sent some messages with a writer sender,
@@ -178,11 +164,7 @@ object Sender extends SenderInstances {
       *
       * Also see [[sendWrittenK]].
       */
-    def sendWritten[Log[_]: Foldable, B](
-      result: WriterT[F, Log[A], B]
-    )(
-      implicit F: Monad[F]
-    ): F[B] =
+    def sendWritten[Log[_]: Foldable, B](result: WriterT[F, Log[A], B])(implicit F: Monad[F]): F[B] =
       result.run.flatMap { case (log, result) =>
         self.sendAll(log).as(result)
       }
@@ -190,9 +172,7 @@ object Sender extends SenderInstances {
     /** Like [[sendWritten]], but might be more convenient if you need a [[cats.arrow.FunctionK]]. See demos/examples for how it can be used
       * with a composition of WriterT and a database transaction.
       */
-    def sendWrittenK[Log[_]: Foldable](
-      implicit F: Monad[F]
-    ): WriterT[F, Log[A], *] ~> F =
+    def sendWrittenK[Log[_]: Foldable](implicit F: Monad[F]): WriterT[F, Log[A], *] ~> F =
       new (WriterT[F, Log[A], *] ~> F) {
         def apply[B](fa: WriterT[F, Log[A], B]): F[B] = sendWritten(fa)
       }
@@ -200,40 +180,24 @@ object Sender extends SenderInstances {
     /** Ignores messages that don't pass the filter. If you add a logging middleware on top of this, the messages filtered out might still
       * be seen, but they will never reach the underlying sender.
       */
-    def filter(
-      f: A => Boolean
-    )(
-      implicit F: InvariantMonoidal[F]
-    ): Sender[F, A] =
+    def filter(f: A => Boolean)(implicit F: InvariantMonoidal[F]): Sender[F, A] =
       contramapFilter(_.some.filter(f))
 
     /** Like [[filter]], but allows effects.
       */
-    def filterM(
-      f: A => F[Boolean]
-    )(
-      implicit F: Monad[F]
-    ): Sender[F, A] =
+    def filterM(f: A => F[Boolean])(implicit F: Monad[F]): Sender[F, A] =
       contramapFilterM { a =>
         f(a).map(_.guard[Option].as(a))
       }
 
     /** Like [[filter]], but allows additionally transforming the message in an Option - e.g. for parsing.
       */
-    def contramapFilter[B](
-      f: B => Option[A]
-    )(
-      implicit F: InvariantMonoidal[F]
-    ): Sender[F, B] =
+    def contramapFilter[B](f: B => Option[A])(implicit F: InvariantMonoidal[F]): Sender[F, B] =
       fromFunction(f(_).fold(F.unit)(self.sendOne))
 
     /** Like [[contramapFilter]], but allows an effectful filter.
       */
-    def contramapFilterM[B](
-      f: B => F[Option[A]]
-    )(
-      implicit F: Monad[F]
-    ): Sender[F, B] =
+    def contramapFilterM[B](f: B => F[Option[A]])(implicit F: Monad[F]): Sender[F, B] =
       fromFunction(f(_).flatMap(_.fold(F.unit)(self.sendOne)))
 
     /** The dual to [[Sender.or]] - sends both parts of the tuple to the right underlying sender ([[self]] or [[another]], based on the
@@ -241,11 +205,7 @@ object Sender extends SenderInstances {
       *
       * This is the same as .tupled from Cats syntax.
       */
-    def and[B](
-      another: Sender[F, B]
-    )(
-      implicit F: Apply[F]
-    ): Sender[F, (A, B)] =
+    def and[B](another: Sender[F, B])(implicit F: Apply[F]): Sender[F, (A, B)] =
       Sender.fromFunction { case (a, b) =>
         self.sendOne(a) *> another.sendOne(b)
       }
@@ -262,10 +222,7 @@ object Sender extends SenderInstances {
     }
 
   // For laws, mostly
-  implicit def eq[F[_], A](
-    implicit equalFunction: Eq[A => F[Unit]]
-  ): Eq[Sender[F, A]] = equalFunction.narrow
-
+  implicit def eq[F[_], A](implicit equalFunction: Eq[A => F[Unit]]): Eq[Sender[F, A]] = equalFunction.narrow
 }
 
 /** See [[Sender.testing]].

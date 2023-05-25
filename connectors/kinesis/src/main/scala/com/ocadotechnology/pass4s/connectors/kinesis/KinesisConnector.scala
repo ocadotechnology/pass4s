@@ -56,10 +56,7 @@ trait KinesisAttributesProvider[F[_]] {
 }
 
 object KinesisAttributesProvider {
-
-  def apply[F[_]](
-    implicit ev: KinesisAttributesProvider[F]
-  ): KinesisAttributesProvider[F] = ev
+  def apply[F[_]](implicit ev: KinesisAttributesProvider[F]): KinesisAttributesProvider[F] = ev
 
   def default[F[_]: Sync]: KinesisAttributesProvider[F] =
     (payload: Payload, _: KinesisDestination) =>

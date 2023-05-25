@@ -41,9 +41,7 @@ trait Broker[F[_], +P] {
 
 object Broker {
 
-  def apply[F[_], P](
-    implicit ev: Broker[F, P]
-  ): ev.type = ev
+  def apply[F[_], P](implicit ev: Broker[F, P]): ev.type = ev
 
   def fromConnector[F[_]: Async, P](connector: Connector[F, P]): Broker[F, P] =
     new Broker[F, P] {

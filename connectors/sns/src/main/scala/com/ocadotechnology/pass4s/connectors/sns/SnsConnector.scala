@@ -86,10 +86,7 @@ trait SnsAttributesProvider[F[_]] {
 }
 
 object SnsAttributesProvider {
-
-  def apply[F[_]](
-    implicit ev: SnsAttributesProvider[F]
-  ): SnsAttributesProvider[F] = ev
+  def apply[F[_]](implicit ev: SnsAttributesProvider[F]): SnsAttributesProvider[F] = ev
 
   def default[F[_]: MonadThrow]: SnsAttributesProvider[F] =
     new SnsAttributesProvider[F] {

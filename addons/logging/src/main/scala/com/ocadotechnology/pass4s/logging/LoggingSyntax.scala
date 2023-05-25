@@ -38,10 +38,7 @@ object syntax {
 
   implicit final class LoggingSenderSyntax[F[_], P](private val underlying: Sender[F, Message[P]]) extends AnyVal {
 
-    def logged(
-      implicit logger: Logger[F],
-      F: MonadCancelThrow[F]
-    ): Sender[F, Message[P]] = {
+    def logged(implicit logger: Logger[F], F: MonadCancelThrow[F]): Sender[F, Message[P]] = {
       val logBefore = Sender.fromFunction[F, Message[P]] { msg =>
         logger.trace(s"Sending message to destination [${msg.destination}]: [${msg.payload}]")
       }
@@ -57,12 +54,7 @@ object syntax {
 
   implicit final class LoggingConsumerSyntax[F[_], A](private val underlying: Consumer[F, Payload]) extends AnyVal {
 
-    def logged[P](
-      source: Source[P]
-    )(
-      implicit logger: Logger[F],
-      F: MonadCancelThrow[F]
-    ): Consumer[F, Payload] =
+    def logged[P](source: Source[P])(implicit logger: Logger[F], F: MonadCancelThrow[F]): Consumer[F, Payload] =
       underlying
         .surroundAll { run =>
           logger.info(s"Starting consumer from [$source]") *> run.guaranteeCase {
@@ -84,10 +76,7 @@ object syntax {
 
   implicit final class LoggingBrokerSyntax[F[_], P](private val underlying: Broker[F, P]) extends AnyVal {
 
-    def logged(
-      implicit logger: Logger[F],
-      F: MonadCancelThrow[F]
-    ): Broker[F, P] =
+    def logged(implicit logger: Logger[F], F: MonadCancelThrow[F]): Broker[F, P] =
       new Broker[F, P] {
         override def consumer[R >: P](source: Source[R]): Consumer[F, Payload] =
           underlying.consumer(source).logged(source)
@@ -100,10 +89,7 @@ object syntax {
 
   implicit final class ConnectorLoggingSyntax[F[_], P](val self: Connector[F, P]) extends AnyVal {
 
-    def logged(
-      implicit logger: Logger[F],
-      F: Monad[F]
-    ): Connector.Aux[F, P, self.Raw] =
+    def logged(implicit logger: Logger[F], F: Monad[F]): Connector.Aux[F, P, self.Raw] =
       new Connector[F, P] {
         type Raw = self.Raw
         val underlying: self.Raw = self.underlying
