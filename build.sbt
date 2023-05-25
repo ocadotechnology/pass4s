@@ -39,7 +39,7 @@ lazy val root = (project in file("."))
     commonSettings,
     name := "pass4s",
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "amazon-sqs-java-extended-client-lib" % "2.0.2",
+      "com.amazonaws" % "amazon-sqs-java-extended-client-lib" % "2.0.3",
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
