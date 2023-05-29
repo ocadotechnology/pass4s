@@ -16,10 +16,10 @@
 
 package com.ocadotechnology.pass4s.connectors.activemq
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.jms.scaladsl.JmsConsumer
-import akka.stream.alpakka.{jms => alpakka}
-import akka.stream.scaladsl.RestartSource
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.jms.scaladsl.JmsConsumer
+import org.apache.pekko.stream.connectors.{jms => alpakka}
+import org.apache.pekko.stream.scaladsl.RestartSource
 import cats.ApplicativeThrow
 import cats.effect.Async
 import cats.effect.Sync

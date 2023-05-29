@@ -16,7 +16,7 @@
 
 package com.ocadotechnology.pass4s.connectors.activemq
 
-import akka.stream.alpakka.{jms => alpakka}
+import org.apache.pekko.stream.connectors.{jms => alpakka}
 
 private[activemq] object common {
 

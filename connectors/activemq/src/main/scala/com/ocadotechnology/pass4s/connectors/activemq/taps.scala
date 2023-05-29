@@ -16,18 +16,18 @@
 
 package com.ocadotechnology.pass4s.connectors.activemq
 
-import akka.stream.FlowShape
-import akka.stream.Graph
-import akka.stream.Materializer
-import akka.stream.OverflowStrategy
-import akka.stream.QueueOfferResult
-import akka.stream.SourceShape
-import akka.stream.StreamDetachedException
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.SinkQueueWithCancel
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.SourceQueueWithComplete
+import org.apache.pekko.stream.FlowShape
+import org.apache.pekko.stream.Graph
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.OverflowStrategy
+import org.apache.pekko.stream.QueueOfferResult
+import org.apache.pekko.stream.SourceShape
+import org.apache.pekko.stream.StreamDetachedException
+import org.apache.pekko.stream.scaladsl.Keep
+import org.apache.pekko.stream.scaladsl.Sink
+import org.apache.pekko.stream.scaladsl.SinkQueueWithCancel
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.stream.scaladsl.SourceQueueWithComplete
 import cats.effect.Async
 
 import cats.effect.kernel.Resource.ExitCase

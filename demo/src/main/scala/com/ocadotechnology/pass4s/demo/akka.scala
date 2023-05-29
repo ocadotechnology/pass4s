@@ -16,7 +16,7 @@
 
 package com.ocadotechnology.pass4s.demo
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import cats.effect.Async
 
 import cats.effect.Resource

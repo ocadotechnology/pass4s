@@ -16,8 +16,8 @@
 
 package com.ocadotechnology.pass4s.connectors.activemq
 
-import akka.actor.ActorSystem
-import akka.stream.{RestartSettings => AkkaRestartSettings}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.{RestartSettings => AkkaRestartSettings}
 import cats.effect.Resource
 import com.ocadotechnology.pass4s.connectors.activemq.JmsSource.JmsSourceSettings
 import com.ocadotechnology.pass4s.connectors.activemq.consumer._

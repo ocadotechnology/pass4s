@@ -1,6 +1,6 @@
 package com.ocadotechnology.pass4s.util
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 
 import cats.effect.IO
 import cats.effect.Resource

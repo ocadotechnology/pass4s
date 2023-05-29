@@ -16,9 +16,9 @@
 
 package com.ocadotechnology.pass4s.connectors.activemq
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.jms.scaladsl.JmsProducer
-import akka.stream.alpakka.{jms => alpakka}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.jms.scaladsl.JmsProducer
+import org.apache.pekko.stream.connectors.{jms => alpakka}
 import cats.ApplicativeThrow
 import cats.effect.Concurrent
 import cats.effect.Resource
