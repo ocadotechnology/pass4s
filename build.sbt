@@ -109,7 +109,6 @@ lazy val activemq = module("activemq", directory = "connectors")
     resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-connectors-jms" % "0.0.0+99-44451f91-SNAPSHOT",
-      // "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "4.0.0", // 5.x.x contains akka-streams +2.7.x which is licensed under BUSL 1.1
       "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ),

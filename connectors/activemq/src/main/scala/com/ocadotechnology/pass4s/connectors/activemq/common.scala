@@ -16,13 +16,13 @@
 
 package com.ocadotechnology.pass4s.connectors.activemq
 
-import org.apache.pekko.stream.connectors.{jms => alpakka}
+import org.apache.pekko.stream.connectors.{jms => pekkojms}
 
 private[activemq] object common {
 
-  def toAlpakkaDestination: (String, Jms.Type) => alpakka.Destination = {
-    case (name, Jms.Type.Topic) => alpakka.Topic(name)
-    case (name, Jms.Type.Queue) => alpakka.Queue(name)
+  def toPekkoDestination: (String, Jms.Type) => pekkojms.Destination = {
+    case (name, Jms.Type.Topic) => pekkojms.Topic(name)
+    case (name, Jms.Type.Queue) => pekkojms.Queue(name)
   }
 
 }

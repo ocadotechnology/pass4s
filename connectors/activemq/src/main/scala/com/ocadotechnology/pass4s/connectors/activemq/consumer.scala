@@ -18,7 +18,7 @@ package com.ocadotechnology.pass4s.connectors.activemq
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.connectors.jms.scaladsl.JmsConsumer
-import org.apache.pekko.stream.connectors.{jms => alpakka}
+import org.apache.pekko.stream.connectors.{jms => pekkojms}
 import org.apache.pekko.stream.scaladsl.RestartSource
 import cats.ApplicativeThrow
 import cats.effect.Async
@@ -48,12 +48,12 @@ private[activemq] object consumer {
     for {
       JmsSource(name, sourceType, settings) <- Stream.eval(extractJmsSource[F](source))
 
-      jmsConsumerSettings = alpakka
+      jmsConsumerSettings = pekkojms
                               .JmsConsumerSettings(as, connectionFactory)
                               .withAckTimeout((settings.messageProcessingTimeout + 1.second) * 1.2)
                               .withSessionCount(settings.parallelSessions)
                               .withFailStreamOnAckTimeout(true)
-                              .withDestination(common.toAlpakkaDestination(name, sourceType))
+                              .withDestination(common.toPekkoDestination(name, sourceType))
 
       txEnvelope         <- RestartSource
                               .withBackoff(settings.restartSettings.toAkka) { () =>
@@ -72,7 +72,7 @@ private[activemq] object consumer {
         )
     }
 
-  private def toCommittableMessage[F[_]: Sync: Logger](txEnvelope: alpakka.TxEnvelope): F[Option[CommittableMessage[F]]] = {
+  private def toCommittableMessage[F[_]: Sync: Logger](txEnvelope: pekkojms.TxEnvelope): F[Option[CommittableMessage[F]]] = {
     val commit = Sync[F].delay(txEnvelope.commit())
     val rollback = Sync[F].delay(txEnvelope.rollback())
     txEnvelope.message match {
