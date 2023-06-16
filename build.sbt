@@ -9,7 +9,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
-val Scala213 = "2.13.10"
+val Scala213 = "2.13.11"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("11"))
 ThisBuild / githubWorkflowBuild ++= Seq(
@@ -21,10 +21,10 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val ActiveMq = "5.17.4"
-  val CatsEffect = "3.4.10"
+  val CatsEffect = "3.4.11"
   val Circe = "0.14.5"
   val Fs2 = "3.6.1"
-  val Logback = "1.4.7"
+  val Logback = "1.4.8"
   val Log4Cats = "2.5.0"
   val Weaver = "0.8.3"
   val Laserdisc = "6.0.0"
@@ -39,14 +39,14 @@ lazy val root = (project in file("."))
     commonSettings,
     name := "pass4s",
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "amazon-sqs-java-extended-client-lib" % "2.0.2",
+      "com.amazonaws" % "amazon-sqs-java-extended-client-lib" % "2.0.3",
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
-      "org.scalatest" %% "scalatest" % "3.2.15", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.15",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.463" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.15",
+      "org.scalatest" %% "scalatest" % "3.2.16", // just for `shouldNot compile`
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.16",
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.488" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.16",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
