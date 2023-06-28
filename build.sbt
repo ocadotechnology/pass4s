@@ -93,6 +93,15 @@ val awsSnykOverrides = Seq(
   "commons-codec" % "commons-codec" % "1.15"
 )
 
+val nettyVersion = "4.1.94.Final"
+
+//Fixes https://security.snyk.io/vuln/SNYK-JAVA-IONETTY-5725787
+val nettySnykOverrides = Seq(
+  "io.netty" % "netty-transport-classes-epoll" % nettyVersion,
+  "io.netty" % "netty-codec-http2" % nettyVersion,
+  "io.netty" % "netty-handler" % nettyVersion
+)
+
 lazy val activemq = module("activemq", directory = "connectors")
   .settings(
     name := "pass4s-connector-activemq",
@@ -119,7 +128,7 @@ lazy val sns = module("sns", directory = "connectors")
     name := "pass4s-connector-sns",
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc
-    ) ++ awsSnykOverrides
+    ) ++ awsSnykOverrides ++ nettySnykOverrides
   )
   .dependsOn(core)
 
@@ -129,7 +138,7 @@ lazy val sqs = module("sqs", directory = "connectors")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sqs-tagless" % Versions.Laserdisc,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    ) ++ awsSnykOverrides
+    ) ++ awsSnykOverrides ++ nettySnykOverrides
   )
   .dependsOn(core)
 
@@ -162,7 +171,7 @@ lazy val s3Proxy = module("s3proxy", directory = "addons")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc,
       "io.circe" %% "circe-literal" % Versions.Circe % Test
-    ) ++ awsSnykOverrides
+    ) ++ awsSnykOverrides ++ nettySnykOverrides
   )
   .dependsOn(high, circe)
 
