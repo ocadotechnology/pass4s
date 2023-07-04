@@ -108,8 +108,12 @@ object syntax {
   }
 
   implicit final class ConsumeXmlMessageSyntax[F[_]](private val consumer: Consumer[F, String]) {
-    def asXmlConsumer[A: XmlDecoder](implicit M: MonadError[F, _ >: DecodingError]): Consumer[F, A] =
+
+    def asXmlConsumer[A: XmlDecoder](
+      implicit M: MonadError[F, _ >: DecodingError]
+    ): Consumer[F, A] =
       consumer.mapM(XmlDecoder[A].decode(_).liftTo[F])
+
   }
 
   implicit final class ConsumeXmlGenericMessageSyntax[F[_], A](private val consumer: Consumer[F, A]) {
