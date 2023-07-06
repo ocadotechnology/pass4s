@@ -20,7 +20,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 )
 
 val Versions = new {
-  val ActiveMq = "5.17.4"
+  val ActiveMq = "5.17.5"
   val CatsEffect = "3.4.11"
   val Circe = "0.14.5"
   val Fs2 = "3.6.1"
@@ -45,7 +45,7 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.16", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.17",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.499" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.501" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.17",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
