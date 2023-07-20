@@ -93,7 +93,7 @@ val awsSnykOverrides = Seq(
   "commons-codec" % "commons-codec" % "1.15"
 )
 
-val nettyVersion = "4.1.94.Final"
+val nettyVersion = "4.1.95.Final"
 
 //Fixes https://security.snyk.io/vuln/SNYK-JAVA-IONETTY-5725787
 val nettySnykOverrides = Seq(
