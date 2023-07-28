@@ -43,7 +43,9 @@ trait S3Client[F[_]] {
 
 object S3Client {
 
-  def apply[F[_]](implicit ev: S3Client[F]): S3Client[F] = ev
+  def apply[F[_]](
+    implicit ev: S3Client[F]
+  ): S3Client[F] = ev
 
   def usingBuilder[F[_]: Async](
     s3Builder: S3AsyncClientBuilder
