@@ -20,14 +20,15 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 )
 
 val Versions = new {
-  val ActiveMq = "5.17.5"
-  val CatsEffect = "3.4.11"
+  val ActiveMq = "5.18.2"
+  val AwsSdkV2 = "2.20.123"
+  val CatsEffect = "3.5.1"
   val Circe = "0.14.5"
-  val Fs2 = "3.6.1"
-  val Logback = "1.4.9"
-  val Log4Cats = "2.5.0"
+  val Fs2 = "3.8.0"
+  val Logback = "1.4.11"
+  val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
-  val Laserdisc = "6.0.0"
+  val Laserdisc = "6.0.2"
 }
 
 lazy val IntegrationTest = config("it") extend Test
@@ -45,7 +46,6 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.16", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.17",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.523" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.17",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
@@ -78,7 +78,7 @@ lazy val kernel = module("kernel").settings(
   libraryDependencies ++= Seq(
     "co.fs2" %% "fs2-core" % Versions.Fs2,
     "org.typelevel" %% "cats-effect" % Versions.CatsEffect,
-    "org.typelevel" %% "cats-tagless-core" % "0.14.0",
+    "org.typelevel" %% "cats-tagless-core" % "0.15.0",
     "org.typelevel" %% "cats-laws" % "2.9.0" % Test,
     "com.disneystreaming" %% "weaver-discipline" % Versions.Weaver % Test
   )
@@ -88,19 +88,6 @@ lazy val high = module("high")
   .dependsOn(core, kernel)
 
 // connectors
-
-val awsSnykOverrides = Seq(
-  "commons-codec" % "commons-codec" % "1.15"
-)
-
-val nettyVersion = "4.1.94.Final"
-
-//Fixes https://security.snyk.io/vuln/SNYK-JAVA-IONETTY-5725787
-val nettySnykOverrides = Seq(
-  "io.netty" % "netty-transport-classes-epoll" % nettyVersion,
-  "io.netty" % "netty-codec-http2" % nettyVersion,
-  "io.netty" % "netty-handler" % nettyVersion
-)
 
 lazy val activemqAkka = module("activemq", directory = "connectors")
   .settings(
@@ -133,8 +120,9 @@ lazy val kinesis = module("kinesis", directory = "connectors")
   .settings(
     name := "pass4s-connector-kinesis",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-kinesis-tagless" % Versions.Laserdisc
-    ) ++ awsSnykOverrides
+      "io.laserdisc" %% "pure-kinesis-tagless" % Versions.Laserdisc,
+      "software.amazon.awssdk" % "kinesis" % Versions.AwsSdkV2
+    )
   )
   .dependsOn(core)
 
@@ -142,8 +130,9 @@ lazy val sns = module("sns", directory = "connectors")
   .settings(
     name := "pass4s-connector-sns",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc
-    ) ++ awsSnykOverrides ++ nettySnykOverrides
+      "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc,
+      "software.amazon.awssdk" % "sns" % Versions.AwsSdkV2
+    )
   )
   .dependsOn(core)
 
@@ -152,8 +141,9 @@ lazy val sqs = module("sqs", directory = "connectors")
     name := "pass4s-connector-sqs",
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sqs-tagless" % Versions.Laserdisc,
+      "software.amazon.awssdk" % "sqs" % Versions.AwsSdkV2,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    ) ++ awsSnykOverrides ++ nettySnykOverrides
+    )
   )
   .dependsOn(core)
 
@@ -170,7 +160,7 @@ lazy val circe = module("circe", directory = "addons")
 lazy val phobos = module("phobos", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
-      "ru.tinkoff" %% "phobos-core" % "0.20.0"
+      "ru.tinkoff" %% "phobos-core" % "0.21.0"
     )
   )
   .dependsOn(core, kernel)
@@ -185,8 +175,9 @@ lazy val s3Proxy = module("s3proxy", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc,
+      "software.amazon.awssdk" % "s3" % Versions.AwsSdkV2,
       "io.circe" %% "circe-literal" % Versions.Circe % Test
-    ) ++ awsSnykOverrides ++ nettySnykOverrides
+    )
   )
   .dependsOn(high, circe)
 
