@@ -92,7 +92,7 @@ object DemoMain extends IOApp {
   //
   //
 
-  val brokerResource = Akka
+  val brokerResource = Pekko
     .system[IO]
     .flatMap { implicit sys =>
       implicit val connectorLogger: Logger[IO] = Slf4jLogger.getLoggerFromClass[IO](classOf[Connector[IO, Jms]])

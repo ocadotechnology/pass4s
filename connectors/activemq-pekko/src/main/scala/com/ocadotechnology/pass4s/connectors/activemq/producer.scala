@@ -16,9 +16,9 @@
 
 package com.ocadotechnology.pass4s.connectors.activemq
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.jms.scaladsl.JmsProducer
-import akka.stream.alpakka.{jms => alpakka}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.jms.scaladsl.JmsProducer
+import org.apache.pekko.stream.connectors.{jms => pekkojms}
 import cats.ApplicativeThrow
 import cats.effect.Concurrent
 import cats.effect.Resource
@@ -43,7 +43,7 @@ private[activemq] object producer {
 
   private type Attempt = Either[Throwable, Unit]
   private type Promise[F[_]] = Deferred[F, Attempt]
-  private type JmsPayload[F[_]] = alpakka.JmsEnvelope[Promise[F]]
+  private type JmsPayload[F[_]] = pekkojms.JmsEnvelope[Promise[F]]
 
   def createMessageProducer[F[_]: Async](
     connectionFactory: jms.ConnectionFactory,
@@ -65,9 +65,9 @@ private[activemq] object producer {
       for {
         jmsDestination <- extractJmsDestination[F](message.destination)
         promise        <- Deferred[F, Attempt]
-        alpakkaMessage = alpakka.JmsTextMessage(message.payload.text, promise).withProperties(message.payload.metadata)
-        alpakkaDestination = common.toAlpakkaDestination(jmsDestination.name, jmsDestination.destinationType)
-        _              <- enqueue(alpakkaMessage.to(alpakkaDestination))
+        pekkoMessage = pekkojms.JmsTextMessage(message.payload.text, promise).withProperties(message.payload.metadata)
+        pekkoDestination = common.toPekkoDestination(jmsDestination.name, jmsDestination.destinationType)
+        _              <- enqueue(pekkoMessage.to(pekkoDestination))
         _              <- promise.get.rethrow
       } yield ()
 
@@ -87,7 +87,7 @@ private[activemq] object producer {
      * that the promise completion and Ref update are atomic
      */
     Stream.eval((Ref.of[F, Set[JmsPayload[F]]](Set.empty), Semaphore[F](n = 1)).tupled).flatMap { case (inflightMessages, semaphore) =>
-      val jmsProducerSettings = alpakka
+      val jmsProducerSettings = pekkojms
         .JmsProducerSettings(as, connectionFactory)
         .withTopic("Pass4s.Default") // default destination is obligatory, but always overridden
 
