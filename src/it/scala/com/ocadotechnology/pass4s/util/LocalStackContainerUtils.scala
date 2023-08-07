@@ -29,7 +29,7 @@ import software.amazon.awssdk.services.sqs.model.CreateQueueRequest
 import software.amazon.awssdk.services.sqs.model.DeleteQueueRequest
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 
-import scala.compat.java8.FutureConverters._
+import scala.jdk.FutureConverters._
 import scala.jdk.CollectionConverters._
 import scala.util.Random
 
@@ -162,7 +162,7 @@ object LocalStackContainerUtils {
             )
       _  <- kinesisClient.waiter.flatMap { waiter =>
               val describeStreamRequest = DescribeStreamRequest.builder().streamName(sn).build()
-              IO.fromFuture(IO(waiter.waitUntilStreamExists(describeStreamRequest).toScala))
+              IO.fromFuture(IO(waiter.waitUntilStreamExists(describeStreamRequest).asScala))
             }
     } yield sn)(sn => kinesisClient.deleteStream(DeleteStreamRequest.builder().streamName(sn).build()).void)
 

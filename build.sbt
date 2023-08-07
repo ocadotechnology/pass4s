@@ -11,7 +11,7 @@ ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
 val Scala213 = "2.13.11"
 ThisBuild / scalaVersion := Scala213
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("11"))
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("20"))
 ThisBuild / githubWorkflowBuild ++= Seq(
   WorkflowStep.Sbt(
     commands = List("IntegrationTest/test"),
@@ -20,11 +20,11 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 )
 
 val Versions = new {
-  val ActiveMq = "5.17.4"
+  val ActiveMq = "5.17.5"
   val CatsEffect = "3.4.11"
   val Circe = "0.14.5"
   val Fs2 = "3.6.1"
-  val Logback = "1.4.8"
+  val Logback = "1.4.9"
   val Log4Cats = "2.5.0"
   val Weaver = "0.8.3"
   val Laserdisc = "6.0.0"
@@ -44,9 +44,9 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.16", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.16",
-      "com.amazonaws" % "aws-java-sdk-core" % "1.12.488" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.16",
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.17",
+      "com.amazonaws" % "aws-java-sdk-core" % "1.12.523" exclude ("*", "*"), // fixme after release of https://github.com/testcontainers/testcontainers-java/pull/5827
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.17",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
@@ -60,8 +60,8 @@ lazy val root = (project in file("."))
     IntegrationTest / classDirectory := (Test / classDirectory).value,
     IntegrationTest / parallelExecution := true
   )
-  .aggregate(core, kernel, high, activemq, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
-  .dependsOn(high, activemq, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
+  .aggregate(core, kernel, high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
+  .dependsOn(high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
 
 def module(name: String, directory: String = ".") = Project(s"pass4s-$name", file(directory) / name).settings(commonSettings)
 
@@ -93,11 +93,35 @@ val awsSnykOverrides = Seq(
   "commons-codec" % "commons-codec" % "1.15"
 )
 
-lazy val activemq = module("activemq", directory = "connectors")
+val nettyVersion = "4.1.94.Final"
+
+//Fixes https://security.snyk.io/vuln/SNYK-JAVA-IONETTY-5725787
+val nettySnykOverrides = Seq(
+  "io.netty" % "netty-transport-classes-epoll" % nettyVersion,
+  "io.netty" % "netty-codec-http2" % nettyVersion,
+  "io.netty" % "netty-handler" % nettyVersion
+)
+
+lazy val activemqAkka = module("activemq", directory = "connectors")
   .settings(
     name := "pass4s-connector-activemq",
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "4.0.0", // 5.x.x contains akka-streams +2.7.x which is licensed under BUSL 1.1
+      "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
+      "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
+    ),
+    headerSources / excludeFilter := HiddenFileFilter || "taps.scala"
+  )
+  .dependsOn(core)
+
+lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
+  .settings(
+    mimaPreviousArtifacts := Set(), // Remove when 0.4.2 is released
+    name := "pass4s-connector-pekko-activemq",
+    resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/", // Resolvers to be removed when stable version is released
+    resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
+    libraryDependencies ++= Seq(
+      "org.apache.pekko" %% "pekko-connectors-jms" % "0.0.0+140-7d704044-SNAPSHOT", // TODO to be changed to stable release once https://github.com/apache/incubator-pekko-connectors/issues/210 is ready
       "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ),
@@ -119,7 +143,7 @@ lazy val sns = module("sns", directory = "connectors")
     name := "pass4s-connector-sns",
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc
-    ) ++ awsSnykOverrides
+    ) ++ awsSnykOverrides ++ nettySnykOverrides
   )
   .dependsOn(core)
 
@@ -129,7 +153,7 @@ lazy val sqs = module("sqs", directory = "connectors")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sqs-tagless" % Versions.Laserdisc,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    ) ++ awsSnykOverrides
+    ) ++ awsSnykOverrides ++ nettySnykOverrides
   )
   .dependsOn(core)
 
@@ -162,7 +186,7 @@ lazy val s3Proxy = module("s3proxy", directory = "addons")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc,
       "io.circe" %% "circe-literal" % Versions.Circe % Test
-    ) ++ awsSnykOverrides
+    ) ++ awsSnykOverrides ++ nettySnykOverrides
   )
   .dependsOn(high, circe)
 
@@ -197,7 +221,7 @@ lazy val docs = project // new documentation project
       WorkflowStep.Sbt(List("docs/mdoc"))
     )
   )
-  .dependsOn(high, activemq, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
+  .dependsOn(high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
   .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
 // misc
@@ -214,7 +238,7 @@ lazy val demo = module("demo")
       "ch.qos.logback" % "logback-classic" % Versions.Logback
     )
   )
-  .dependsOn(activemq, sns, sqs, extra, logging)
+  .dependsOn(activemqPekko, sns, sqs, extra, logging)
 
 lazy val commonSettings = Seq(
   organization := "com.ocadotechnology",
