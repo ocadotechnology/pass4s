@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ocadotechnology.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.connectors.jms.scaladsl.JmsProducer
@@ -29,7 +29,7 @@ import cats.effect.kernel.Ref
 import cats.effect.std.Queue
 import cats.effect.std.Semaphore
 import cats.implicits._
-import com.ocadotechnology.pass4s.connectors.activemq.taps._
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.taps._
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
 import fs2.Pipe

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ocadotechnology.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import cats.effect.Resource
 import cats.effect.Sync

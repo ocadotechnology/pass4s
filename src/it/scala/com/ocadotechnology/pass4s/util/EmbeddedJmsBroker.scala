@@ -1,7 +1,6 @@
 package com.ocadotechnology.pass4s.util
 
-import org.apache.pekko.actor.ActorSystem
-
+import akka.actor.ActorSystem
 import cats.effect.IO
 import cats.effect.Resource
 import com.ocadotechnology.pass4s.connectors.activemq.JmsConnector

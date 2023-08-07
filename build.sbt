@@ -116,7 +116,7 @@ lazy val activemqAkka = module("activemq", directory = "connectors")
 
 lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
   .settings(
-    name := "pass4s-connector-activemq",
+    name := "pass4s-connector-pekko-activemq",
     resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/",
     resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
     libraryDependencies ++= Seq(

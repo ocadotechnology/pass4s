@@ -31,8 +31,8 @@ import cats.effect.implicits._
 import cats.implicits._
 import cats.~>
 import com.ocadotechnology.pass4s.circe.syntax._
-import com.ocadotechnology.pass4s.connectors.activemq.Jms
-import com.ocadotechnology.pass4s.connectors.activemq.JmsConnector
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.Jms
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsConnector
 import com.ocadotechnology.pass4s.core._
 import com.ocadotechnology.pass4s.extra.MessageProcessor
 import com.ocadotechnology.pass4s.high._

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ocadotechnology.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import org.apache.pekko.stream.FlowShape
 import org.apache.pekko.stream.Graph

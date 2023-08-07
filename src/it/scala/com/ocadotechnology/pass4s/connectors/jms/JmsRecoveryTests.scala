@@ -1,7 +1,7 @@
 package com.ocadotechnology.pass4s.connectors.jms
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.connectors.jms.ConnectionRetryException
+import akka.actor.ActorSystem
+import akka.stream.alpakka.jms.ConnectionRetryException
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.kernel.Deferred

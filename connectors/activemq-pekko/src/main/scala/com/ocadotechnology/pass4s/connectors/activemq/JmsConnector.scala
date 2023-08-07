@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.ocadotechnology.pass4s.connectors.activemq
+package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.{RestartSettings => AkkaRestartSettings}
 import cats.effect.Resource
-import com.ocadotechnology.pass4s.connectors.activemq.JmsSource.JmsSourceSettings
-import com.ocadotechnology.pass4s.connectors.activemq.consumer._
-import com.ocadotechnology.pass4s.connectors.activemq.producer._
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsSource.JmsSourceSettings
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.consumer._
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.producer._
 import com.ocadotechnology.pass4s.core.CommittableMessage
 import com.ocadotechnology.pass4s.core.Connector
 import com.ocadotechnology.pass4s.core.Destination
