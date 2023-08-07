@@ -118,7 +118,7 @@ lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
   .settings(
     mimaPreviousArtifacts := Set(), // Remove when 0.4.2 is released
     name := "pass4s-connector-pekko-activemq",
-    resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/",
+    resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/", // Resolvers to be removed when stable version is released
     resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-connectors-jms" % "0.0.0+140-7d704044-SNAPSHOT", // TODO to be changed to stable release once https://github.com/apache/incubator-pekko-connectors/issues/210 is ready

@@ -30,9 +30,13 @@ The library is divided into multiple modules. If you're only interested in the b
 
 [ActiveMq](https://activemq.apache.org/)
 ```scala
-// ActiveMQ connector
+// ActiveMQ connector - based on Akka Alpakka
 "com.ocadotechnology" %% "pass4s-connector-activemq" % "@VERSION@"
+// ActiveMQ pekko connector - based on Pekko Connectors
+"com.ocadotechnology" %% "pass4s-connector-pekko-activemq" % "@VERSION@"
 ```
+⚠️ **Warning** Pekko connector is an experimental addition at the moment, as it is based on nightly build
+
 
 [SNS/SQS](https://aws.amazon.com/blogs/aws/queues-and-notifications-now-best-friends/)
 ```scala
