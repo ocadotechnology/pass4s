@@ -31,8 +31,8 @@ import cats.effect.implicits._
 import cats.implicits._
 import cats.~>
 import com.ocadotechnology.pass4s.circe.syntax._
-import com.ocadotechnology.pass4s.connectors.activemq.Jms
-import com.ocadotechnology.pass4s.connectors.activemq.JmsConnector
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.Jms
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsConnector
 import com.ocadotechnology.pass4s.core._
 import com.ocadotechnology.pass4s.extra.MessageProcessor
 import com.ocadotechnology.pass4s.high._
@@ -92,7 +92,7 @@ object DemoMain extends IOApp {
   //
   //
 
-  val brokerResource = Akka
+  val brokerResource = Pekko
     .system[IO]
     .flatMap { implicit sys =>
       implicit val connectorLogger: Logger[IO] = Slf4jLogger.getLoggerFromClass[IO](classOf[Connector[IO, Jms]])

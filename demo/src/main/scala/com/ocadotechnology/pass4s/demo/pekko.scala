@@ -16,11 +16,14 @@
 
 package com.ocadotechnology.pass4s.demo
 
-import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsDestination
-import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsSource
+import org.apache.pekko.actor.ActorSystem
+import cats.effect.Async
 
-object Destinations {
-  val inventoryEvents = JmsSource.queue("Inventory.Events")
-  val orderUpdates = JmsDestination.topic("VirtualTopic.Order.Updates")
-  val orderEvents = JmsDestination.topic("VirtualTopic.Order.Events")
+import cats.effect.Resource
+import cats.effect.Sync
+import cats.implicits._
+
+object Pekko {
+  def system[F[_]: Async]: Resource[F, ActorSystem] =
+    Resource.make(Sync[F].delay(ActorSystem()))(sys => Async[F].fromFuture(Sync[F].delay(sys.terminate())).void)
 }
