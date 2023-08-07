@@ -90,7 +90,7 @@ lazy val high = module("high")
 // connectors
 
 val awsSnykOverrides = Seq(
-  "commons-codec" % "commons-codec" % "1.15"
+  "commons-codec" % "commons-codec" % "1.16.0"
 )
 
 val nettyVersion = "4.1.94.Final"
