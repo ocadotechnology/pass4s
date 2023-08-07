@@ -25,7 +25,7 @@ val Versions = new {
   val Circe = "0.14.5"
   val Fs2 = "3.6.1"
   val Logback = "1.4.9"
-  val Log4Cats = "2.5.0"
+  val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
   val Laserdisc = "6.0.0"
 }
