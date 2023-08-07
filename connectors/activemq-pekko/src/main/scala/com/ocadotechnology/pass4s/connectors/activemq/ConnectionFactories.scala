@@ -22,6 +22,9 @@ import cats.implicits._
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.pool.PooledConnectionFactory
 
+/** This implementation is EXPERIMENTAL - use at your own risk This module relies on SNAPSHOT version of Pekko that has not been extensively
+  * tested in production yet
+  */
 object ConnectionFactories {
 
   /** Creates a pooled ActiveMQ connection factory.

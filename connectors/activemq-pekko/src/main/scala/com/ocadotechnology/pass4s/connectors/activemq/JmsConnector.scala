@@ -91,9 +91,9 @@ object JmsDestination {
 object JmsConnector {
   type JmsConnector[F[_]] = Connector.Aux[F, Jms, ConnectionFactory]
 
-  // these might have to return resources,
-  // we might also have variants that build an Egress directly or have a conversion method on Connector
-  // (probably not, as methods on Connector shouldn't be used by end users)
+  /** This implementation is EXPERIMENTAL - use at your own risk This module relies on SNAPSHOT version of Pekko that has not been
+    * extensively tested in production yet
+    */
   def singleBroker[F[_]: Logger: Async](
     username: String,
     password: String,
@@ -103,6 +103,9 @@ object JmsConnector {
   ): Resource[F, JmsConnector[F]] =
     ConnectionFactories.pooled(username, password, url).flatMap(singleBroker[F](_))
 
+  /** This implementation is EXPERIMENTAL - use at your own risk This module relies on SNAPSHOT version of Pekko that has not been
+    * extensively tested in production yet
+    */
   def singleBroker[F[_]: Logger: Async](
     connectionFactory: ConnectionFactory
   )(
