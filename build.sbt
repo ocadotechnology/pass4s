@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.5" // current series x.y
+ThisBuild / tlBaseVersion := "0.4" // current series x.y
 
 ThisBuild / organization := "com.ocadotechnology"
 ThisBuild / organizationName := "Ocado Technology"
@@ -116,6 +116,7 @@ lazy val activemqAkka = module("activemq", directory = "connectors")
 
 lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
   .settings(
+    mimaPreviousArtifacts := Set(), // Remove when 0.4.2 is released
     name := "pass4s-connector-pekko-activemq",
     resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/",
     resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
