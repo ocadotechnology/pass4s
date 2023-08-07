@@ -24,8 +24,8 @@ import cats.effect.kernel.Sync
 import cats.effect.kernel.Temporal
 import cats.implicits._
 import com.ocadotechnology.pass4s.circe.syntax._
-import com.ocadotechnology.pass4s.connectors.activemq.Jms
-import com.ocadotechnology.pass4s.connectors.activemq.JmsSource
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.Jms
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsSource
 import com.ocadotechnology.pass4s.core.CommittableMessage
 import com.ocadotechnology.pass4s.core.Connector
 import com.ocadotechnology.pass4s.core.Message

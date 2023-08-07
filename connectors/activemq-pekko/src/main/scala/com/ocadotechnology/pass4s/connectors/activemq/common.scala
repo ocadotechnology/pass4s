@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package com.ocadotechnology.pass4s.demo
+package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
-import akka.actor.ActorSystem
-import cats.effect.Async
+import org.apache.pekko.stream.connectors.{jms => pekkojms}
 
-import cats.effect.Resource
-import cats.effect.Sync
-import cats.implicits._
+private[activemq] object common {
 
-object Akka {
-  def system[F[_]: Async]: Resource[F, ActorSystem] =
-    Resource.make(Sync[F].delay(ActorSystem()))(sys => Async[F].fromFuture(Sync[F].delay(sys.terminate())).void)
+  def toPekkoDestination: (String, Jms.Type) => pekkojms.Destination = {
+    case (name, Jms.Type.Topic) => pekkojms.Topic(name)
+    case (name, Jms.Type.Queue) => pekkojms.Queue(name)
+  }
+
 }
