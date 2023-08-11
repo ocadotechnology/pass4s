@@ -21,7 +21,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val ActiveMq = "5.18.2"
-  val AwsSdkV2 = "2.20.123"
+  val AwsSdkV2 = "2.20.124"
   val CatsEffect = "3.5.1"
   val Circe = "0.14.5"
   val Fs2 = "3.8.0"
