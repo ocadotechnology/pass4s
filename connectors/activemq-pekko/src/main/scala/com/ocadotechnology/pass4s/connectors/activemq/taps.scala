@@ -40,8 +40,13 @@ private[activemq] object taps {
 
   implicit class AkkaSourceDsl[A, M](source: Graph[SourceShape[A], M]) {
 
-    def toStream[F[_]: Async](onMaterialization: M => Unit = _ => ())(implicit materializer: Materializer): Stream[F, A] =
+    def toStream[F[_]: Async](
+      onMaterialization: M => Unit = _ => ()
+    )(
+      implicit materializer: Materializer
+    ): Stream[F, A] =
       akkaSourceToFs2Stream(source)(onMaterialization)
+
   }
 
   implicit class AkkaFlowDsl[A, B, M](flow: Graph[FlowShape[A, B], M]) {
@@ -141,7 +146,11 @@ private[activemq] object taps {
       }
   }
 
-  private def subscriberStream[F[_], A](subscriber: SinkQueueWithCancel[A])(implicit F: Async[F]): Stream[F, A] = {
+  private def subscriberStream[F[_], A](
+    subscriber: SinkQueueWithCancel[A]
+  )(
+    implicit F: Async[F]
+  ): Stream[F, A] = {
     val pull = Async[F].fromFuture(F.delay(subscriber.pull()))
     val cancel = F.delay(subscriber.cancel())
     Stream.repeatEval(pull).unNoneTerminate.onFinalize(cancel)
