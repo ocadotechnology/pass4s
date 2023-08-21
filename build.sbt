@@ -103,7 +103,6 @@ lazy val activemqAkka = module("activemq", directory = "connectors")
 
 lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
   .settings(
-    mimaPreviousArtifacts := Set(), // Remove when 0.4.2 is released
     name := "pass4s-connector-pekko-activemq",
     resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/", // Resolvers to be removed when stable version is released
     resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
@@ -236,7 +235,6 @@ lazy val commonSettings = Seq(
   compilerOptions,
   Test / fork := true,
   libraryDependencies ++= compilerPlugins,
-  mimaPreviousArtifacts := Set(), // TODO
   libraryDependencies ++= Seq(
     "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
