@@ -142,8 +142,8 @@ private[activemq] object taps {
   }
 
   private def subscriberStream[F[_], A](subscriber: SinkQueueWithCancel[A])(implicit F: Async[F]): Stream[F, A] = {
-    val pull = Async[F].fromFuture(F.delay(subscriber.pull()))
     val cancel = F.delay(subscriber.cancel())
+    val pull = Async[F].fromFutureCancelable(F.delay((subscriber.pull(), cancel)))
     Stream.repeatEval(pull).unNoneTerminate.onFinalize(cancel)
   }
 
