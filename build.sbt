@@ -236,7 +236,7 @@ lazy val commonSettings = Seq(
   compilerOptions,
   Test / fork := true,
   libraryDependencies ++= compilerPlugins,
-  // mimaPreviousArtifacts := Seq(), // TODO
+  mimaPreviousArtifacts := Set(), // TODO
   libraryDependencies ++= Seq(
     "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
