@@ -108,11 +108,7 @@ object syntax {
         message = s3.replacePointerWithPayload(config, msg, payload)
       } yield message
 
-    private def removeDataFromS3(
-      pointer: PayloadS3Pointer
-    )(
-      implicit s3Client: S3Client[F]
-    ): F[Unit] =
+    private def removeDataFromS3(pointer: PayloadS3Pointer)(implicit s3Client: S3Client[F]): F[Unit] =
       s3Client.deleteObject(pointer.s3BucketName, pointer.s3Key)
 
   }

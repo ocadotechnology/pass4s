@@ -171,10 +171,7 @@ trait SqsAttributesProvider[F[_]] {
 }
 
 object SqsAttributesProvider {
-
-  def apply[F[_]](
-    implicit ev: SqsAttributesProvider[F]
-  ): SqsAttributesProvider[F] = ev
+  def apply[F[_]](implicit ev: SqsAttributesProvider[F]): SqsAttributesProvider[F] = ev
 
   def default[F[_]: MonadThrow]: SqsAttributesProvider[F] =
     new SqsAttributesProvider[F] {

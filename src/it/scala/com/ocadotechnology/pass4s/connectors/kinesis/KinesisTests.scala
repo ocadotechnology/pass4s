@@ -68,11 +68,7 @@ object KinesisTests extends MutableIOSuite {
     }
   }
 
-  private def getShardIterator(
-    streamName: String
-  )(
-    implicit kinesisClient: KinesisAsyncClientOp[IO]
-  ): IO[String] =
+  private def getShardIterator(streamName: String)(implicit kinesisClient: KinesisAsyncClientOp[IO]): IO[String] =
     kinesisClient
       .getShardIterator(
         GetShardIteratorRequest
@@ -84,11 +80,6 @@ object KinesisTests extends MutableIOSuite {
       )
       .map(_.shardIterator())
 
-  private def getRecords(
-    shardIterator: String
-  )(
-    implicit kinesisClient: KinesisAsyncClientOp[IO]
-  ): IO[List[Record]] =
+  private def getRecords(shardIterator: String)(implicit kinesisClient: KinesisAsyncClientOp[IO]): IO[List[Record]] =
     kinesisClient.getRecords(GetRecordsRequest.builder().shardIterator(shardIterator).build()).map(_.records().asScala.toList)
-
 }

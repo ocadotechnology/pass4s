@@ -28,13 +28,6 @@ trait MyService[F[_]] {
 }
 
 object MyService {
-
-  def apply[F[_]](
-    implicit F: MyService[F]
-  ): F.type = F
-
-  def instance[F[_]](
-    implicit sender: Sender[F, Int]
-  ): MyService[F] = () => sender.sendOne(42)
-
+  def apply[F[_]](implicit F: MyService[F]): F.type = F
+  def instance[F[_]](implicit sender: Sender[F, Int]): MyService[F] = () => sender.sendOne(42)
 }
