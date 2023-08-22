@@ -103,8 +103,11 @@ lazy val activemqAkka = module("activemq", directory = "connectors")
 
 lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
   .settings(
-    mimaPreviousArtifacts := Set(), // Remove when 0.4.2 is released
     name := "pass4s-connector-pekko-activemq",
+    mimaPreviousArtifacts := { // this setting can be removed in 0.5.x
+      val artifacts = mimaPreviousArtifacts.value
+      artifacts.filter(_.revision >= "0.4.4") // this module has been published in 0.4.4
+    },
     resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/", // Resolvers to be removed when stable version is released
     resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
     libraryDependencies ++= Seq(
@@ -231,17 +234,23 @@ lazy val demo = module("demo")
   )
   .dependsOn(activemqPekko, sns, sqs, extra, logging)
 
+// Those versions failed to release
+val versionsExcludedFromMima = List("0.4.3")
+
 lazy val commonSettings = Seq(
   organization := "com.ocadotechnology",
   compilerOptions,
   Test / fork := true,
   libraryDependencies ++= compilerPlugins,
-  mimaPreviousArtifacts := Set(), // TODO
   libraryDependencies ++= Seq(
     "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver
   ).map(_ % Test),
+  mimaPreviousArtifacts := {
+    val artifacts = mimaPreviousArtifacts.value
+    artifacts.filterNot(artifact => versionsExcludedFromMima.contains(artifact.revision))
+  },
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
 
