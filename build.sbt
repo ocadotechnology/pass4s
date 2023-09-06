@@ -29,6 +29,7 @@ val Versions = new {
   val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
   val Laserdisc = "6.0.2"
+  val PekkoConnectors = "1.0.0"
 }
 
 lazy val IntegrationTest = config("it") extend Test
@@ -106,12 +107,10 @@ lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
     name := "pass4s-connector-pekko-activemq",
     mimaPreviousArtifacts := { // this setting can be removed in 0.5.x
       val artifacts = mimaPreviousArtifacts.value
-      artifacts.filter(_.revision >= "0.4.4") // this module has been published in 0.4.4
+      artifacts.filter(_.revision >= "0.4.5") // this module has been prod ready in 0.4.5
     },
-    resolvers += "Apache Snapshots" at "https://repository.apache.org/content/repositories/snapshots/", // Resolvers to be removed when stable version is released
-    resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
     libraryDependencies ++= Seq(
-      "org.apache.pekko" %% "pekko-connectors-jms" % "0.0.0+140-7d704044-SNAPSHOT", // TODO to be changed to stable release once https://github.com/apache/incubator-pekko-connectors/issues/210 is ready
+      "org.apache.pekko" %% "pekko-connectors-jms" % Versions.PekkoConnectors,
       "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ),
