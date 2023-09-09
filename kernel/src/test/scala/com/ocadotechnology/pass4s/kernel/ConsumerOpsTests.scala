@@ -134,7 +134,11 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
         messages: List[Int],
         isValid: Int => Boolean
       ) =>
-        def message(i: Int)(implicit sender: Sender[IO, Int]): Resource[IO, Int] =
+        def message(
+          i: Int
+        )(
+          implicit sender: Sender[IO, Int]
+        ): Resource[IO, Int] =
           Resource.make(
             sender.contramap(open).sendOne(i).as(i)
           )(sender.contramap(close).sendOne)
