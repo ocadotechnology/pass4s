@@ -21,14 +21,14 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val ActiveMq = "5.18.2"
-  val AwsSdkV2 = "2.20.135"
+  val AwsSdkV2 = "2.20.144"
   val CatsEffect = "3.5.1"
-  val Circe = "0.14.5"
+  val Circe = "0.14.6"
   val Fs2 = "3.8.0"
   val Logback = "1.4.11"
   val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
-  val Laserdisc = "6.0.2"
+  val Laserdisc = "6.0.3"
   val PekkoConnectors = "1.0.0"
 }
 
@@ -45,7 +45,7 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
-      "org.scalatest" %% "scalatest" % "3.2.16", // just for `shouldNot compile`
+      "org.scalatest" %% "scalatest" % "3.2.17", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.17",
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.17",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
