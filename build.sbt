@@ -9,7 +9,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
-val Scala213 = "2.13.11"
+val Scala213 = "2.13.12"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("20"))
 ThisBuild / githubWorkflowBuild ++= Seq(
@@ -21,7 +21,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val ActiveMq = "5.18.2"
-  val AwsSdkV2 = "2.20.144"
+  val AwsSdkV2 = "2.20.146"
   val CatsEffect = "3.5.1"
   val Circe = "0.14.6"
   val Fs2 = "3.8.0"
