@@ -11,7 +11,7 @@ ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
 val Scala213 = "2.13.12"
 ThisBuild / scalaVersion := Scala213
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("20"))
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("21"))
 ThisBuild / githubWorkflowBuild ++= Seq(
   WorkflowStep.Sbt(
     commands = List("IntegrationTest/test"),
