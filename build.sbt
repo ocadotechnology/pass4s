@@ -34,6 +34,11 @@ val Versions = new {
 
 lazy val IntegrationTest = config("it") extend Test
 
+lazy val securityDependencyOverrides = Seq(
+  "io.netty" % "netty-handler" % "4.1.100.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-codec-http2" % "4.1.100.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
+)
+
 lazy val root = (project in file("."))
   .configs(IntegrationTest)
   .enablePlugins(NoPublishPlugin)
@@ -124,7 +129,7 @@ lazy val kinesis = module("kinesis", directory = "connectors")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-kinesis-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "kinesis" % Versions.AwsSdkV2
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
 
@@ -134,7 +139,7 @@ lazy val sns = module("sns", directory = "connectors")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "sns" % Versions.AwsSdkV2
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
 
@@ -145,7 +150,7 @@ lazy val sqs = module("sqs", directory = "connectors")
       "io.laserdisc" %% "pure-sqs-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "sqs" % Versions.AwsSdkV2,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
 
@@ -179,7 +184,7 @@ lazy val s3Proxy = module("s3proxy", directory = "addons")
       "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "s3" % Versions.AwsSdkV2,
       "io.circe" %% "circe-literal" % Versions.Circe % Test
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(high, circe)
 
