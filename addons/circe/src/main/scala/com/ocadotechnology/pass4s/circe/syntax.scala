@@ -36,7 +36,12 @@ object syntax {
   final private[syntax] class AsJsonSenderPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]]) extends AnyVal {
 
     @scala.annotation.nowarn("cat=unused-params")
-    def apply[R >: P](to: Destination[R])(implicit encoder: Encoder[A], noGroupId: GroupIdMeta.Absent[R]): Sender[F, A] =
+    def apply[R >: P](
+      to: Destination[R]
+    )(
+      implicit encoder: Encoder[A],
+      noGroupId: GroupIdMeta.Absent[R]
+    ): Sender[F, A] =
       sender.contramap(JsonMessage(_, to).widen)
 
   }
@@ -101,7 +106,10 @@ object syntax {
 
   implicit final class ConsumerCirceExtensions[F[_], A](private val consumer: Consumer[F, A]) extends AnyVal {
 
-    def asJsonConsumer[B: Decoder](implicit M: MonadError[F, _ >: io.circe.Error], ev: A <:< Payload): Consumer[F, B] =
+    def asJsonConsumer[B: Decoder](
+      implicit M: MonadError[F, _ >: io.circe.Error],
+      ev: A <:< Payload
+    ): Consumer[F, B] =
       consumer.mapM(msg => decode[B](msg.text).liftTo[F])
 
     def asJsonConsumerWithMessage[B: Decoder](
