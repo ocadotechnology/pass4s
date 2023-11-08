@@ -11,7 +11,7 @@ ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
 val Scala213 = "2.13.12"
 ThisBuild / scalaVersion := Scala213
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("20"))
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("21"))
 ThisBuild / githubWorkflowBuild ++= Seq(
   WorkflowStep.Sbt(
     commands = List("IntegrationTest/test"),
@@ -20,19 +20,24 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 )
 
 val Versions = new {
-  val ActiveMq = "5.18.2"
-  val AwsSdkV2 = "2.20.151"
-  val CatsEffect = "3.5.1"
+  val ActiveMq = "5.18.3"
+  val AwsSdkV2 = "2.20.162"
+  val CatsEffect = "3.5.2"
   val Circe = "0.14.6"
-  val Fs2 = "3.8.0"
+  val Fs2 = "3.9.3"
   val Logback = "1.4.11"
   val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
   val Laserdisc = "6.0.3"
-  val PekkoConnectors = "1.0.0"
+  val PekkoConnectors = "1.0.1"
 }
 
 lazy val IntegrationTest = config("it") extend Test
+
+lazy val securityDependencyOverrides = Seq(
+  "io.netty" % "netty-handler" % "4.1.100.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-codec-http2" % "4.1.100.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
+)
 
 lazy val root = (project in file("."))
   .configs(IntegrationTest)
@@ -46,8 +51,8 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.17", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.40.17",
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.40.17",
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.41.0",
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.41.0",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
@@ -124,7 +129,7 @@ lazy val kinesis = module("kinesis", directory = "connectors")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-kinesis-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "kinesis" % Versions.AwsSdkV2
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
 
@@ -134,7 +139,7 @@ lazy val sns = module("sns", directory = "connectors")
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "sns" % Versions.AwsSdkV2
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
 
@@ -145,7 +150,7 @@ lazy val sqs = module("sqs", directory = "connectors")
       "io.laserdisc" %% "pure-sqs-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "sqs" % Versions.AwsSdkV2,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
 
@@ -179,7 +184,7 @@ lazy val s3Proxy = module("s3proxy", directory = "addons")
       "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc,
       "software.amazon.awssdk" % "s3" % Versions.AwsSdkV2,
       "io.circe" %% "circe-literal" % Versions.Circe % Test
-    )
+    ) ++ securityDependencyOverrides
   )
   .dependsOn(high, circe)
 
