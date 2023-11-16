@@ -21,7 +21,6 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 
 val Versions = new {
   val ActiveMq = "5.18.3"
-  val AwsSdkV2 = "2.20.162"
   val CatsEffect = "3.5.2"
   val Circe = "0.14.6"
   val Fs2 = "3.9.3"
@@ -127,8 +126,7 @@ lazy val kinesis = module("kinesis", directory = "connectors")
   .settings(
     name := "pass4s-connector-kinesis",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-kinesis-tagless" % Versions.Laserdisc,
-      "software.amazon.awssdk" % "kinesis" % Versions.AwsSdkV2
+      "io.laserdisc" %% "pure-kinesis-tagless" % Versions.Laserdisc
     ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
@@ -137,8 +135,7 @@ lazy val sns = module("sns", directory = "connectors")
   .settings(
     name := "pass4s-connector-sns",
     libraryDependencies ++= Seq(
-      "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc,
-      "software.amazon.awssdk" % "sns" % Versions.AwsSdkV2
+      "io.laserdisc" %% "pure-sns-tagless" % Versions.Laserdisc
     ) ++ securityDependencyOverrides
   )
   .dependsOn(core)
@@ -148,7 +145,6 @@ lazy val sqs = module("sqs", directory = "connectors")
     name := "pass4s-connector-sqs",
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-sqs-tagless" % Versions.Laserdisc,
-      "software.amazon.awssdk" % "sqs" % Versions.AwsSdkV2,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ) ++ securityDependencyOverrides
   )
@@ -182,7 +178,6 @@ lazy val s3Proxy = module("s3proxy", directory = "addons")
   .settings(
     libraryDependencies ++= Seq(
       "io.laserdisc" %% "pure-s3-tagless" % Versions.Laserdisc,
-      "software.amazon.awssdk" % "s3" % Versions.AwsSdkV2,
       "io.circe" %% "circe-literal" % Versions.Circe % Test
     ) ++ securityDependencyOverrides
   )
