@@ -27,7 +27,7 @@ val Versions = new {
   val Logback = "1.4.13"
   val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
-  val Laserdisc = "6.0.5"
+  val Laserdisc = "6.1.0"
   val PekkoConnectors = "1.0.1"
 }
 
