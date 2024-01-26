@@ -28,7 +28,7 @@ val Versions = new {
   val Log4Cats = "2.6.0"
   val Weaver = "0.8.3"
   val Laserdisc = "6.0.5"
-  val PekkoConnectors = "1.0.1"
+  val PekkoConnectors = "1.0.2"
 }
 
 lazy val IntegrationTest = config("it") extend Test
