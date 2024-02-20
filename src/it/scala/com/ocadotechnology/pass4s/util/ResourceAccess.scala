@@ -28,6 +28,7 @@ object ResourceAccess {
       Semaphore[IO](1).flatMap { lock =>
         Ref[IO].of(Option.empty[IO[Unit]]).map { ref =>
           val access = new ResourceAccess {
+
             val shutdown: IO[Unit] =
               ref.modify {
                 case None            => (None, IO.raiseError(new Throwable("Can't close - there's no resource allocated")))
@@ -44,6 +45,7 @@ object ResourceAccess {
                 .flatMap { case (_, finalizer) =>
                   ref.set(Some(finalizer))
                 }
+
           }
 
           Resource.make(IO.pure(access.mapK(λ[IO ~> IO](v => lock.permit.surround(v)))).flatTap(_.start))(_.shutdown.attempt.void)

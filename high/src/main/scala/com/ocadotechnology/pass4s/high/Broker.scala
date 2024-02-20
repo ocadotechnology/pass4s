@@ -91,6 +91,7 @@ object Broker {
       )
     else
       new Broker[F, P1 with P2] {
+
         override def consumer[R >: P1 with P2](source: Source[R]): Consumer[F, Payload] =
           source.capability match {
             case p1 if typeOf[P1] <:< p1 => broker1.asInstanceOf[Broker[F, R]].consumer(source)
@@ -112,6 +113,7 @@ object Broker {
                 )
             }
           }
+
       }.pure[F]
   }
 
