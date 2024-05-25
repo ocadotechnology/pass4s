@@ -83,7 +83,7 @@ lazy val kernel = module("kernel").settings(
   libraryDependencies ++= Seq(
     "co.fs2" %% "fs2-core" % Versions.Fs2,
     "org.typelevel" %% "cats-effect" % Versions.CatsEffect,
-    "org.typelevel" %% "cats-tagless-core" % "0.15.0",
+    "org.typelevel" %% "cats-tagless-core" % "0.16.1",
     "org.typelevel" %% "cats-laws" % "2.9.0" % Test,
     "com.disneystreaming" %% "weaver-discipline" % Versions.Weaver % Test
   )
