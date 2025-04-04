@@ -22,13 +22,13 @@ import cats.MonadThrow
 import cats.data.OptionT
 import cats.effect.Async
 import cats.effect.Resource
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.core.Message.Payload
-import com.ocadotechnology.pass4s.core._
+import com.ocadotechnology.pass4s.core.*
 import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
 import fs2.Stream
 import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp
-import io.laserdisc.pure.sqs.tagless.{Interpreter => SqsInterpreter}
+import io.laserdisc.pure.sqs.tagless.Interpreter as SqsInterpreter
 import org.typelevel.log4cats.Logger
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -40,9 +40,11 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 
 import java.net.URI
-import scala.concurrent.duration._
-import scala.jdk.CollectionConverters._
-import scala.reflect.runtime.universe._
+import scala.concurrent.duration.*
+import scala.jdk.CollectionConverters.*
+import izumi.reflect.Tag
+import izumi.reflect.macrortti.LightTypeTag
+
 import scala.util.Try
 
 private object util {
@@ -75,7 +77,7 @@ object SqsFifo {
 
 final case class SqsUrl(value: String) extends AnyVal
 
-sealed trait SqsSource[T >: Sqs with SqsFifo] extends Source[T] {
+sealed trait SqsSource[T >: Sqs & SqsFifo] extends Source[T] {
   def url: SqsUrl
   def settings: SqsSource.Settings
 
@@ -86,7 +88,7 @@ sealed trait SqsSource[T >: Sqs with SqsFifo] extends Source[T] {
 }
 
 object SqsSource {
-  def unapply(src: SqsSource[_]): Option[(SqsUrl, Settings)] = Some((src.url, src.settings))
+  def unapply(src: SqsSource[?]): Option[(SqsUrl, Settings)] = Some((src.url, src.settings))
 
   sealed trait Settings {
     def messageProcessingTimeout: FiniteDuration
@@ -115,7 +117,7 @@ object SqsSource {
 
 final case class SqsEndpoint(url: SqsUrl, settings: SqsEndpoint.Settings = SqsEndpoint.Settings()) extends SqsSource[Sqs] {
   if (url.value.endsWith(".fifo")) throw new IllegalArgumentException("For fifo queues use SqsFifoEndpoint")
-  override def capability: Type = typeOf[Sqs]
+  override def capability: LightTypeTag = Tag[Sqs].tag
   def toDestination: SqsDestination = SqsDestination(url)
 }
 
@@ -135,7 +137,7 @@ object SqsEndpoint {
 
 final case class SqsFifoEndpoint(url: SqsUrl, settings: SqsFifoEndpoint.Settings = SqsFifoEndpoint.Settings()) extends SqsSource[SqsFifo] {
   if (!url.value.endsWith(".fifo")) throw new IllegalArgumentException("For non-fifo queues use SqsEndpoint")
-  override def capability: Type = typeOf[SqsFifo]
+  override def capability: LightTypeTag = Tag[SqsFifo].tag
   def toDestination: SqsFifoDestination = SqsFifoDestination(url)
 }
 
@@ -154,13 +156,13 @@ object SqsFifoEndpoint {
 }
 
 final case class SqsDestination(url: SqsUrl) extends Destination[Sqs] {
-  override val capability: Type = typeOf[Sqs]
+  override val capability: LightTypeTag = Tag[Sqs].tag
   override val name: String = util.niceName(url)
   def toSource(settings: SqsEndpoint.Settings = SqsEndpoint.Settings()): SqsEndpoint = SqsEndpoint(url, settings)
 }
 
 final case class SqsFifoDestination(url: SqsUrl) extends Destination[SqsFifo] {
-  override val capability: Type = typeOf[SqsFifo]
+  override val capability: LightTypeTag = Tag[SqsFifo].tag
   override val name: String = util.niceName(url)
   def toSource(settings: SqsFifoEndpoint.Settings = SqsFifoEndpoint.Settings()): SqsFifoEndpoint = SqsFifoEndpoint(url, settings)
 }
@@ -193,7 +195,7 @@ object SqsAttributesProvider {
 }
 
 object SqsConnector {
-  type SqsConnector[F[_]] = Connector.Aux[F, Sqs with SqsFifo, SqsAsyncClientOp[F]]
+  type SqsConnector[F[_]] = Connector.Aux[F, Sqs & SqsFifo, SqsAsyncClientOp[F]]
 
   def usingLocalAws[F[_]: SqsAttributesProvider: Async: Logger](
     endpointOverride: URI,
@@ -243,12 +245,12 @@ object SqsConnector {
   }
 
   def usingPureClient[F[_]: SqsAttributesProvider: Async: Logger](sqsAsyncClientOp: SqsAsyncClientOp[F]): SqsConnector[F] =
-    new Connector[F, Sqs with SqsFifo] {
+    new Connector[F, Sqs & SqsFifo] {
 
       type Raw = SqsAsyncClientOp[F]
       val underlying: SqsAsyncClientOp[F] = sqsAsyncClientOp
 
-      override def consumeBatched[R >: Sqs with SqsFifo](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: Sqs & SqsFifo](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
         source match {
           case sqsEndpoint: SqsSource[_] =>
             Stream
@@ -287,8 +289,8 @@ object SqsConnector {
             Stream.raiseError[F](new UnsupportedOperationException(s"SqsConnector does not support destination: $unsupportedDestination"))
         }
 
-      @scala.annotation.nowarn("cat=other-match-analysis") // custom unapply breaks the exhaustiveness checking
-      private val createReceiveMessageRequest: SqsSource[_] => ReceiveMessageRequest = {
+      @scala.annotation.nowarn // custom unapply breaks the exhaustiveness checking
+      private val createReceiveMessageRequest: SqsSource[?] => ReceiveMessageRequest = {
         case SqsSource(sqsUrl, SqsSource.Settings(messageProcessingTimeout, _, waitTimeSeconds, maxNumberOfMessages, _)) =>
           ReceiveMessageRequest
             .builder()
@@ -327,21 +329,24 @@ object SqsConnector {
                               .getOrElse(withGroupId)
         } yield withDedupId.build()
 
-      override def produce[R >: Sqs with SqsFifo](message: Message[R]): F[Unit] =
+      override def produce[R >: Sqs & SqsFifo](message: Message[R]): F[Unit] =
         for {
-          (request, d) <- message match {
-                            case Message(payload, d: SqsDestination)     =>
-                              (makeRequest(d, payload), d).pure[F]
-                            case Message(payload, d: SqsFifoDestination) =>
-                              makeFifoRequest(d, payload).tupleRight(d)
-                            case Message(_, unsupportedDestination)      =>
-                              ApplicativeThrow[F].raiseError(
-                                new UnsupportedOperationException(s"SqsConnector does not support destination: $unsupportedDestination")
-                              )
-                          }
-          _            <- sqsAsyncClientOp
-                            .sendMessage(request)
-                            .adaptError(SqsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
+          requestWithDestination <- message match {
+                                      case Message(payload, d: SqsDestination)     =>
+                                        (makeRequest(d, payload), d).pure[F]
+                                      case Message(payload, d: SqsFifoDestination) =>
+                                        makeFifoRequest(d, payload).tupleRight(d)
+                                      case Message(_, unsupportedDestination)      =>
+                                        ApplicativeThrow[F].raiseError(
+                                          new UnsupportedOperationException(
+                                            s"SqsConnector does not support destination: $unsupportedDestination"
+                                          )
+                                        )
+                                    }
+          (request, d) = requestWithDestination
+          _                      <- sqsAsyncClientOp
+                                      .sendMessage(request)
+                                      .adaptError(SqsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
         } yield ()
 
     }

@@ -37,7 +37,7 @@ object syntax {
     def apply[R >: P](
       to: Destination[R]
     )(
-      implicit M: MonadError[F, _ >: EncodingError],
+      implicit M: MonadError[F, ? >: EncodingError],
       encoder: XmlEncoder[A],
       noGroupId: GroupIdMeta.Absent[R]
     ): Sender[F, A] =
@@ -52,7 +52,7 @@ object syntax {
       to: Destination[R],
       computeMetadata: A => Map[String, String]
     )(
-      implicit M: MonadError[F, _ >: EncodingError],
+      implicit M: MonadError[F, ? >: EncodingError],
       encoder: XmlEncoder[A],
       noGroupId: GroupIdMeta.Absent[R]
     ): Sender[F, A] =
@@ -67,7 +67,7 @@ object syntax {
       to: Destination[R],
       computeMetadata: A => Map[String, String] = _ => Map()
     )(
-      implicit M: MonadError[F, _ >: EncodingError],
+      implicit M: MonadError[F, ? >: EncodingError],
       encoder: XmlEncoder[A],
       groupIdMeta: GroupIdMeta[R],
       messageGroup: MessageGroup[A]
@@ -108,7 +108,7 @@ object syntax {
   implicit final class ConsumeXmlMessageSyntax[F[_]](private val consumer: Consumer[F, String]) {
 
     def asXmlConsumer[A: XmlDecoder](
-      implicit M: MonadError[F, _ >: DecodingError]
+      implicit M: MonadError[F, ? >: DecodingError]
     ): Consumer[F, A] =
       consumer.mapM(XmlDecoder[A].decode(_).liftTo[F])
 
@@ -117,7 +117,7 @@ object syntax {
   implicit final class ConsumeXmlGenericMessageSyntax[F[_], A](private val consumer: Consumer[F, A]) {
 
     def asXmlConsumer[B: XmlDecoder](
-      implicit M: MonadError[F, _ >: DecodingError],
+      implicit M: MonadError[F, ? >: DecodingError],
       ev: A <:< Payload
     ): Consumer[F, B] =
       consumer.mapM(msg => XmlDecoder[B].decode(msg.text).liftTo[F])

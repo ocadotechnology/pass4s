@@ -256,8 +256,8 @@ object Sender extends SenderInstances {
   // instances
   //
 
-  implicit def functorK[A]: FunctorK[Sender[*[_], A]] =
-    new FunctorK[Sender[*[_], A]] {
+  implicit def functorK[A]: FunctorK[({ type S[F[_]] = Sender[F, A] })#S] =
+    new FunctorK[({ type S[F[_]] = Sender[F, A] })#S] {
       def mapK[F[_], G[_]](af: Sender[F, A])(fk: F ~> G): Sender[G, A] = fromFunction(msg => fk(af.sendOne(msg)))
     }
 

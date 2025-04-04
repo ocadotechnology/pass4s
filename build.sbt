@@ -11,7 +11,9 @@ ThisBuild / developers := List(
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
 val Scala213 = "2.13.16"
+val Scala3 = "3.3.5"
 ThisBuild / scalaVersion := Scala213
+ThisBuild / crossScalaVersions := Seq(Scala213, Scala3)
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("21"))
 ThisBuild / githubWorkflowBuild ++= Seq(
   WorkflowStep.Sbt(
@@ -31,6 +33,7 @@ val Versions = new {
   val Weaver = "0.8.4"
   val Laserdisc = "6.0.5"
   val PekkoConnectors = "1.1.0"
+  val IzumiReflect = "3.0.2"
 }
 
 lazy val IntegrationTest = config("it") extend Test
@@ -67,15 +70,15 @@ lazy val root = (project in file("."))
     IntegrationTest / classDirectory := (Test / classDirectory).value,
     IntegrationTest / parallelExecution := true
   )
-  .aggregate(core, kernel, high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
-  .dependsOn(high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
+  .aggregate(core, kernel, high, activemqPekko, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
+  .dependsOn(high, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
 
 def module(name: String, directory: String = ".") = Project(s"pass4s-$name", file(directory) / name).settings(commonSettings)
 
 lazy val core = module("core")
   .settings(
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "dev.zio" %% "izumi-reflect" % Versions.IzumiReflect,
       "co.fs2" %% "fs2-core" % Versions.Fs2,
       "org.typelevel" %% "cats-effect" % Versions.CatsEffect
     )
@@ -104,7 +107,9 @@ lazy val activemqAkka = module("activemq", directory = "connectors")
       "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
     ),
-    headerSources / excludeFilter := HiddenFileFilter || "taps.scala"
+    headerSources / excludeFilter := HiddenFileFilter || "taps.scala",
+    crossScalaVersions := Seq(Scala213),
+    publish / skip := scalaVersion.value.startsWith("3.") // Skip publishing for Scala 3
   )
   .dependsOn(core)
 
@@ -216,7 +221,7 @@ lazy val docs = project // new documentation project
       WorkflowStep.Sbt(List("docs/mdoc"))
     )
   )
-  .dependsOn(high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
+  .dependsOn(high, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
   .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
 // misc
@@ -225,7 +230,6 @@ lazy val demo = module("demo")
   .enablePlugins(NoPublishPlugin)
   .settings(
     publishArtifact := false,
-    // mimaPreviousArtifacts := Set(), // TODO
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-generic" % Versions.Circe,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
@@ -242,7 +246,7 @@ lazy val commonSettings = Seq(
   organization := "com.ocadotechnology",
   compilerOptions,
   Test / fork := true,
-  libraryDependencies ++= compilerPlugins,
+//  libraryDependencies ++= compilerPlugins,
   libraryDependencies ++= Seq(
     "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
@@ -255,10 +259,20 @@ lazy val commonSettings = Seq(
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
 
-val compilerOptions =
-  scalacOptions --= Seq("-Xfatal-warnings", "-Xsource:3")
+lazy val compilerOptions =
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((3, _)) => Seq()
+      case _            => Seq("-Xsource:3")
+    }
+  }
 
-val compilerPlugins = Seq(
-  compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full),
-  compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
-)
+def compilerPlugins =
+  libraryDependencies ++= (if (scalaVersion.value.startsWith("3")) Seq()
+                           else
+                             Seq(
+//        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
+                               compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+                             ))
+
+Global / lintUnusedKeysOnLoad := false

@@ -18,25 +18,27 @@ package com.ocadotechnology.pass4s.addons.s3proxy
 
 import cats.effect.IO
 import cats.effect.Resource
-import cats.implicits._
-import com.amazon.sqs.javamessaging._
-import com.ocadotechnology.pass4s.connectors.sqs._
+import cats.implicits.*
+import com.amazon.sqs.javamessaging.*
+import com.ocadotechnology.pass4s.connectors.sqs.*
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.s3proxy.S3Client
 import com.ocadotechnology.pass4s.s3proxy.S3ProxyConfig
-import com.ocadotechnology.pass4s.s3proxy.syntax._
-import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
+import com.ocadotechnology.pass4s.s3proxy.syntax.*
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils.*
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import software.amazon.awssdk.services.s3.{S3Client => AwsS3Client}
-import software.amazon.awssdk.services.sqs.model._
-import software.amazon.awssdk.services.sqs.{SqsClient => AwsSqsClient}
+import software.amazon.awssdk.services.s3.S3Client as AwsS3Client
+import software.amazon.awssdk.services.sqs.SqsClient as AwsSqsClient
+import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import weaver.MutableIOSuite
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object S3ProxyAmazonExtendedClientCompatibilityTests extends MutableIOSuite {
 
@@ -130,6 +132,8 @@ object S3ProxyAmazonExtendedClientCompatibilityTests extends MutableIOSuite {
         IO.delay(amazonSqsExtendedClient.receiveMessage(request).messages().asScala.headOption)
       }
 
+      val attributeValue = MessageAttributeValue.builder().dataType("String").stringValue("bar").build()
+
       for {
         _               <- pass4sSendMessage
         s3Objects       <- s3Client.listObjects(bucketName)
@@ -138,7 +142,7 @@ object S3ProxyAmazonExtendedClientCompatibilityTests extends MutableIOSuite {
       } yield expect.all(
         receivedPayload.body() == payload.text,
         receivedPayload.messageAttributes().asScala == Map(
-          "foo" -> MessageAttributeValue.builder().dataType("String").stringValue("bar").build()
+          "foo" -> attributeValue
         ),
         storedPayload.contains(payload.text)
       )

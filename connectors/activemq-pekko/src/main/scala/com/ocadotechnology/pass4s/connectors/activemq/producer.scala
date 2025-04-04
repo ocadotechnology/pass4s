@@ -39,7 +39,7 @@ import javax.jms
 
 private[activemq] object producer {
 
-  type MessageProducer[F[_]] = Message[_] => F[Unit]
+  type MessageProducer[F[_]] = Message[?] => F[Unit]
 
   private type Attempt = Either[Throwable, Unit]
   private type Promise[F[_]] = Deferred[F, Attempt]
@@ -115,7 +115,7 @@ private[activemq] object producer {
     }
   }
 
-  private def extractJmsDestination[F[_]: ApplicativeThrow](destination: Destination[_]): F[JmsDestination] =
+  private def extractJmsDestination[F[_]: ApplicativeThrow](destination: Destination[?]): F[JmsDestination] =
     destination match {
       case jmsDestination: JmsDestination => jmsDestination.pure[F]
       case unsupportedDestination         =>
