@@ -41,7 +41,7 @@ private[activemq] object consumer {
   def consumeAndReconnectOnErrors[F[_]: Async: Logger](
     connectionFactory: jms.ConnectionFactory
   )(
-    source: Source[_]
+    source: Source[?]
   )(
     implicit as: ActorSystem
   ): Stream[F, CommittableMessage[F]] =
@@ -63,7 +63,7 @@ private[activemq] object consumer {
       committableMessage <- Stream.eval(toCommittableMessage(txEnvelope)).unNone
     } yield committableMessage
 
-  private def extractJmsSource[F[_]: ApplicativeThrow](source: Source[_]): F[JmsSource] =
+  private def extractJmsSource[F[_]: ApplicativeThrow](source: Source[?]): F[JmsSource] =
     source match {
       case jmsSource: JmsSource   => jmsSource.pure[F]
       case unsupportedDestination =>

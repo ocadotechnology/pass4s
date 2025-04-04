@@ -18,15 +18,15 @@ package com.ocadotechnology.pass4s.addons.s3proxy
 
 import cats.effect.IO
 import cats.effect.Resource
-import com.ocadotechnology.pass4s.connectors.sns._
-import com.ocadotechnology.pass4s.connectors.sqs._
+import com.ocadotechnology.pass4s.connectors.sns.*
+import com.ocadotechnology.pass4s.connectors.sqs.*
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.s3proxy.S3Client
 import com.ocadotechnology.pass4s.s3proxy.S3ProxyConfig
-import com.ocadotechnology.pass4s.s3proxy.syntax._
-import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
+import com.ocadotechnology.pass4s.s3proxy.syntax.*
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils.*
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -34,9 +34,9 @@ import weaver.MutableIOSuite
 import fs2.Stream
 
 import scala.annotation.nowarn
-import scala.concurrent.duration._
 
-@nowarn
+import scala.concurrent.duration.*
+
 object S3ProxyTests extends MutableIOSuite {
 
   override type Res = (Broker[IO, Sns with Sqs], S3Client[IO], SnsConnector.SnsConnector[IO], SqsConnector.SqsConnector[IO])
@@ -211,6 +211,7 @@ object S3ProxyTests extends MutableIOSuite {
       }
   }
 
+  @nowarn
   def waitUntil[A](action: => IO[A])(predicate: A => Boolean)(sleepDuration: FiniteDuration, attempts: Int): IO[A] = {
     assert(attempts > 0, "Attempts must be positive")
     Stream

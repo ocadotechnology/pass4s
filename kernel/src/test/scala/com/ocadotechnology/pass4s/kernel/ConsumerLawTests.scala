@@ -70,12 +70,12 @@ object ConsumerLawTests extends FunSuite with Discipline {
 
   checkAll(
     "sequential Monoid[Consumer[F, Int]]",
-    MonoidTests[Consumer[F, Int]](Consumer.zipMonoid).monoid
+    MonoidTests[Consumer[F, Int]](using Consumer.zipMonoid).monoid
   )
 
   checkAll(
     "parallel Semigroup[Consumer[List, Int]]",
-    SemigroupTests[Consumer[List, Int]](Consumer.parZipSemigroup).semigroup
+    SemigroupTests[Consumer[List, Int]](using Consumer.parZipSemigroup).semigroup
   )
 
   // This one is commented out as there's a bug in CE3 that needs fixing: https://github.com/typelevel/cats-effect/issues/2778
