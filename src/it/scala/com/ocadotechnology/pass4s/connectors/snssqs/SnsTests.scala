@@ -29,6 +29,9 @@ import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 
+import scala.annotation.nowarn
+
+@nowarn
 object SnsTests extends MutableIOSuite {
   override type Res = (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], SnsAsyncClientOp[IO], SqsAsyncClientOp[IO])
 
