@@ -256,7 +256,7 @@ lazy val commonSettings = Seq(
 )
 
 val compilerOptions =
-  scalacOptions -= "-Xfatal-warnings"
+  scalacOptions --= Seq("-Xfatal-warnings", "-Xsource:3")
 
 val compilerPlugins = Seq(
   compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full),
