@@ -1,5 +1,6 @@
 ThisBuild / tlBaseVersion := "0.4" // current series x.y
 
+ThisBuild / startYear := Some(2023)
 ThisBuild / organization := "com.ocadotechnology"
 ThisBuild / organizationName := "Ocado Technology"
 ThisBuild / licenses := Seq(License.Apache2)
