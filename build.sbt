@@ -19,6 +19,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
     name = Some("Integration tests")
   )
 )
+ThisBuild / tlJdkRelease := None
 
 val Versions = new {
   val ActiveMq = "5.18.3"
