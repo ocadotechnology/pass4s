@@ -18,8 +18,10 @@ package com.ocadotechnology.pass4s.phobos
 
 import cats.effect.IO
 import com.ocadotechnology.pass4s.core.Message.Payload
-import com.ocadotechnology.pass4s.core.{Destination, Message}
-import com.ocadotechnology.pass4s.kernel.{Consumer, Sender}
+import com.ocadotechnology.pass4s.core.Destination
+import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.kernel.Consumer
+import com.ocadotechnology.pass4s.kernel.Sender
 import com.ocadotechnology.pass4s.phobos.syntax.*
 import izumi.reflect.Tag
 import izumi.reflect.macrortti.LightTypeTag

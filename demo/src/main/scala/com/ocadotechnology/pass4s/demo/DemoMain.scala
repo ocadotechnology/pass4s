@@ -51,12 +51,11 @@ object DemoMain extends IOApp {
   type AppEffect[A] = WriterT[ConnectionIO, Chain[Message[Jms]], A]
 
   val transactorResource: Resource[IO, ConnectionIO ~> IO] = Resource.pure[IO, ConnectionIO ~> IO] {
-      new (ConnectionIO ~> IO) {
-        def apply[A](cio: ConnectionIO[A]): IO[A] = {
-          IO(UUID.randomUUID()).map(_.toString()).flatTap(s => IO(println("Transaction ID: " + s))).flatMap(cio.run)
-        }
-      }
+    new (ConnectionIO ~> IO) {
+      def apply[A](cio: ConnectionIO[A]): IO[A] =
+        IO(UUID.randomUUID()).map(_.toString()).flatTap(s => IO(println("Transaction ID: " + s))).flatMap(cio.run)
     }
+  }
 
   def runAppEffect[F[_]: Monad](sender: Sender[F, Message[Jms]])(transactor: ConnectionIO ~> F): AppEffect ~> F =
     WriterT

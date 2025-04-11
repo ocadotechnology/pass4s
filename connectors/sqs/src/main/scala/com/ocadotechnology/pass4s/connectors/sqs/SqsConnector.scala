@@ -332,19 +332,19 @@ object SqsConnector {
       override def produce[R >: Sqs with SqsFifo](message: Message[R]): F[Unit] =
         for {
           requestD <- message match {
-                            case Message(payload, d: SqsDestination)     =>
-                              (makeRequest(d, payload), d).pure[F]
-                            case Message(payload, d: SqsFifoDestination) =>
-                              makeFifoRequest(d, payload).tupleRight(d)
-                            case Message(_, unsupportedDestination)      =>
-                              ApplicativeThrow[F].raiseError(
-                                new UnsupportedOperationException(s"SqsConnector does not support destination: $unsupportedDestination")
-                              )
-                          }
+                        case Message(payload, d: SqsDestination)     =>
+                          (makeRequest(d, payload), d).pure[F]
+                        case Message(payload, d: SqsFifoDestination) =>
+                          makeFifoRequest(d, payload).tupleRight(d)
+                        case Message(_, unsupportedDestination)      =>
+                          ApplicativeThrow[F].raiseError(
+                            new UnsupportedOperationException(s"SqsConnector does not support destination: $unsupportedDestination")
+                          )
+                      }
           (request, d) = requestD
-          _            <- sqsAsyncClientOp
-                            .sendMessage(request)
-                            .adaptError(SqsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
+          _        <- sqsAsyncClientOp
+                        .sendMessage(request)
+                        .adaptError(SqsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
         } yield ()
 
     }

@@ -199,19 +199,19 @@ object SnsConnector {
       override def produce[R >: AllSns](message: Message[R]): F[Unit] =
         for {
           requestD <- message match {
-                            case Message(payload, d: SnsDestination)     =>
-                              (makeRequest(d, payload), d).pure[F]
-                            case Message(payload, d: SnsFifoDestination) =>
-                              makeFifoRequest(d, payload).tupleRight(d)
-                            case Message(_, unsupportedDestination)      =>
-                              ApplicativeThrow[F].raiseError(
-                                new UnsupportedOperationException(s"SnsConnector does not support destination: $unsupportedDestination")
-                              )
-                          }
+                        case Message(payload, d: SnsDestination)     =>
+                          (makeRequest(d, payload), d).pure[F]
+                        case Message(payload, d: SnsFifoDestination) =>
+                          makeFifoRequest(d, payload).tupleRight(d)
+                        case Message(_, unsupportedDestination)      =>
+                          ApplicativeThrow[F].raiseError(
+                            new UnsupportedOperationException(s"SnsConnector does not support destination: $unsupportedDestination")
+                          )
+                      }
           (request, d) = requestD
-          _            <- snsAsyncClientOp
-                            .publish(request)
-                            .adaptError(SnsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
+          _        <- snsAsyncClientOp
+                        .publish(request)
+                        .adaptError(SnsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
         } yield ()
 
     }

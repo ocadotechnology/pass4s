@@ -259,8 +259,6 @@ def commonSettings = Seq(
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
 
-
-
 val compilerOptions = scalacOptions ++= List(
     "-Xsource:3",
     "-Wconf:msg=constructor modifiers are assumed:s",
@@ -272,6 +270,6 @@ def compilerPlugins =
     if (scalaVersion.value.startsWith("3")) Seq()
     else
       Seq(
-//        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full),
+//        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
         compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
       ))

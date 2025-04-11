@@ -40,7 +40,7 @@ object BrokerTests extends SimpleIOSuite {
   type Intersection2 = Baz & Qux
   type Intersection3 = Bar & Baz
 
-  //TODO: write test about mergeByCapability
+  // TODO: write test about mergeByCapability
 
   final case class FooDestination(name: String) extends Source[Foo] with Destination[Foo] {
     override val capability: LightTypeTag = Tag[Foo].tag
@@ -75,8 +75,8 @@ object BrokerTests extends SimpleIOSuite {
 
   test("routed broker should select correct consumer") {
     for {
-      createdBroker1  <- createBroker[Foo](foo1Id)
-      createdBroker2  <- createBroker[Foo](foo2Id)
+      createdBroker1   <- createBroker[Foo](foo1Id)
+      createdBroker2   <- createBroker[Foo](foo2Id)
       fooBroker = Broker.routed[IO, Foo] {
                     case this.foo1Destination => createdBroker1._1
                     case _                    => createdBroker2._1
@@ -99,8 +99,8 @@ object BrokerTests extends SimpleIOSuite {
                     case this.foo1Destination => foo1Broker
                     case _                    => foo2Broker
                   }
-      sentToFoo1                  <- fooBroker.sender.sendOne(Message(somePayload, foo1Destination)) *> foo1RefSender.sent
-      sentToFoo2                  <- fooBroker.sender.sendOne(Message(somePayload, foo2Destination)) *> foo2RefSender.sent
+      sentToFoo1           <- fooBroker.sender.sendOne(Message(somePayload, foo1Destination)) *> foo1RefSender.sent
+      sentToFoo2           <- fooBroker.sender.sendOne(Message(somePayload, foo2Destination)) *> foo2RefSender.sent
     } yield expect.all(
       sentToFoo1 == List((foo1Id, somePayload)),
       sentToFoo2 == List((foo2Id, somePayload))
@@ -111,13 +111,13 @@ object BrokerTests extends SimpleIOSuite {
     for {
       fooBrokerSenderPair <- createBroker[Foo](fooId)
       (fooBroker, _) = fooBrokerSenderPair
-      barBrokerSenderPair  <- createBroker[Bar](barId)
+      barBrokerSenderPair <- createBroker[Bar](barId)
       (barBroker, _) = barBrokerSenderPair
-      bazBrokerSenderPair  <- createBroker[Baz](bazId)
+      bazBrokerSenderPair <- createBroker[Baz](bazId)
       (bazBroker, _) = bazBrokerSenderPair
-      broker          <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
-      consumedFromFoo <- consumeOne(broker.consumer(fooDestination))
-      consumedFromBar <- consumeOne(broker.consumer(barDestination))
+      broker              <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
+      consumedFromFoo     <- consumeOne(broker.consumer(fooDestination))
+      consumedFromBar     <- consumeOne(broker.consumer(barDestination))
     } yield expect.all(
       consumedFromFoo.text == fooId,
       consumedFromBar.text == barId
@@ -128,13 +128,13 @@ object BrokerTests extends SimpleIOSuite {
     for {
       fooBrokerSenderPair <- createBroker[Foo](fooId)
       (fooBroker, fooRefSender) = fooBrokerSenderPair
-      barBrokerSenderPair           <- createBroker[Bar](barId)
+      barBrokerSenderPair <- createBroker[Bar](barId)
       (barBroker, _) = barBrokerSenderPair
       bazBrokerSenderPair <- createBroker[Baz](bazId)
       (bazBroker, bazRefSender) = bazBrokerSenderPair
-      broker                    <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
-      sentToFoo                 <- broker.sender.sendOne(Message(somePayload, fooDestination)) *> fooRefSender.sent
-      sentToBaz                 <- broker.sender.sendOne(Message(somePayload, bazDestination)) *> bazRefSender.sent
+      broker              <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
+      sentToFoo           <- broker.sender.sendOne(Message(somePayload, fooDestination)) *> fooRefSender.sent
+      sentToBaz           <- broker.sender.sendOne(Message(somePayload, bazDestination)) *> bazRefSender.sent
     } yield expect.all(
       sentToFoo == List((fooId, somePayload)),
       sentToBaz == List((bazId, somePayload))
@@ -151,9 +151,9 @@ object BrokerTests extends SimpleIOSuite {
       (barBroker, _) = barBrokerSenderPair
       bazBrokerSenderPair  <- createBroker[Baz](bazId)
       (bazBroker, _) = bazBrokerSenderPair
-      foo1BarBroker   <- Broker.mergeByCapabilities(foo1Broker, barBroker)
-      foo2BazBroker   <- Broker.mergeByCapabilities(foo2Broker, bazBroker)
-      result          <- Broker.mergeByCapabilities(foo1BarBroker, foo2BazBroker).attempt
+      foo1BarBroker        <- Broker.mergeByCapabilities(foo1Broker, barBroker)
+      foo2BazBroker        <- Broker.mergeByCapabilities(foo2Broker, bazBroker)
+      result               <- Broker.mergeByCapabilities(foo1BarBroker, foo2BazBroker).attempt
     } yield {
       val ex = result.swap.getOrElse(throw new IllegalStateException())
       expect.all(
@@ -167,9 +167,9 @@ object BrokerTests extends SimpleIOSuite {
     for {
       brokerSenderPair1 <- createBroker[Intersection1](foo1Id)
       (broker1, _) = brokerSenderPair1
-      brokerSenderPair2  <- createBroker[Intersection3](barId)
+      brokerSenderPair2 <- createBroker[Intersection3](barId)
       (broker2, _) = brokerSenderPair2
-      result          <- Broker.mergeByCapabilities(broker1, broker2).attempt
+      result            <- Broker.mergeByCapabilities(broker1, broker2).attempt
     } yield {
       val ex = result.swap.getOrElse(throw new IllegalStateException())
       expect.all(
@@ -183,11 +183,11 @@ object BrokerTests extends SimpleIOSuite {
     for {
       brokerSenderPair1 <- createBroker[Intersection1](fooId)
       (broker1, sender1) = brokerSenderPair1
-      brokerSenderPair2  <- createBroker[Intersection2](bazId)
+      brokerSenderPair2 <- createBroker[Intersection2](bazId)
       (broker2, sender2) = brokerSenderPair2
-      broker                    <- Broker.mergeByCapabilities(broker1, broker2)
-      sentToFoo                 <- broker.sender.sendOne(Message(somePayload, fooDestination)) *> sender1.sent
-      sentToBaz                 <- broker.sender.sendOne(Message(somePayload, bazDestination)) *> sender2.sent
+      broker            <- Broker.mergeByCapabilities(broker1, broker2)
+      sentToFoo         <- broker.sender.sendOne(Message(somePayload, fooDestination)) *> sender1.sent
+      sentToBaz         <- broker.sender.sendOne(Message(somePayload, bazDestination)) *> sender2.sent
     } yield expect.all(
       sentToFoo == List((fooId, somePayload)),
       sentToBaz == List((bazId, somePayload))
@@ -208,10 +208,10 @@ object BrokerTests extends SimpleIOSuite {
       (barBroker, _) = barBrokerSenderPair
       bazBrokerSenderPair  <- createBroker[Baz](bazId)
       (bazBroker, _) = bazBrokerSenderPair
-      broker           <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
-      consumedFromFoo1 <- consumeOne(broker.consumer(foo1Destination))
-      consumedFromFoo2 <- consumeOne(broker.consumer(foo2Destination))
-      consumedFromBar  <- consumeOne(broker.consumer(barDestination))
+      broker               <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
+      consumedFromFoo1     <- consumeOne(broker.consumer(foo1Destination))
+      consumedFromFoo2     <- consumeOne(broker.consumer(foo2Destination))
+      consumedFromBar      <- consumeOne(broker.consumer(barDestination))
     } yield expect.all(
       consumedFromFoo1.text == foo1Id,
       consumedFromFoo2.text == foo2Id,
@@ -233,10 +233,10 @@ object BrokerTests extends SimpleIOSuite {
       (barBroker, _) = barBrokerSenderPair
       bazBrokerSenderPair  <- createBroker[Baz](bazId)
       (bazBroker, bazRefSender) = bazBrokerSenderPair
-      broker                      <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
-      sentToFoo1                  <- fooBroker.sender.sendOne(Message(somePayload, foo1Destination)) *> foo1RefSender.sent
-      sentToFoo2                  <- fooBroker.sender.sendOne(Message(somePayload, foo2Destination)) *> foo2RefSender.sent
-      sentToBaz                   <- broker.sender.sendOne(Message(somePayload, bazDestination)) *> bazRefSender.sent
+      broker               <- Broker.mergeByCapabilities(fooBroker, barBroker, bazBroker)
+      sentToFoo1           <- fooBroker.sender.sendOne(Message(somePayload, foo1Destination)) *> foo1RefSender.sent
+      sentToFoo2           <- fooBroker.sender.sendOne(Message(somePayload, foo2Destination)) *> foo2RefSender.sent
+      sentToBaz            <- broker.sender.sendOne(Message(somePayload, bazDestination)) *> bazRefSender.sent
     } yield expect.all(
       sentToFoo1 == List((foo1Id, somePayload)),
       sentToFoo2 == List((foo2Id, somePayload)),
