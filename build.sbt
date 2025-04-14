@@ -1,5 +1,6 @@
 ThisBuild / tlBaseVersion := "0.4" // current series x.y
 
+ThisBuild / startYear := Some(2023)
 ThisBuild / organization := "com.ocadotechnology"
 ThisBuild / organizationName := "Ocado Technology"
 ThisBuild / licenses := Seq(License.Apache2)
@@ -18,6 +19,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
     name = Some("Integration tests")
   )
 )
+ThisBuild / tlJdkRelease := None
 
 val Versions = new {
   val ActiveMq = "5.18.3"
@@ -254,7 +256,7 @@ lazy val commonSettings = Seq(
 )
 
 val compilerOptions =
-  scalacOptions -= "-Xfatal-warnings"
+  scalacOptions --= Seq("-Xfatal-warnings", "-Xsource:3")
 
 val compilerPlugins = Seq(
   compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full),
