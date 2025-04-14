@@ -17,9 +17,9 @@
 package com.ocadotechnology.pass4s.phobos
 
 import cats.effect.IO
-import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
+import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.kernel.Sender
 import com.ocadotechnology.pass4s.phobos.syntax.*
@@ -30,16 +30,12 @@ import ru.tinkoff.phobos.derivation.semiauto.*
 import ru.tinkoff.phobos.encoding.XmlEncoder
 import weaver.SimpleIOSuite
 
-import scala.annotation.nowarn
-
-@nowarn
 object PhobosTests extends SimpleIOSuite {
 
   object UnitEnd extends Destination[Unit] { override def name: String = "unit"; override def capability: LightTypeTag = Tag[Unit].tag }
 
   case class MyEvent(foo: Int, bar: String)
 
-  @nowarn
   object MyEvent {
     implicit val xmlEncoder: XmlEncoder[MyEvent] = deriveXmlEncoder("journey")
     implicit val xmlDecoder: XmlDecoder[MyEvent] = deriveXmlDecoder("journey")

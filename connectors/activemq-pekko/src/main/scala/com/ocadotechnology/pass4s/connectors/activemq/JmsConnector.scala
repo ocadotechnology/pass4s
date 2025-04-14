@@ -42,8 +42,8 @@ object Jms {
   sealed trait Type extends Product with Serializable
 
   object Type {
-    final case object Queue extends Type
-    final case object Topic extends Type
+    case object Queue extends Type
+    case object Topic extends Type
   }
 
 }

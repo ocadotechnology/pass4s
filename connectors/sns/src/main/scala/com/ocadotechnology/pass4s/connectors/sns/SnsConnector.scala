@@ -109,8 +109,8 @@ object SnsAttributesProvider {
 }
 
 object SnsConnector {
-  type SnsConnector[F[_]] = Connector.Aux[F, Sns with SnsFifo, SnsAsyncClientOp[F]]
-  type AllSns = Sns with SnsFifo
+  type SnsConnector[F[_]] = Connector.Aux[F, Sns & SnsFifo, SnsAsyncClientOp[F]]
+  type AllSns = Sns & SnsFifo
 
   def usingLocalAws[F[_]: SnsAttributesProvider: Async](
     endpointOverride: URI,

@@ -79,7 +79,7 @@ object Broker {
   def mergeByCapabilities[F[_]: ApplicativeThrow, P1: Tag, P2: Tag](
     broker1: Broker[F, P1],
     broker2: Broker[F, P2]
-  ): F[Broker[F, P1 with P2]] = {
+  ): F[Broker[F, P1 & P2]] = {
     val commonCapabilities = Tag[P1].tag.decompose intersect Tag[P2].tag.decompose
     if (commonCapabilities.nonEmpty)
       ApplicativeThrow[F].raiseError(
@@ -88,8 +88,8 @@ object Broker {
         )
       )
     else
-      new Broker[F, P1 with P2] {
-        override def consumer[R >: P1 with P2](source: Source[R]): Consumer[F, Payload] =
+      new Broker[F, P1 & P2] {
+        override def consumer[R >: P1 & P2](source: Source[R]): Consumer[F, Payload] =
           source.capability match {
             case p1 if Tag[P1].tag <:< p1 => broker1.asInstanceOf[Broker[F, R]].consumer(source)
             case p2 if Tag[P2].tag <:< p2 => broker2.asInstanceOf[Broker[F, R]].consumer(source)
@@ -99,7 +99,7 @@ object Broker {
               )
           }
 
-        override def sender[R >: P1 with P2]: Sender[F, Message[R]] =
+        override def sender[R >: P1 & P2]: Sender[F, Message[R]] =
           Sender.routed { message =>
             message.destination.capability match {
               case p1 if Tag[P1].tag <:< p1 => broker1.asInstanceOf[Broker[F, R]].sender
@@ -119,18 +119,18 @@ object Broker {
     broker1: Broker[F, P1],
     broker2: Broker[F, P2],
     broker3: Broker[F, P3]
-  ): F[Broker[F, P1 with P2 with P3]] =
+  ): F[Broker[F, P1 & P2 & P3]] =
     mergeByCapabilities[F, P1, P2](broker1, broker2)
-      .flatMap(mergeByCapabilities[F, P1 with P2, P3](_, broker3))
+      .flatMap(mergeByCapabilities[F, P1 & P2, P3](_, broker3))
 
   def mergeByCapabilities[F[_]: MonadThrow, P1: Tag, P2: Tag, P3: Tag, P4: Tag](
     broker1: Broker[F, P1],
     broker2: Broker[F, P2],
     broker3: Broker[F, P3],
     broker4: Broker[F, P4]
-  ): F[Broker[F, P1 with P2 with P3 with P4]] =
+  ): F[Broker[F, P1 & P2 & P3 & P4]] =
     mergeByCapabilities[F, P1, P2, P3](broker1, broker2, broker3)
-      .flatMap(mergeByCapabilities[F, P1 with P2 with P3, P4](_, broker4))
+      .flatMap(mergeByCapabilities[F, P1 & P2 & P3, P4](_, broker4))
 
   def mergeByCapabilities[F[_]: MonadThrow, P1: Tag, P2: Tag, P3: Tag, P4: Tag, P5: Tag](
     broker1: Broker[F, P1],
@@ -138,8 +138,8 @@ object Broker {
     broker3: Broker[F, P3],
     broker4: Broker[F, P4],
     broker5: Broker[F, P5]
-  ): F[Broker[F, P1 with P2 with P3 with P4 with P5]] =
+  ): F[Broker[F, P1 & P2 & P3 & P4 & P5]] =
     mergeByCapabilities[F, P1, P2, P3, P4](broker1, broker2, broker3, broker4)
-      .flatMap(mergeByCapabilities[F, P1 with P2 with P3 with P4, P5](_, broker5))
+      .flatMap(mergeByCapabilities[F, P1 & P2 & P3 & P4, P5](_, broker5))
 
 }

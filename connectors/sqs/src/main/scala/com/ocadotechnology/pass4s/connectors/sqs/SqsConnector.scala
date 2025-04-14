@@ -77,7 +77,7 @@ object SqsFifo {
 
 final case class SqsUrl(value: String) extends AnyVal
 
-sealed trait SqsSource[T >: Sqs with SqsFifo] extends Source[T] {
+sealed trait SqsSource[T >: Sqs & SqsFifo] extends Source[T] {
   def url: SqsUrl
   def settings: SqsSource.Settings
 
@@ -195,7 +195,7 @@ object SqsAttributesProvider {
 }
 
 object SqsConnector {
-  type SqsConnector[F[_]] = Connector.Aux[F, Sqs with SqsFifo, SqsAsyncClientOp[F]]
+  type SqsConnector[F[_]] = Connector.Aux[F, Sqs & SqsFifo, SqsAsyncClientOp[F]]
 
   def usingLocalAws[F[_]: SqsAttributesProvider: Async: Logger](
     endpointOverride: URI,
@@ -245,12 +245,12 @@ object SqsConnector {
   }
 
   def usingPureClient[F[_]: SqsAttributesProvider: Async: Logger](sqsAsyncClientOp: SqsAsyncClientOp[F]): SqsConnector[F] =
-    new Connector[F, Sqs with SqsFifo] {
+    new Connector[F, Sqs & SqsFifo] {
 
       type Raw = SqsAsyncClientOp[F]
       val underlying: SqsAsyncClientOp[F] = sqsAsyncClientOp
 
-      override def consumeBatched[R >: Sqs with SqsFifo](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
+      override def consumeBatched[R >: Sqs & SqsFifo](source: Source[R]): Stream[F, List[CommittableMessage[F]]] =
         source match {
           case sqsEndpoint: SqsSource[_] =>
             Stream
@@ -289,7 +289,7 @@ object SqsConnector {
             Stream.raiseError[F](new UnsupportedOperationException(s"SqsConnector does not support destination: $unsupportedDestination"))
         }
 
-      @scala.annotation.nowarn("cat=other-match-analysis") // custom unapply breaks the exhaustiveness checking
+      @scala.annotation.nowarn // custom unapply breaks the exhaustiveness checking
       private val createReceiveMessageRequest: SqsSource[?] => ReceiveMessageRequest = {
         case SqsSource(sqsUrl, SqsSource.Settings(messageProcessingTimeout, _, waitTimeSeconds, maxNumberOfMessages, _)) =>
           ReceiveMessageRequest
@@ -329,7 +329,7 @@ object SqsConnector {
                               .getOrElse(withGroupId)
         } yield withDedupId.build()
 
-      override def produce[R >: Sqs with SqsFifo](message: Message[R]): F[Unit] =
+      override def produce[R >: Sqs & SqsFifo](message: Message[R]): F[Unit] =
         for {
           requestD <- message match {
                         case Message(payload, d: SqsDestination)     =>

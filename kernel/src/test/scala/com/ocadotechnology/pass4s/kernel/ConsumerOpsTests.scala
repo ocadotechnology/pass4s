@@ -49,7 +49,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
       consumed     <- Sender.testing[IO, Int]
       ignored      <- Sender.testing[IO, Int]
       _            <- Consumer
-                        .many[IO, Int](0 until 6: _*)
+                        .many[IO, Int]((0 until 6)*)
                         .evalMapFilter {
                           case i if i % 2 === 0 => IO.pure(Some(i))
                           case i                => ignored.sendOne(i).as(None)
