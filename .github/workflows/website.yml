@@ -1,7 +1,7 @@
 name: Website
 on:
   push:
-    branches: 
+    branches:
       - main
       - docs
     tags: ["*"]
@@ -10,18 +10,18 @@ jobs:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: olafurpg/setup-scala@v10
+      - uses: olafurpg/setup-scala@v11
         with:
           distribution: graalvm
           java-version: 11
       - name: Run mdoc
         run: sbt '++2.13.11 docs/mdoc'
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 18
           cache-dependency-path: website/package-lock.json
           cache: yarn
       - name: Install dependencies
