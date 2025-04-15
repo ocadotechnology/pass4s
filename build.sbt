@@ -28,7 +28,7 @@ val Versions = new {
   val Fs2 = "3.12.0"
   val Logback = "1.5.18"
   val Log4Cats = "2.7.0"
-  val Weaver = "0.8.3"
+  val Weaver = "0.8.4"
   val Laserdisc = "6.0.5"
   val PekkoConnectors = "1.0.1"
 }
@@ -36,7 +36,7 @@ val Versions = new {
 lazy val IntegrationTest = config("it") extend Test
 
 lazy val securityDependencyOverrides = Seq(
-  "io.netty" % "netty-handler" % "4.1.100.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-handler" % "4.1.118.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
   "io.netty" % "netty-codec-http2" % "4.1.100.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
 )
 
