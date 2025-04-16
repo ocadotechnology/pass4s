@@ -116,9 +116,9 @@ object syntax {
                 _.map {
                   _.mapScope {
                     _.flatTap { payload =>
-                      /** Note: this logs *after* the resource has been acquired (which is the only place where we'll see a message, so it
-                        * makes sense) and *before* the resource is closed.
-                        */
+                      /* Note: this logs *after* the resource has been acquired (which is the only place where we'll see a message, so it
+                       * makes sense) and *before* the resource is closed.
+                       */
                       Resource.eval(logger.debug(s"Received message [$payload] from [$source]")).onFinalizeCase {
                         case ExitCase.Succeeded  => logger.debug(s"Committing message [$payload]")
                         case ExitCase.Canceled   => logger.warn(s"Rolling back message [$payload] because of cancelation")

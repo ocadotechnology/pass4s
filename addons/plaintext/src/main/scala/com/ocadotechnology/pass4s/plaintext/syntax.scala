@@ -26,7 +26,6 @@ object syntax {
 
   final private[syntax] class AsPlaintextSenderPartiallyApplied[F[_], P](private val sender: Sender[F, Message[P]]) extends AnyVal {
 
-    @scala.annotation.nowarn("cat=unused-params")
     def apply[R >: P](
       to: Destination[R],
       computeMetadata: String => Map[String, String] = _ => Map()

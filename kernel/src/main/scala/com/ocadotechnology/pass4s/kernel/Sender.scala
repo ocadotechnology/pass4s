@@ -81,7 +81,7 @@ trait Sender[F[_], -A] extends (A => F[Unit]) with Serializable {
   def prepare[B](f: B => A): Sender[F, B] = contramap(f)
 
   /** Returns a sender that, based on whether the input is a Left or a Right, chooses the sender that will receive the message - for Lefts
-    * it'll be [[this]], for Rights it'll be [[another]].
+    * it'll be `this`, for Rights it'll be `another`.
     */
   def or[B](another: Sender[F, B]): Sender[F, Either[A, B]] = Sender.decide(this, another)
 }
@@ -174,7 +174,7 @@ object Sender extends SenderInstances {
       messages.traverse_(self.sendOne)
 
     /** This can be used together with [[Sender.writer]] or [[Sender.chainWriter]]: After you've sent some messages with a writer sender,
-      * you can pass the result to actualSender.sendWritten(...). This will perform the actual send using the underlying sender ([[self]]).
+      * you can pass the result to actualSender.sendWritten(...). This will perform the actual send using the underlying sender (`self`).
       *
       * Also see [[sendWrittenK]].
       */
@@ -236,8 +236,8 @@ object Sender extends SenderInstances {
     ): Sender[F, B] =
       fromFunction(f(_).flatMap(_.fold(F.unit)(self.sendOne)))
 
-    /** The dual to [[Sender.or]] - sends both parts of the tuple to the right underlying sender ([[self]] or [[another]], based on the
-      * position in the tuple).
+    /** The dual to [[Sender.or]] - sends both parts of the tuple to the right underlying sender (`self` or `another`, based on the position
+      * in the tuple).
       *
       * This is the same as .tupled from Cats syntax.
       */

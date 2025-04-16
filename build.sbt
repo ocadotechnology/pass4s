@@ -1,5 +1,6 @@
 ThisBuild / tlBaseVersion := "0.4" // current series x.y
 
+ThisBuild / startYear := Some(2023)
 ThisBuild / organization := "com.ocadotechnology"
 ThisBuild / organizationName := "Ocado Technology"
 ThisBuild / licenses := Seq(License.Apache2)
@@ -9,7 +10,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
-val Scala213 = "2.13.12"
+val Scala213 = "2.13.16"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("21"))
 ThisBuild / githubWorkflowBuild ++= Seq(
@@ -18,24 +19,25 @@ ThisBuild / githubWorkflowBuild ++= Seq(
     name = Some("Integration tests")
   )
 )
+ThisBuild / tlJdkRelease := None
 
 val Versions = new {
   val ActiveMq = "6.1.1"
-  val CatsEffect = "3.5.2"
-  val Circe = "0.14.6"
-  val Fs2 = "3.9.3"
-  val Logback = "1.4.13"
-  val Log4Cats = "2.6.0"
-  val Weaver = "0.8.3"
+  val CatsEffect = "3.6.1"
+  val Circe = "0.14.12"
+  val Fs2 = "3.12.0"
+  val Logback = "1.5.18"
+  val Log4Cats = "2.7.0"
+  val Weaver = "0.8.4"
   val Laserdisc = "6.0.5"
-  val PekkoConnectors = "1.0.1"
+  val PekkoConnectors = "1.1.0"
 }
 
 lazy val IntegrationTest = config("it") extend Test
 
 lazy val securityDependencyOverrides = Seq(
-  "io.netty" % "netty-handler" % "4.1.100.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
-  "io.netty" % "netty-codec-http2" % "4.1.100.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-handler" % "4.1.119.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-codec-http2" % "4.1.119.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
 )
 
 lazy val root = (project in file("."))
@@ -49,9 +51,9 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
-      "org.scalatest" %% "scalatest" % "3.2.17", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.41.0",
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.41.0",
+      "org.scalatest" %% "scalatest" % "3.2.19", // just for `shouldNot compile`
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.41.8",
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.41.8",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
@@ -83,8 +85,8 @@ lazy val kernel = module("kernel").settings(
   libraryDependencies ++= Seq(
     "co.fs2" %% "fs2-core" % Versions.Fs2,
     "org.typelevel" %% "cats-effect" % Versions.CatsEffect,
-    "org.typelevel" %% "cats-tagless-core" % "0.15.0",
-    "org.typelevel" %% "cats-laws" % "2.9.0" % Test,
+    "org.typelevel" %% "cats-tagless-core" % "0.16.3",
+    "org.typelevel" %% "cats-laws" % "2.13.0" % Test,
     "com.disneystreaming" %% "weaver-discipline" % Versions.Weaver % Test
   )
 )
@@ -192,7 +194,7 @@ lazy val logging = module("logging", directory = "addons")
   .dependsOn(high)
 
 def latestStableVersion = {
-  import scala.sys.process._
+  import scala.sys.process.*
   "git -c versionsort.suffix=- tag --list --sort=-version:refname"
     .!!
     .split("\n")
@@ -254,9 +256,9 @@ lazy val commonSettings = Seq(
 )
 
 val compilerOptions =
-  scalacOptions -= "-Xfatal-warnings"
+  scalacOptions --= Seq("-Xfatal-warnings", "-Xsource:3")
 
 val compilerPlugins = Seq(
-  compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full),
+  compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full),
   compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
