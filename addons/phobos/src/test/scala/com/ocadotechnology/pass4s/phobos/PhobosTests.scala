@@ -28,6 +28,7 @@ import ru.tinkoff.phobos.derivation.semiauto._
 import ru.tinkoff.phobos.encoding.XmlEncoder
 import weaver.SimpleIOSuite
 
+import scala.annotation.nowarn
 import scala.reflect.runtime.universe._
 
 object PhobosTests extends SimpleIOSuite {
@@ -36,6 +37,7 @@ object PhobosTests extends SimpleIOSuite {
 
   case class MyEvent(foo: Int, bar: String)
 
+  @nowarn
   object MyEvent {
     implicit val xmlEncoder: XmlEncoder[MyEvent] = deriveXmlEncoder("journey")
     implicit val xmlDecoder: XmlDecoder[MyEvent] = deriveXmlDecoder("journey")

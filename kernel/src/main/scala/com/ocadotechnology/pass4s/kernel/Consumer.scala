@@ -55,7 +55,7 @@ trait Consumer[F[_], +A] extends ((A => F[Unit]) => F[Unit]) with Serializable {
   //
   //
 
-  /** Starts the consumer, passing every message through the processing function `f`. Think of it like of an `evalMap` on [[Stream]] or
+  /** Starts the consumer, passing every message through the processing function `f`. Think of it like of an `evalMap` on [[fs2.Stream]] or
     * `use` on [[cats.effect.Resource]].
     *
     * For consumers built from an infinite-stream Connector (which every connector you ever use is going to be), this never terminates. For
@@ -275,7 +275,7 @@ object Consumer extends ConsumerInstances {
     ): Consumer[F, B] =
       Consumer.fromFunction[F, B](handler => self.consume(f(_).flatMap(_.fold(Applicative[F].unit)(handler))))
 
-    /** Similar to [[mapM()]], but discards the result of the tapped effect.
+    /** Similar to [[mapM]], but discards the result of the tapped effect.
       */
     def contraTapM(
       f: A => F[Unit]
@@ -296,7 +296,7 @@ object Consumer extends ConsumerInstances {
       use => self.consume(msg => use(msg) >> f(msg))
 
     /** For every message, creates an artificial consumer that only handles that one message, and runs it through the given function. This
-      * follows [[Consumer#flatMap]] semantics, so while the consumer of `B` is busy processing, no further messages will be received by
+      * follows `Consumer#flatMap` semantics, so while the consumer of `B` is busy processing, no further messages will be received by
       * `self`.
       */
     def selfProduct[B](
