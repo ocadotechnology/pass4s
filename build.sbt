@@ -52,8 +52,8 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.19", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.41.3",
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.41.4",
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.41.8",
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.41.8",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
