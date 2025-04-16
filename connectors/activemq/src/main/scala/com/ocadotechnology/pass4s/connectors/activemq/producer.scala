@@ -53,10 +53,10 @@ private[activemq] object producer {
   ): Resource[F, MessageProducer[F]] =
     for {
       queue <- Resource.eval(Queue.bounded[F, JmsPayload[F]](bufferSize))
-      /** Stream.eval(queue.take) wouldn't work here because it takes only single element and terminates. In this case we need to take all
-        * elements but one by one as long as there's anything in the queue. Limit is set to one as we only process single message at a time,
-        * so that we don't reemit chukns in case of failure.
-        */
+      /* Stream.eval(queue.take) wouldn't work here because it takes only single element and terminates. In this case we need to take all
+       * elements but one by one as long as there's anything in the queue. Limit is set to one as we only process single message at a time,
+       * so that we don't reemit chukns in case of failure.
+       */
       _ <- Stream.fromQueueUnterminated(queue, limit = 1).through(sendMessageAndCompletePromise(connectionFactory)).compile.drain.background
     } yield enqueueAndWaitForPromise[F](queue.offer)
 
