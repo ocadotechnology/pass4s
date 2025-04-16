@@ -33,8 +33,10 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 import fs2.Stream
 
+import scala.annotation.nowarn
 import scala.concurrent.duration._
 
+@nowarn
 object S3ProxyTests extends MutableIOSuite {
 
   override type Res = (Broker[IO, Sns with Sqs], S3Client[IO], SnsConnector.SnsConnector[IO], SqsConnector.SqsConnector[IO])
