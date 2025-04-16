@@ -34,7 +34,6 @@ object syntax {
 
   final private[syntax] class AsXmlSenderPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]]) extends AnyVal {
 
-    @scala.annotation.nowarn("cat=unused-params")
     def apply[R >: P](
       to: Destination[R]
     )(
@@ -49,7 +48,6 @@ object syntax {
   final private[syntax] class AsXmlSenderWithCustomMetadataPartiallyApplied[F[_], P, A](private val sender: Sender[F, Message[P]])
     extends AnyVal {
 
-    @scala.annotation.nowarn("cat=unused-params")
     def apply[R >: P](
       to: Destination[R],
       computeMetadata: A => Map[String, String]
