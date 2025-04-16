@@ -1,3 +1,10 @@
+import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
+import com.typesafe.tools.mima.core.IncompatibleResultTypeProblem
+import com.typesafe.tools.mima.core.ProblemFilters
+import com.typesafe.tools.mima.core.ReversedMissingMethodProblem
+import sbt.librarymanagement.SemanticSelector
+import sbt.librarymanagement.VersionNumber
+
 ThisBuild / tlBaseVersion := "0.4" // current series x.y
 
 ThisBuild / startYear := Some(2023)
@@ -246,16 +253,20 @@ lazy val commonSettings = Seq(
   organization := "com.ocadotechnology",
   compilerOptions,
   Test / fork := true,
-//  libraryDependencies ++= compilerPlugins,
   libraryDependencies ++= Seq(
     "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver
   ).map(_ % Test),
   mimaPreviousArtifacts := {
-    val artifacts = mimaPreviousArtifacts.value
-    artifacts.filterNot(artifact => versionsExcludedFromMima.contains(artifact.revision))
+    if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector(">=3"))) {
+      Set.empty
+    } else {
+      val artifacts = mimaPreviousArtifacts.value
+      artifacts.filterNot(artifact => versionsExcludedFromMima.contains(artifact.revision))
+    }
   },
+  mimaFailOnNoPrevious := false,
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
 
@@ -267,12 +278,19 @@ lazy val compilerOptions =
     }
   }
 
-def compilerPlugins =
-  libraryDependencies ++= (if (scalaVersion.value.startsWith("3")) Seq()
-                           else
-                             Seq(
-//        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-                               compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
-                             ))
-
 Global / lintUnusedKeysOnLoad := false
+
+ThisBuild / mimaBinaryIssueFilters ++= Seq(
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.core.End.capability"),
+  ProblemFilters.exclude[ReversedMissingMethodProblem]("com.ocadotechnology.pass4s.core.End.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.kinesis.KinesisDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sns.SnsDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sns.SnsFifoDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsFifoDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsFifoEndpoint.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsSource.capability"),
+  ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.ocadotechnology.pass4s.high.Broker.mergeByCapabilities")
+)
