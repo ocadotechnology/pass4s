@@ -152,7 +152,7 @@ object DemoMain extends IOApp {
         .sequence_
     }
 
-    server.flatten.surround(IO.never) /* .timeout(3.seconds) */.as(ExitCode.Success)
+    server.flatten.surround(IO.never) /* .timeout(3.seconds) */ .as(ExitCode.Success)
   }
 
 }
