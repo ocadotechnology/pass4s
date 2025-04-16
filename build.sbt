@@ -10,7 +10,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
-val Scala213 = "2.13.12"
+val Scala213 = "2.13.16"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("21"))
 ThisBuild / githubWorkflowBuild ++= Seq(
@@ -36,8 +36,8 @@ val Versions = new {
 lazy val IntegrationTest = config("it") extend Test
 
 lazy val securityDependencyOverrides = Seq(
-  "io.netty" % "netty-handler" % "4.1.118.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
-  "io.netty" % "netty-codec-http2" % "4.1.100.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-handler" % "4.1.119.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-codec-http2" % "4.1.119.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
 )
 
 lazy val root = (project in file("."))
@@ -85,7 +85,7 @@ lazy val kernel = module("kernel").settings(
   libraryDependencies ++= Seq(
     "co.fs2" %% "fs2-core" % Versions.Fs2,
     "org.typelevel" %% "cats-effect" % Versions.CatsEffect,
-    "org.typelevel" %% "cats-tagless-core" % "0.16.2",
+    "org.typelevel" %% "cats-tagless-core" % "0.16.3",
     "org.typelevel" %% "cats-laws" % "2.13.0" % Test,
     "com.disneystreaming" %% "weaver-discipline" % Versions.Weaver % Test
   )
