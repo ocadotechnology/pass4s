@@ -25,40 +25,40 @@ object KinesisTests extends MutableIOSuite {
       kinesisConnector <- createKinesisConnector(container)
     } yield (Broker.fromConnector(kinesisConnector), kinesisConnector.underlying)
 
-  test("sending a message should putRecord using random partitionKey").usingRes {
-    case (broker, implicit0(kinesisClient: KinesisAsyncClientOp[IO])) =>
-      val payload = Message.Payload("body", Map())
-      kinesisStreamResource(kinesisClient)("test-stream")
-        .use { streamName =>
-          val sendMessageOnStream = broker.sender.sendOne(Message(payload, KinesisDestination(streamName)))
+  test("sending a message should putRecord using random partitionKey").usingRes { case (broker, kinesisClient) =>
+    implicit val kinesisClientImplicit: KinesisAsyncClientOp[IO] = kinesisClient
+    val payload = Message.Payload("body", Map())
+    kinesisStreamResource(kinesisClient)("test-stream")
+      .use { streamName =>
+        val sendMessageOnStream = broker.sender.sendOne(Message(payload, KinesisDestination(streamName)))
 
-          sendMessageOnStream *> getShardIterator(streamName) >>= getRecords
-        }
-        .map(records =>
-          expect.all(
-            records.size == 1,
-            records.head.data().asUtf8String() == "body",
-            records.head.partitionKey().matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}") // simplified uuid regex
-          )
+        sendMessageOnStream *> getShardIterator(streamName) >>= getRecords
+      }
+      .map(records =>
+        expect.all(
+          records.size == 1,
+          records.head.data().asUtf8String() == "body",
+          records.head.partitionKey().matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}") // simplified uuid regex
         )
+      )
   }
 
-  test("sending a message should putRecord using given partitionKey").usingRes {
-    case (broker, implicit0(kinesisClient: KinesisAsyncClientOp[IO])) =>
-      val payload = Message.Payload("body", Map(Kinesis.partitionKeyMetadata -> "myPartitionKey"))
-      kinesisStreamResource(kinesisClient)("test-stream")
-        .use { streamName =>
-          val sendMessageOnStream = broker.sender.sendOne(Message(payload, KinesisDestination(streamName)))
+  test("sending a message should putRecord using given partitionKey").usingRes { case (broker, kinesisClient) =>
+    implicit val kinesisClientImplicit: KinesisAsyncClientOp[IO] = kinesisClient
+    val payload = Message.Payload("body", Map(Kinesis.partitionKeyMetadata -> "myPartitionKey"))
+    kinesisStreamResource(kinesisClient)("test-stream")
+      .use { streamName =>
+        val sendMessageOnStream = broker.sender.sendOne(Message(payload, KinesisDestination(streamName)))
 
-          sendMessageOnStream *> getShardIterator(streamName) >>= getRecords
-        }
-        .map(records =>
-          expect.all(
-            records.size == 1,
-            records.head.data().asUtf8String() == "body",
-            records.head.partitionKey() == "myPartitionKey"
-          )
+        sendMessageOnStream *> getShardIterator(streamName) >>= getRecords
+      }
+      .map(records =>
+        expect.all(
+          records.size == 1,
+          records.head.data().asUtf8String() == "body",
+          records.head.partitionKey() == "myPartitionKey"
         )
+      )
   }
 
   test("exception should be wrapped using own exception").usingRes { case (broker, _) =>

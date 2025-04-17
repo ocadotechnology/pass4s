@@ -16,6 +16,8 @@
 
 package com.ocadotechnology.pass4s.core
 
+import scala.annotation.nowarn
+
 object groupId {
 
   @scala.annotation.implicitNotFound(
@@ -38,7 +40,7 @@ object groupId {
       )
       implicit def default[P]: Absent[P] = new Absent[P] {}
 
-      @scala.annotation.nowarn("cat=unused") // this is supposed to be unused
+      @nowarn
       implicit def ambiguous[P: GroupIdMeta]: Absent[P] = new Absent[P] {}
       def iKnowWhatImDoing[P]: Absent[P] = new Absent[P] {}
     }

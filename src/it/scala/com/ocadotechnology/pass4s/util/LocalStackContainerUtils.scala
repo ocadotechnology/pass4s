@@ -108,7 +108,7 @@ object LocalStackContainerUtils {
                           ).build()
                         )
       } yield response.queueUrl())(queueUrl => sqsClient.deleteQueue(DeleteQueueRequest.builder().queueUrl(queueUrl).build()).void)
-      .map(SqsUrl)
+      .map(SqsUrl.apply)
 
   def topicResource(
     snsClient: SnsAsyncClientOp[IO]
@@ -127,7 +127,7 @@ object LocalStackContainerUtils {
             additionalParameters(CreateTopicRequest.builder().name(s"$topicName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)).build()
           )
       } yield response.topicArn())(topicArn => snsClient.deleteTopic(DeleteTopicRequest.builder().topicArn(topicArn).build()).void)
-      .map(SnsArn)
+      .map(SnsArn.apply)
 
   def topicWithSubscriptionResource(
     snsClient: SnsAsyncClientOp[IO],

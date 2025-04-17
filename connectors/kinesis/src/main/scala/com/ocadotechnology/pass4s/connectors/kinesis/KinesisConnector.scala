@@ -20,12 +20,14 @@ import cats.ApplicativeThrow
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.Sync
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.core.Message.Payload
-import com.ocadotechnology.pass4s.core._
+import com.ocadotechnology.pass4s.core.*
 import fs2.Stream
 import io.laserdisc.pure.kinesis.tagless.KinesisAsyncClientOp
-import io.laserdisc.pure.kinesis.tagless.{Interpreter => KinesisInterpreter}
+import io.laserdisc.pure.kinesis.tagless.Interpreter as KinesisInterpreter
+import izumi.reflect.macrortti.LightTypeTag
+import izumi.reflect.Tag
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.core.SdkBytes
 import software.amazon.awssdk.regions.Region
@@ -35,7 +37,6 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordRequest
 
 import java.net.URI
 import java.util.UUID
-import scala.reflect.runtime.universe._
 
 trait Kinesis
 
@@ -48,7 +49,7 @@ object Kinesis {
 }
 
 final case class KinesisDestination(name: String) extends Destination[Kinesis] {
-  override val capability: Type = typeOf[Kinesis]
+  override val capability: LightTypeTag = Tag[Kinesis].tag
 }
 
 trait KinesisAttributesProvider[F[_]] {

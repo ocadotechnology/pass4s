@@ -105,13 +105,13 @@ object syntax {
   implicit final class ConsumerCirceExtensions[F[_], A](private val consumer: Consumer[F, A]) extends AnyVal {
 
     def asJsonConsumer[B: Decoder](
-      implicit M: MonadError[F, _ >: io.circe.Error],
+      implicit M: MonadError[F, ? >: io.circe.Error],
       ev: A <:< Payload
     ): Consumer[F, B] =
       consumer.mapM(msg => decode[B](msg.text).liftTo[F])
 
     def asJsonConsumerWithMessage[B: Decoder](
-      implicit M: MonadError[F, _ >: io.circe.Error],
+      implicit M: MonadError[F, ? >: io.circe.Error],
       D: Defer[F],
       ev: A <:< Payload
     ): Consumer[F, (A, B)] =

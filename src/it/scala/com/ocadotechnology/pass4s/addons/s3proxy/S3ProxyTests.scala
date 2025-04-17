@@ -18,15 +18,15 @@ package com.ocadotechnology.pass4s.addons.s3proxy
 
 import cats.effect.IO
 import cats.effect.Resource
-import com.ocadotechnology.pass4s.connectors.sns._
-import com.ocadotechnology.pass4s.connectors.sqs._
+import com.ocadotechnology.pass4s.connectors.sns.*
+import com.ocadotechnology.pass4s.connectors.sqs.*
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.s3proxy.S3Client
 import com.ocadotechnology.pass4s.s3proxy.S3ProxyConfig
-import com.ocadotechnology.pass4s.s3proxy.syntax._
-import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
+import com.ocadotechnology.pass4s.s3proxy.syntax.*
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils.*
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -34,7 +34,7 @@ import weaver.MutableIOSuite
 import fs2.Stream
 
 import scala.annotation.nowarn
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 @nowarn
 object S3ProxyTests extends MutableIOSuite {
@@ -55,13 +55,15 @@ object S3ProxyTests extends MutableIOSuite {
   def bucketAndTopics(s3Client: S3Client[IO], snsConnector: SnsConnector.SnsConnector[IO], sqsConnector: SqsConnector.SqsConnector[IO]) =
     for {
       bucketName     <- s3BucketResource(s3Client)("bucket")
-      (topic, queue) <- topicWithSubscriptionResource(snsConnector.underlying, sqsConnector.underlying)("output-topic")
+      topicQueuePair <- topicWithSubscriptionResource(snsConnector.underlying, sqsConnector.underlying)("output-topic")
+      (topic, queue) = topicQueuePair
     } yield (bucketName, topic, queue)
 
   val payload: Message.Payload = Message.Payload("body", Map("foo" -> "bar"))
 
   test("Sender and consumer should do a full S3 round trip. Legacy format.").usingRes {
-    case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
+    case (broker, s3Client, snsConnector, sqsConnector) =>
+      implicit val s3ClientImplicit: S3Client[IO] = s3Client
       bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
         val consume1MessageFromQueue = {
           val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = false)
@@ -87,7 +89,8 @@ object S3ProxyTests extends MutableIOSuite {
   }
 
   test("Sender and consumer should do a full S3 round trip, message should not be deleted afterwards when deleting is disabled").usingRes {
-    case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
+    case (broker, s3Client, snsConnector, sqsConnector) =>
+      implicit val s3ClientImplicit: S3Client[IO] = s3Client
       bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
         val consume1MessageFromQueue = {
           val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = false)
@@ -112,7 +115,8 @@ object S3ProxyTests extends MutableIOSuite {
   }
 
   test("Sender and consumer should do a full S3 round trip, message should be deleted afterwards when deleting is enabled").usingRes {
-    case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
+    case (broker, s3Client, snsConnector, sqsConnector) =>
+      implicit val s3ClientImplicit: S3Client[IO] = s3Client
       bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
         val consume1MessageFromQueue = {
           val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = true)
@@ -141,74 +145,74 @@ object S3ProxyTests extends MutableIOSuite {
       }
   }
 
-  test("Round trip should not send to s3 when message is too small").usingRes {
-    case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
-        val consume1MessageFromQueue = {
-          val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults()
-          val consumer = broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
-          Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
-        }
-
-        val sendMessageOnTopic = {
-          val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = Some(Int.MaxValue))
-          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
-        }
-
-        for {
-          _       <- sendMessageOnTopic
-          objects <- s3Client.listObjects(bucketName)
-          message <- consume1MessageFromQueue
-        } yield expect.all(
-          message == payload,
-          objects.isEmpty
-        )
+  test("Round trip should not send to s3 when message is too small").usingRes { case (broker, s3Client, snsConnector, sqsConnector) =>
+    implicit val s3ClientImplicit: S3Client[IO] = s3Client
+    bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
+      val consume1MessageFromQueue = {
+        val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults()
+        val consumer = broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
+        Consumer.toStreamSynchronous(consumer).head.compile.lastOrError
       }
+
+      val sendMessageOnTopic = {
+        val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = Some(Int.MaxValue))
+        broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
+      }
+
+      for {
+        _       <- sendMessageOnTopic
+        objects <- s3Client.listObjects(bucketName)
+        message <- consume1MessageFromQueue
+      } yield expect.all(
+        message == payload,
+        objects.isEmpty
+      )
+    }
 
   }
 
-  test("When large enough message is sent, it lands on S3").usingRes {
-    case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, _) =>
-        val sendMessageOnTopic = {
-          val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = None)
-          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
-        }
-
-        for {
-          initial <- s3Client.listObjects(bucketName)
-          _       <- sendMessageOnTopic
-          objects <- s3Client.listObjects(bucketName)
-        } yield expect.all(
-          initial.isEmpty,
-          objects.nonEmpty
-        )
+  test("When large enough message is sent, it lands on S3").usingRes { case (broker, s3Client, snsConnector, sqsConnector) =>
+    implicit val s3ClientImplicit: S3Client[IO] = s3Client
+    bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, _) =>
+      val sendMessageOnTopic = {
+        val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = None)
+        broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
       }
+
+      for {
+        initial <- s3Client.listObjects(bucketName)
+        _       <- sendMessageOnTopic
+        objects <- s3Client.listObjects(bucketName)
+      } yield expect.all(
+        initial.isEmpty,
+        objects.nonEmpty
+      )
+    }
   }
 
-  test("Objects are persisted when consumer fails to process them").usingRes {
-    case (broker, implicit0(s3Client: S3Client[IO]), snsConnector, sqsConnector) =>
-      bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
-        val sendMessageOnTopic = {
-          val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = Some(0))
-          broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
-        }
-
-        val consumer = {
-          val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = true)
-          broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
-        }
-
-        for {
-          _       <- consumer.consume(_ => IO.raiseError(new RuntimeException("intentionally failed"))).background.use_
-          initial <- s3Client.listObjects(bucketName)
-          _       <- sendMessageOnTopic
-          objects <- s3Client.listObjects(bucketName)
-        } yield expect.all(
-          initial.isEmpty,
-          objects.nonEmpty
-        )
+  test("Objects are persisted when consumer fails to process them").usingRes { case (broker, s3Client, snsConnector, sqsConnector) =>
+    implicit val s3ClientImplicit: S3Client[IO] = s3Client
+    bucketAndTopics(s3Client, snsConnector, sqsConnector).use { case (bucketName, topicArn, queueUrl) =>
+      val sendMessageOnTopic = {
+        val senderConfig = S3ProxyConfig.Sender.withSnsDefaults(bucketName).copy(minPayloadSize = Some(0))
+        broker.sender.usingS3ProxyForBigPayload(senderConfig).sendOne(Message(payload, SnsDestination(topicArn)).widen)
       }
+
+      val consumer = {
+        val consumerConfig = S3ProxyConfig.Consumer.withSnsDefaults().copy(shouldDeleteAfterProcessing = true)
+        broker.consumer(SqsEndpoint(queueUrl)).usingS3ProxyForBigPayload(consumerConfig)
+      }
+
+      for {
+        _       <- consumer.consume(_ => IO.raiseError(new RuntimeException("intentionally failed"))).background.use_
+        initial <- s3Client.listObjects(bucketName)
+        _       <- sendMessageOnTopic
+        objects <- s3Client.listObjects(bucketName)
+      } yield expect.all(
+        initial.isEmpty,
+        objects.nonEmpty
+      )
+    }
   }
 
   def waitUntil[A](action: => IO[A])(predicate: A => Boolean)(sleepDuration: FiniteDuration, attempts: Int): IO[A] = {

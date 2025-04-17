@@ -17,11 +17,11 @@
 package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.{RestartSettings => AkkaRestartSettings}
+import org.apache.pekko.stream.RestartSettings as AkkaRestartSettings
 import cats.effect.Resource
 import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsSource.JmsSourceSettings
-import com.ocadotechnology.pass4s.connectors.pekko.activemq.consumer._
-import com.ocadotechnology.pass4s.connectors.pekko.activemq.producer._
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.consumer.*
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.producer.*
 import com.ocadotechnology.pass4s.core.CommittableMessage
 import com.ocadotechnology.pass4s.core.Connector
 import com.ocadotechnology.pass4s.core.Destination
@@ -31,9 +31,10 @@ import fs2.Stream
 import org.typelevel.log4cats.Logger
 
 import javax.jms.ConnectionFactory
-import scala.concurrent.duration._
-import scala.reflect.runtime.universe._
+import scala.concurrent.duration.*
 import cats.effect.kernel.Async
+import izumi.reflect.Tag
+import izumi.reflect.macrortti.LightTypeTag
 
 trait Jms
 
@@ -41,14 +42,14 @@ object Jms {
   sealed trait Type extends Product with Serializable
 
   object Type {
-    final case object Queue extends Type
-    final case object Topic extends Type
+    case object Queue extends Type
+    case object Topic extends Type
   }
 
 }
 
-final case class JmsSource private (name: String, sourceType: Jms.Type, settings: JmsSourceSettings) extends Source[Jms] {
-  override val capability: Type = typeOf[Jms]
+final case class JmsSource private[activemq] (name: String, sourceType: Jms.Type, settings: JmsSourceSettings) extends Source[Jms] {
+  override val capability: LightTypeTag = Tag[Jms].tag
 
   override val messageProcessingTimeout: Option[FiniteDuration] = Some(settings.messageProcessingTimeout)
   override val cancelableMessageProcessing: Boolean = settings.cancelableMessageProcessing
@@ -76,13 +77,14 @@ object JmsSource {
   def topic(name: String, settings: JmsSourceSettings = JmsSourceSettings()): JmsSource = JmsSource(name, Jms.Type.Topic, settings)
 }
 
-final case class JmsDestination private (name: String, destinationType: Jms.Type) extends Destination[Jms] {
-  override val capability: Type = typeOf[Jms]
+final case class JmsDestination private[activemq] (name: String, destinationType: Jms.Type) extends Destination[Jms] {
+  override val capability: LightTypeTag = Tag[Jms].tag
 
   def toSource(settings: JmsSourceSettings = JmsSourceSettings()): JmsSource = JmsSource(name, destinationType, settings)
 }
 
 object JmsDestination {
+
   def queue(name: String): JmsDestination = JmsDestination(name, Jms.Type.Queue)
 
   def topic(name: String): JmsDestination = JmsDestination(name, Jms.Type.Topic)

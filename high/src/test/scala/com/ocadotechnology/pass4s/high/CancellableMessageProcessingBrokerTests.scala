@@ -17,26 +17,27 @@
 package com.ocadotechnology.pass4s.high
 
 import cats.data.Chain
-import cats.effect._
-import cats.implicits._
-import com.ocadotechnology.pass4s.core._
+import cats.effect.*
+import cats.implicits.*
+import com.ocadotechnology.pass4s.core.*
 import fs2.Stream
+import izumi.reflect.Tag
+import izumi.reflect.macrortti.LightTypeTag
 import weaver.SimpleIOSuite
 
-import scala.concurrent.duration._
-import scala.reflect.runtime.universe._
+import scala.concurrent.duration.*
 
 object CancellableMessageProcessingBrokerTests extends SimpleIOSuite {
   trait Test
 
   final case class TestSource(name: String, override val cancelableMessageProcessing: Boolean) extends Source[Test] {
-    override val capability: Type = typeOf[Test]
+    override val capability: LightTypeTag = Tag[Test].tag
   }
 
   sealed trait State
-  final object ProcessingStart extends State
-  final object ProcessingFinish extends State
-  final object MessageCommit extends State
+  object ProcessingStart extends State
+  object ProcessingFinish extends State
+  object MessageCommit extends State
   final case class MessageRollback(rollbackCause: RollbackCause) extends State
 
   val createBroker: IO[(Ref[IO, Chain[State]], Broker[IO, Test])] =
@@ -59,7 +60,8 @@ object CancellableMessageProcessingBrokerTests extends SimpleIOSuite {
 
   test("cancelable source should break message processing and rollback message if canceled") {
     for {
-      (stateLog, broker) <- createBroker
+      stateLogBrokerPair <- createBroker
+      (stateLog, broker) = stateLogBrokerPair
       deferred           <- Deferred[IO, Unit]
       _                  <- broker
                               .consumer(cancelableSource)
@@ -76,7 +78,8 @@ object CancellableMessageProcessingBrokerTests extends SimpleIOSuite {
 
   test("uncancelable source should continue message processing and commit message if canceled") {
     for {
-      (stateLog, broker) <- createBroker
+      stateLogBrokerPair <- createBroker
+      (stateLog, broker) = stateLogBrokerPair
       deferred           <- Deferred[IO, Unit]
       _                  <- broker
                               .consumer(uncancelableSource)

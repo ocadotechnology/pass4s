@@ -206,8 +206,8 @@ object Consumer extends ConsumerInstances {
   /** [[cats.tagless.InvariantK]] instance for Consumer. The effect appears in both covariant and contravariant positions, so we can't get
     * anything stronger like [[cats.tagless.FunctorK]].
     */
-  implicit def invariantK[A]: InvariantK[Consumer[*[_], A]] =
-    new InvariantK[Consumer[*[_], A]] {
+  implicit def invariantK[A]: InvariantK[({ type C[F[_]] = Consumer[F, A] })#C] =
+    new InvariantK[({ type C[F[_]] = Consumer[F, A] })#C] {
       def imapK[F[_], G[_]](af: Consumer[F, A])(fk: F ~> G)(gk: G ~> F): Consumer[G, A] = af.imapK(fk)(gk)
     }
 
@@ -393,7 +393,11 @@ sealed trait ConsumerInstances extends ConsumerInstances1 {
       private val sem = parZipSemigroup[F, A]
 
       def combine(x: Consumer[F, A], y: Consumer[F, A]): Consumer[F, A] = sem.combine(x, y)
-      val empty: Consumer[F, A] = Consumer.done(Parallel[F].monad)
+
+      val empty: Consumer[F, A] = Consumer.done(
+        using Parallel[F].monad
+      )
+
     }
 
 }

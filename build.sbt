@@ -1,3 +1,10 @@
+import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
+import com.typesafe.tools.mima.core.IncompatibleResultTypeProblem
+import com.typesafe.tools.mima.core.ProblemFilters
+import com.typesafe.tools.mima.core.ReversedMissingMethodProblem
+import sbt.librarymanagement.SemanticSelector
+import sbt.librarymanagement.VersionNumber
+
 ThisBuild / tlBaseVersion := "0.4" // current series x.y
 
 ThisBuild / startYear := Some(2023)
@@ -11,7 +18,9 @@ ThisBuild / developers := List(
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
 val Scala213 = "2.13.16"
+val Scala3 = "3.3.5"
 ThisBuild / scalaVersion := Scala213
+ThisBuild / crossScalaVersions := Seq(Scala213, Scala3)
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.graalvm("21"))
 ThisBuild / githubWorkflowBuild ++= Seq(
   WorkflowStep.Sbt(
@@ -67,15 +76,15 @@ lazy val root = (project in file("."))
     IntegrationTest / classDirectory := (Test / classDirectory).value,
     IntegrationTest / parallelExecution := true
   )
-  .aggregate(core, kernel, high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
-  .dependsOn(high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
+  .aggregate(core, kernel, high, activemqPekko, kinesis, sns, sqs, circe, phobos, plaintext, extra, logging, demo, s3Proxy)
+  .dependsOn(high, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
 
 def module(name: String, directory: String = ".") = Project(s"pass4s-$name", file(directory) / name).settings(commonSettings)
 
 lazy val core = module("core")
   .settings(
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "dev.zio" %% "izumi-reflect" % "3.0.2",
       "co.fs2" %% "fs2-core" % Versions.Fs2,
       "org.typelevel" %% "cats-effect" % Versions.CatsEffect
     )
@@ -95,18 +104,6 @@ lazy val high = module("high")
   .dependsOn(core, kernel)
 
 // connectors
-
-lazy val activemqAkka = module("activemq", directory = "connectors")
-  .settings(
-    name := "pass4s-connector-activemq",
-    libraryDependencies ++= Seq(
-      "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "4.0.0", // 5.x.x contains akka-streams +2.7.x which is licensed under BUSL 1.1
-      "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
-      "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    ),
-    headerSources / excludeFilter := HiddenFileFilter || "taps.scala"
-  )
-  .dependsOn(core)
 
 lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
   .settings(
@@ -216,7 +213,7 @@ lazy val docs = project // new documentation project
       WorkflowStep.Sbt(List("docs/mdoc"))
     )
   )
-  .dependsOn(high, activemqAkka, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
+  .dependsOn(high, activemqPekko, kinesis, sns, sqs, circe, logging, extra, s3Proxy)
   .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
 // misc
@@ -238,27 +235,50 @@ lazy val demo = module("demo")
 // Those versions failed to release
 val versionsExcludedFromMima = List("0.4.3")
 
-lazy val commonSettings = Seq(
+def commonSettings = Seq(
   organization := "com.ocadotechnology",
   compilerOptions,
   Test / fork := true,
-  libraryDependencies ++= compilerPlugins,
   libraryDependencies ++= Seq(
     "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
     "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver
   ).map(_ % Test),
   mimaPreviousArtifacts := {
-    val artifacts = mimaPreviousArtifacts.value
-    artifacts.filterNot(artifact => versionsExcludedFromMima.contains(artifact.revision))
+    if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector(">=3"))) {
+      Set.empty
+    } else {
+      val artifacts = mimaPreviousArtifacts.value
+      artifacts.filterNot(artifact => versionsExcludedFromMima.contains(artifact.revision))
+    }
   },
+  mimaFailOnNoPrevious := false,
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
 
-val compilerOptions =
-  scalacOptions --= Seq("-Xfatal-warnings", "-Xsource:3")
+val compilerOptions = {
+  scalacOptions ++= List(
+    "-Wconf:msg=constructor modifiers are assumed:s",
+    "-Wconf:msg=unused value of type:s"
+  )
+  scalacOptions ~= { options =>
+    options.distinct
+  }
+}
 
-val compilerPlugins = Seq(
-  compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.full),
-  compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+Global / lintUnusedKeysOnLoad := false
+
+ThisBuild / mimaBinaryIssueFilters ++= Seq(
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.core.End.capability"),
+  ProblemFilters.exclude[ReversedMissingMethodProblem]("com.ocadotechnology.pass4s.core.End.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.kinesis.KinesisDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sns.SnsDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sns.SnsFifoDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsFifoDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.sqs.SqsFifoEndpoint.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsDestination.capability"),
+  ProblemFilters.exclude[IncompatibleResultTypeProblem]("com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsSource.capability"),
+  ProblemFilters.exclude[IncompatibleMethTypeProblem]("com.ocadotechnology.pass4s.high.Broker.mergeByCapabilities")
 )
