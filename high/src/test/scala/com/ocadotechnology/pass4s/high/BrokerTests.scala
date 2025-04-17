@@ -243,9 +243,7 @@ object BrokerTests extends SimpleIOSuite {
       sentToBaz == List((bazId, somePayload))
     )
   }
-
-  test("")
-
+  
   private def createBroker[P](id: String): IO[(Broker[IO, P], RefSender[IO, (String, Payload)])] =
     Sender.testing[IO, (String, Payload)].fproductLeft { refSender =>
       new Broker[IO, P] {
