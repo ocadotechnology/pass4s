@@ -256,10 +256,15 @@ def commonSettings = Seq(
   testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
 
-val compilerOptions = scalacOptions ++= List(
-  "-Wconf:msg=constructor modifiers are assumed:s",
-  "-Wconf:msg=unused value of type:s"
-)
+val compilerOptions = {
+  scalacOptions ++= List(
+    "-Wconf:msg=constructor modifiers are assumed:s",
+    "-Wconf:msg=unused value of type:s"
+  )
+  scalacOptions ~= { options =>
+    options.distinct
+  },
+}
 
 Global / lintUnusedKeysOnLoad := false
 
