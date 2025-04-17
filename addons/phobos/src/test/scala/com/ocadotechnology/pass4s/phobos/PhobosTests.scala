@@ -30,6 +30,9 @@ import ru.tinkoff.phobos.derivation.semiauto.*
 import ru.tinkoff.phobos.encoding.XmlEncoder
 import weaver.SimpleIOSuite
 
+import scala.annotation.nowarn
+
+@nowarn
 object PhobosTests extends SimpleIOSuite {
 
   object UnitEnd extends Destination[Unit] { override def name: String = "unit"; override def capability: LightTypeTag = Tag[Unit].tag }

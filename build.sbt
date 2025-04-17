@@ -263,7 +263,7 @@ val compilerOptions = {
   )
   scalacOptions ~= { options =>
     options.distinct
-  },
+  }
 }
 
 Global / lintUnusedKeysOnLoad := false
