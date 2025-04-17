@@ -106,20 +106,6 @@ lazy val high = module("high")
 
 // connectors
 
-lazy val activemqAkka = module("activemq", directory = "connectors")
-  .settings(
-    name := "pass4s-connector-activemq",
-    libraryDependencies ++= Seq(
-      "com.lightbend.akka" %% "akka-stream-alpakka-jms" % "4.0.0", // 5.x.x contains akka-streams +2.7.x which is licensed under BUSL 1.1
-      "org.apache.activemq" % "activemq-pool" % Versions.ActiveMq,
-      "org.typelevel" %% "log4cats-core" % Versions.Log4Cats
-    ),
-    headerSources / excludeFilter := HiddenFileFilter || "taps.scala",
-    crossScalaVersions := Seq(Scala213),
-    publish / skip := scalaVersion.value.startsWith("3.") // Skip publishing for Scala 3
-  )
-  .dependsOn(core)
-
 lazy val activemqPekko = module("activemq-pekko", directory = "connectors")
   .settings(
     name := "pass4s-connector-pekko-activemq",
