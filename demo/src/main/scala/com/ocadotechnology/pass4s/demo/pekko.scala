@@ -21,7 +21,7 @@ import cats.effect.Async
 
 import cats.effect.Resource
 import cats.effect.Sync
-import cats.implicits._
+import cats.implicits.*
 
 object Pekko {
   def system[F[_]: Async]: Resource[F, ActorSystem] =

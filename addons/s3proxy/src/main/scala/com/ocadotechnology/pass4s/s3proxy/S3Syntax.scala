@@ -19,7 +19,7 @@ package com.ocadotechnology.pass4s.s3proxy
 import cats.Monad
 import cats.MonadThrow
 import cats.effect.std.UUIDGen
-import cats.syntax.all._
+import cats.syntax.all.*
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.kernel.Consumer
@@ -27,7 +27,7 @@ import com.ocadotechnology.pass4s.kernel.Sender
 import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.parser.decode
-import io.circe.syntax._
+import io.circe.syntax.*
 
 object syntax {
 

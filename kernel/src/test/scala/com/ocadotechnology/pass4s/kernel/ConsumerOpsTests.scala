@@ -18,7 +18,7 @@ package com.ocadotechnology.pass4s.kernel
 
 import cats.data.Kleisli
 import cats.effect.IO
-import cats.implicits._
+import cats.implicits.*
 import cats.~>
 import weaver.SimpleMutableIOSuite
 import weaver.scalacheck.Checkers

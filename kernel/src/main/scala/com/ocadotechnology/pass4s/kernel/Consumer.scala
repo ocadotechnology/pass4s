@@ -31,10 +31,10 @@ import cats.StackSafeMonad
 import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.Resource
-import cats.effect.implicits._
+import cats.effect.implicits.*
 import cats.effect.kernel.Sync
 import cats.effect.std.Queue
-import cats.implicits._
+import cats.implicits.*
 import cats.kernel.Eq
 import cats.kernel.Monoid
 import cats.kernel.Semigroup

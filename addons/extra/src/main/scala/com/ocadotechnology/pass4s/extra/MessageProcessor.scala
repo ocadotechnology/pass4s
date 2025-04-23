@@ -18,8 +18,8 @@ package com.ocadotechnology.pass4s.extra
 
 import cats.arrow.FunctionK
 import cats.effect.Concurrent
-import cats.effect.syntax.all._
-import cats.syntax.all._
+import cats.effect.syntax.all.*
+import cats.syntax.all.*
 import cats.~>
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.Source

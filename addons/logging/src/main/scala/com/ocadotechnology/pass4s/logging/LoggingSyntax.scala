@@ -18,11 +18,11 @@ package com.ocadotechnology.pass4s.logging
 
 import cats.Monad
 import cats.effect.Resource
-import cats.effect.implicits._
+import cats.effect.implicits.*
 import cats.effect.kernel.MonadCancelThrow
 import cats.effect.kernel.Outcome
 import cats.effect.kernel.Resource.ExitCase
-import cats.syntax.all._
+import cats.syntax.all.*
 import com.ocadotechnology.pass4s.core.CommittableMessage
 import com.ocadotechnology.pass4s.core.Connector
 import com.ocadotechnology.pass4s.core.Message

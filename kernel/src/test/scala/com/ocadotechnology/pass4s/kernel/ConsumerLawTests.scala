@@ -19,7 +19,7 @@ package com.ocadotechnology.pass4s.kernel
 import cats.Eval
 import cats.data.EitherT
 import cats.data.WriterT
-import cats.implicits._
+import cats.implicits.*
 import cats.kernel.Monoid
 import cats.kernel.laws.discipline.EqTests
 import cats.kernel.laws.discipline.MonoidTests
@@ -28,10 +28,10 @@ import cats.laws.discipline.ExhaustiveCheck
 import cats.laws.discipline.FunctorFilterTests
 import cats.laws.discipline.MiniInt
 import cats.laws.discipline.MonadTests
-import cats.laws.discipline.arbitrary._
-import cats.laws.discipline.eq._
-import com.ocadotechnology.pass4s.kernel.Arbitraries._
-import com.ocadotechnology.pass4s.kernel.Cogens._
+import cats.laws.discipline.arbitrary.*
+import cats.laws.discipline.eq.*
+import com.ocadotechnology.pass4s.kernel.Arbitraries.*
+import com.ocadotechnology.pass4s.kernel.Cogens.*
 import org.scalacheck.Arbitrary
 import org.scalacheck.Cogen
 import weaver.FunSuite

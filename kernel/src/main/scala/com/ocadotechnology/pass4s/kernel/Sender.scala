@@ -34,7 +34,7 @@ import cats.data.Const
 import cats.data.WriterT
 import cats.effect.Sync
 import cats.effect.kernel.Ref
-import cats.implicits._
+import cats.implicits.*
 import cats.kernel.Semigroup
 import cats.tagless.FunctorK
 import cats.~>

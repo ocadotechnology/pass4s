@@ -17,7 +17,7 @@
 package com.ocadotechnology.pass4s.demo
 
 import cats.~>
-import com.ocadotechnology.pass4s.kernel._
+import com.ocadotechnology.pass4s.kernel.*
 
 trait MyService[F[_]] {
   def foo(): F[Unit]

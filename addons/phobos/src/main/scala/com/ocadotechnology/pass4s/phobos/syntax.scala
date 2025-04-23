@@ -17,7 +17,7 @@
 package com.ocadotechnology.pass4s.phobos
 
 import cats.MonadError
-import cats.syntax.all._
+import cats.syntax.all.*
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.Message.Payload

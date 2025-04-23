@@ -22,8 +22,8 @@ import cats.effect.IOApp
 import cats.effect.kernel.Async
 import cats.effect.kernel.Sync
 import cats.effect.kernel.Temporal
-import cats.implicits._
-import com.ocadotechnology.pass4s.circe.syntax._
+import cats.implicits.*
+import com.ocadotechnology.pass4s.circe.syntax.*
 import com.ocadotechnology.pass4s.connectors.pekko.activemq.Jms
 import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsSource
 import com.ocadotechnology.pass4s.core.CommittableMessage
@@ -32,7 +32,7 @@ import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.core.Source
 import com.ocadotechnology.pass4s.high.Broker
-import com.ocadotechnology.pass4s.logging.syntax._
+import com.ocadotechnology.pass4s.logging.syntax.*
 import fs2.Pure
 import fs2.Stream
 import org.typelevel.log4cats.Logger
@@ -58,7 +58,7 @@ object CirceDemo extends IOApp {
 
   def runDemo[F[_]: Async](console: String => F[Unit]): F[ExitCode] = {
 
-    import io.circe.generic.auto._
+    import io.circe.generic.auto.*
 
     val connector: Connector.Aux[F, Jms, Unit] = new Connector[F, Jms] {
       override type Raw = Unit
@@ -81,9 +81,9 @@ object CirceDemo extends IOApp {
   }
 
   def runDemoConcurrent[F[_]: Async](console: String => F[Unit]): F[ExitCode] = {
-    import cats.effect.implicits._
+    import cats.effect.implicits.*
 
-    import scala.concurrent.duration._
+    import scala.concurrent.duration.*
 
     def msg(i: Int) = s"""{"s": $i}"""
 
