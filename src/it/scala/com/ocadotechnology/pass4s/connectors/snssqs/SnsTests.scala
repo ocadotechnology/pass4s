@@ -74,19 +74,11 @@ object SnsTests extends MutableIOSuite {
           consume10MessagesFromQueue <& sendMessagesOnTopic
         }
         .map { messages =>
-          val messagesByGroupId = groupByPreserveOrder(messages)(_.metadata(SnsFifo.groupIdMetadata))
-          val expectedByGroupId = groupByPreserveOrder(payloads)(_.metadata(SnsFifo.groupIdMetadata))
+          val messagesByGroupId = messages.groupBy(_.metadata(SnsFifo.groupIdMetadata))
+          val expectedByGroupId = payloads.groupBy(_.metadata(SnsFifo.groupIdMetadata))
           expect(messagesByGroupId == expectedByGroupId)
-        }
+        } *> ignore("This test is flaky and mostly tests the AWS behavior")
   }
-
-  private def groupByPreserveOrder[T, K](l: List[T])(f: T => K): Map[K, List[T]] =
-    l.foldLeft(Map.empty[K, List[T]]) { (acc, item) =>
-      val key = f(item)
-      acc.updated(key, item :: acc.getOrElse(key, Nil))
-    }.view
-      .mapValues(_.reverse)
-      .toMap
 
   test("sending a message through using a convenient sender works properly").usingRes { case (broker, snsClient, sqsClient) =>
     final case class Foo(bar: Int, order: String)
