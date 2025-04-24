@@ -22,13 +22,15 @@ import cats.MonadThrow
 import cats.data.OptionT
 import cats.effect.Async
 import cats.effect.Resource
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.core.Message.Payload
-import com.ocadotechnology.pass4s.core._
+import com.ocadotechnology.pass4s.core.*
 import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
 import fs2.Stream
 import io.laserdisc.pure.sns.tagless.SnsAsyncClientOp
-import io.laserdisc.pure.sns.tagless.{Interpreter => SnsInterpreter}
+import io.laserdisc.pure.sns.tagless.Interpreter as SnsInterpreter
+import izumi.reflect.Tag
+import izumi.reflect.macrortti.LightTypeTag
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sns.SnsAsyncClient
@@ -37,8 +39,7 @@ import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 
 import java.net.URI
-import scala.jdk.CollectionConverters._
-import scala.reflect.runtime.universe._
+import scala.jdk.CollectionConverters.*
 
 trait Sns
 
@@ -47,7 +48,7 @@ final case class SnsArn(value: String) extends AnyVal
 final case class SnsDestination(arn: SnsArn) extends Destination[Sns] {
   if (arn.value.endsWith(".fifo")) throw new IllegalArgumentException("For FIFO topics use SnsFifoDestination")
 
-  override val capability: Type = typeOf[Sns]
+  override val capability: LightTypeTag = Tag[Sns].tag
 
   override val name: String = arn.value match {
     case s"arn:aws:sns:$_:$_:$topicName" => topicName
@@ -71,7 +72,7 @@ object SnsFifo {
 final case class SnsFifoDestination(arn: SnsArn) extends Destination[SnsFifo] {
   if (!arn.value.endsWith(".fifo")) throw new IllegalArgumentException("For non-FIFO topics use SnsDestination")
 
-  override val capability: Type = typeOf[Sns]
+  override val capability: LightTypeTag = Tag[Sns].tag
 
   override val name: String = arn.value match {
     case s"arn:aws:sns:$_:$_:$topicName" => topicName
@@ -108,8 +109,8 @@ object SnsAttributesProvider {
 }
 
 object SnsConnector {
-  type SnsConnector[F[_]] = Connector.Aux[F, Sns with SnsFifo, SnsAsyncClientOp[F]]
-  type AllSns = Sns with SnsFifo
+  type SnsConnector[F[_]] = Connector.Aux[F, Sns & SnsFifo, SnsAsyncClientOp[F]]
+  type AllSns = Sns & SnsFifo
 
   def usingLocalAws[F[_]: SnsAttributesProvider: Async](
     endpointOverride: URI,
@@ -197,19 +198,22 @@ object SnsConnector {
 
       override def produce[R >: AllSns](message: Message[R]): F[Unit] =
         for {
-          (request, d) <- message match {
-                            case Message(payload, d: SnsDestination)     =>
-                              (makeRequest(d, payload), d).pure[F]
-                            case Message(payload, d: SnsFifoDestination) =>
-                              makeFifoRequest(d, payload).tupleRight(d)
-                            case Message(_, unsupportedDestination)      =>
-                              ApplicativeThrow[F].raiseError(
-                                new UnsupportedOperationException(s"SnsConnector does not support destination: $unsupportedDestination")
-                              )
-                          }
-          _            <- snsAsyncClientOp
-                            .publish(request)
-                            .adaptError(SnsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
+          requestWithDestination <- message match {
+                                      case Message(payload, d: SnsDestination)     =>
+                                        (makeRequest(d, payload), d).pure[F]
+                                      case Message(payload, d: SnsFifoDestination) =>
+                                        makeFifoRequest(d, payload).tupleRight(d)
+                                      case Message(_, unsupportedDestination)      =>
+                                        ApplicativeThrow[F].raiseError(
+                                          new UnsupportedOperationException(
+                                            s"SnsConnector does not support destination: $unsupportedDestination"
+                                          )
+                                        )
+                                    }
+          (request, d) = requestWithDestination
+          _                      <- snsAsyncClientOp
+                                      .publish(request)
+                                      .adaptError(SnsClientException(s"Exception while sending a message [${message.payload}] on [$d]", _))
         } yield ()
 
     }

@@ -19,19 +19,18 @@ package com.ocadotechnology.pass4s.high
 import cats.ApplicativeThrow
 import cats.MonadThrow
 import cats.effect.Resource
-import cats.effect.implicits._
+import cats.effect.implicits.*
 import cats.effect.kernel.Async
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.core.Connector
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.End
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.core.Source
-import com.ocadotechnology.pass4s.kernel._
+import com.ocadotechnology.pass4s.kernel.*
 import fs2.Stream
-
-import scala.reflect.runtime.universe._
+import izumi.reflect.Tag
 
 trait Broker[F[_], +P] {
   def consumer[R >: P](source: Source[R]): Consumer[F, Payload]
@@ -77,38 +76,37 @@ object Broker {
 
     }
 
-  def mergeByCapabilities[F[_]: ApplicativeThrow, P1: TypeTag, P2: TypeTag](
+  def mergeByCapabilities[F[_]: ApplicativeThrow, P1: Tag, P2: Tag](
     broker1: Broker[F, P1],
     broker2: Broker[F, P2]
-  ): F[Broker[F, P1 with P2]] = {
-    val commonCapabilities = (typeOf[P1].baseClasses intersect typeOf[P2].baseClasses)
-      .filterNot(List(typeOf[Object], typeOf[Any]).map(_.typeSymbol).contains)
+  ): F[Broker[F, P1 & P2]] = {
+    val commonCapabilities = Tag[P1].tag.decompose intersect Tag[P2].tag.decompose
     if (commonCapabilities.nonEmpty)
       ApplicativeThrow[F].raiseError(
         new IllegalArgumentException(
-          s"While merging, brokers can not have common capability. Broker 1: ${typeOf[P1]}, Broker 2: ${typeOf[P2]}, Common: $commonCapabilities"
+          s"While merging, brokers can not have common capability. Broker 1: ${Tag[P1]}, Broker 2: ${Tag[P2]}, Common: $commonCapabilities"
         )
       )
     else
-      new Broker[F, P1 with P2] {
-        override def consumer[R >: P1 with P2](source: Source[R]): Consumer[F, Payload] =
+      new Broker[F, P1 & P2] {
+        override def consumer[R >: P1 & P2](source: Source[R]): Consumer[F, Payload] =
           source.capability match {
-            case p1 if typeOf[P1] <:< p1 => broker1.asInstanceOf[Broker[F, R]].consumer(source)
-            case p2 if typeOf[P2] <:< p2 => broker2.asInstanceOf[Broker[F, R]].consumer(source)
-            case _                       =>
+            case p1 if Tag[P1].tag <:< p1 => broker1.asInstanceOf[Broker[F, R]].consumer(source)
+            case p2 if Tag[P2].tag <:< p2 => broker2.asInstanceOf[Broker[F, R]].consumer(source)
+            case _                        =>
               throw new UnsupportedOperationException(
-                s"Broker with capabilities [${typeOf[P1]} with ${typeOf[P2]}] doesn't support capability ${source.capability} from $source"
+                s"Broker with capabilities [${Tag[P1]} & ${Tag[P2]}] doesn't support capability ${source.capability} from $source"
               )
           }
 
-        override def sender[R >: P1 with P2]: Sender[F, Message[R]] =
+        override def sender[R >: P1 & P2]: Sender[F, Message[R]] =
           Sender.routed { message =>
             message.destination.capability match {
-              case p1 if typeOf[P1] <:< p1 => broker1.asInstanceOf[Broker[F, R]].sender
-              case p2 if typeOf[P2] <:< p2 => broker2.asInstanceOf[Broker[F, R]].sender
-              case _                       =>
+              case p1 if Tag[P1].tag <:< p1 => broker1.asInstanceOf[Broker[F, R]].sender
+              case p2 if Tag[P2].tag <:< p2 => broker2.asInstanceOf[Broker[F, R]].sender
+              case _                        =>
                 throw new UnsupportedOperationException(
-                  s"Broker with capabilities [${typeOf[P1]} with ${typeOf[P2]}] doesn't support capability ${message.destination.capability} from $message"
+                  s"Broker with capabilities [${Tag[P1]} & ${Tag[P2]}] doesn't support capability ${message.destination.capability} from $message"
                 )
             }
           }
@@ -117,31 +115,31 @@ object Broker {
 
   // boring stuff
 
-  def mergeByCapabilities[F[_]: MonadThrow, P1: TypeTag, P2: TypeTag, P3: TypeTag](
+  def mergeByCapabilities[F[_]: MonadThrow, P1: Tag, P2: Tag, P3: Tag](
     broker1: Broker[F, P1],
     broker2: Broker[F, P2],
     broker3: Broker[F, P3]
-  ): F[Broker[F, P1 with P2 with P3]] =
+  ): F[Broker[F, P1 & P2 & P3]] =
     mergeByCapabilities[F, P1, P2](broker1, broker2)
-      .flatMap(mergeByCapabilities[F, P1 with P2, P3](_, broker3))
+      .flatMap(mergeByCapabilities[F, P1 & P2, P3](_, broker3))
 
-  def mergeByCapabilities[F[_]: MonadThrow, P1: TypeTag, P2: TypeTag, P3: TypeTag, P4: TypeTag](
+  def mergeByCapabilities[F[_]: MonadThrow, P1: Tag, P2: Tag, P3: Tag, P4: Tag](
     broker1: Broker[F, P1],
     broker2: Broker[F, P2],
     broker3: Broker[F, P3],
     broker4: Broker[F, P4]
-  ): F[Broker[F, P1 with P2 with P3 with P4]] =
+  ): F[Broker[F, P1 & P2 & P3 & P4]] =
     mergeByCapabilities[F, P1, P2, P3](broker1, broker2, broker3)
-      .flatMap(mergeByCapabilities[F, P1 with P2 with P3, P4](_, broker4))
+      .flatMap(mergeByCapabilities[F, P1 & P2 & P3, P4](_, broker4))
 
-  def mergeByCapabilities[F[_]: MonadThrow, P1: TypeTag, P2: TypeTag, P3: TypeTag, P4: TypeTag, P5: TypeTag](
+  def mergeByCapabilities[F[_]: MonadThrow, P1: Tag, P2: Tag, P3: Tag, P4: Tag, P5: Tag](
     broker1: Broker[F, P1],
     broker2: Broker[F, P2],
     broker3: Broker[F, P3],
     broker4: Broker[F, P4],
     broker5: Broker[F, P5]
-  ): F[Broker[F, P1 with P2 with P3 with P4 with P5]] =
+  ): F[Broker[F, P1 & P2 & P3 & P4 & P5]] =
     mergeByCapabilities[F, P1, P2, P3, P4](broker1, broker2, broker3, broker4)
-      .flatMap(mergeByCapabilities[F, P1 with P2 with P3 with P4, P5](_, broker5))
+      .flatMap(mergeByCapabilities[F, P1 & P2 & P3 & P4, P5](_, broker5))
 
 }

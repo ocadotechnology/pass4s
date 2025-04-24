@@ -2,7 +2,7 @@ package com.ocadotechnology.pass4s.connectors.snssqs
 
 import cats.effect.IO
 import cats.effect.Resource
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.connectors.sns.Sns
 import com.ocadotechnology.pass4s.connectors.sns.SnsArn
 import com.ocadotechnology.pass4s.connectors.sns.SnsClientException
@@ -18,7 +18,7 @@ import com.ocadotechnology.pass4s.core.groupId.MessageGroup
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
 import com.ocadotechnology.pass4s.kernel.Sender
-import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils.*
 import io.circe.Encoder
 import io.circe.Json
 import io.circe.syntax.EncoderOps
@@ -29,9 +29,6 @@ import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import weaver.MutableIOSuite
 
-import scala.annotation.nowarn
-
-@nowarn
 object SnsTests extends MutableIOSuite {
   override type Res = (Broker[IO, Sns with SnsFifo with Sqs with SqsFifo], SnsAsyncClientOp[IO], SqsAsyncClientOp[IO])
 
@@ -91,7 +88,7 @@ object SnsTests extends MutableIOSuite {
 
     topicWithSubscriptionResource(snsClient, sqsClient)("fifo-topic", isFifo = true)
       .use { case (topicArn, queueUrl) =>
-        import com.ocadotechnology.pass4s.circe.syntax._
+        import com.ocadotechnology.pass4s.circe.syntax.*
         val sender: Sender[IO, Foo] = broker.sender.asJsonSenderWithMessageGroup[Foo](SnsFifoDestination(topicArn))
         val consumeMessageFromQueue =
           Consumer
@@ -119,10 +116,10 @@ object SnsTests extends MutableIOSuite {
 
   test("ensure at compile time that message groups are provided") {
     IO {
-      import org.scalatest.matchers.should.Matchers._
+      import org.scalatest.matchers.should.Matchers.*
 
       """
-        import com.ocadotechnology.pass4s.circe.syntax._
+        import com.ocadotechnology.pass4s.circe.syntax.*
         import com.ocadotechnology.pass4s.core.Destination
 
         final case class Foo(bar: Int, order: String)

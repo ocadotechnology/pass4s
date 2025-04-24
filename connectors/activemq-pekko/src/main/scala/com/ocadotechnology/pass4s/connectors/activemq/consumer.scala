@@ -18,13 +18,13 @@ package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.connectors.jms.scaladsl.JmsConsumer
-import org.apache.pekko.stream.connectors.{jms => pekkojms}
+import org.apache.pekko.stream.connectors.jms as pekkojms
 import org.apache.pekko.stream.scaladsl.RestartSource
 import cats.ApplicativeThrow
 import cats.effect.Async
 import cats.effect.Sync
-import cats.implicits._
-import com.ocadotechnology.pass4s.connectors.pekko.activemq.taps._
+import cats.implicits.*
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.taps.*
 import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.core.CommittableMessage
 import com.ocadotechnology.pass4s.core.Source
@@ -32,8 +32,8 @@ import fs2.Stream
 import org.typelevel.log4cats.Logger
 
 import javax.jms
-import scala.jdk.CollectionConverters._
-import scala.concurrent.duration._
+import scala.jdk.CollectionConverters.*
+import scala.concurrent.duration.*
 import scala.util.Try
 
 private[activemq] object consumer {
@@ -41,7 +41,7 @@ private[activemq] object consumer {
   def consumeAndReconnectOnErrors[F[_]: Async: Logger](
     connectionFactory: jms.ConnectionFactory
   )(
-    source: Source[_]
+    source: Source[?]
   )(
     implicit as: ActorSystem
   ): Stream[F, CommittableMessage[F]] =
@@ -63,7 +63,7 @@ private[activemq] object consumer {
       committableMessage <- Stream.eval(toCommittableMessage(txEnvelope)).unNone
     } yield committableMessage
 
-  private def extractJmsSource[F[_]: ApplicativeThrow](source: Source[_]): F[JmsSource] =
+  private def extractJmsSource[F[_]: ApplicativeThrow](source: Source[?]): F[JmsSource] =
     source match {
       case jmsSource: JmsSource   => jmsSource.pure[F]
       case unsupportedDestination =>

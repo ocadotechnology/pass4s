@@ -16,11 +16,11 @@
 
 package com.ocadotechnology.pass4s.demo
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 import cats.effect.kernel.Temporal
-import cats.implicits._
-import com.ocadotechnology.pass4s.kernel._
+import cats.implicits.*
+import com.ocadotechnology.pass4s.kernel.*
 
 object MyProcessor {
 

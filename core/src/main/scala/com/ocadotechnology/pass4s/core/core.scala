@@ -21,9 +21,9 @@ import cats.effect.Resource
 import cats.effect.kernel.Resource.ExitCase
 import com.ocadotechnology.pass4s.core.Message.Payload
 import fs2.Stream
+import izumi.reflect.macrortti.LightTypeTag
 
 import scala.concurrent.duration.FiniteDuration
-import scala.reflect.runtime.universe.Type
 
 final case class Message[P](
   payload: Message.Payload,
@@ -54,7 +54,7 @@ object Message {
 
 trait End[P] {
   def name: String
-  def capability: Type
+  def capability: LightTypeTag
 }
 
 trait Source[P] extends End[P] {

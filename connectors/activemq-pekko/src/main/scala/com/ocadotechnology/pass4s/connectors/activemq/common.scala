@@ -16,7 +16,7 @@
 
 package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
-import org.apache.pekko.stream.connectors.{jms => pekkojms}
+import org.apache.pekko.stream.connectors.jms as pekkojms
 
 private[activemq] object common {
 

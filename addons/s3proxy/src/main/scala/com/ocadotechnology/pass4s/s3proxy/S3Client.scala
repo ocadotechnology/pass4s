@@ -18,19 +18,19 @@ package com.ocadotechnology.pass4s.s3proxy
 
 import cats.effect.kernel.Async
 import cats.effect.kernel.Resource
-import cats.implicits._
+import cats.implicits.*
 import io.laserdisc.pure.s3.tagless.S3AsyncClientOp
-import io.laserdisc.pure.s3.tagless.{Interpreter => S3Interpreter}
+import io.laserdisc.pure.s3.tagless.Interpreter as S3Interpreter
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
 import software.amazon.awssdk.core.async.AsyncRequestBody
 import software.amazon.awssdk.core.async.AsyncResponseTransformer
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.S3AsyncClientBuilder
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 
 import java.net.URI
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait S3Client[F[_]] {
   def getObject(bucket: String, key: String): F[Option[String]]

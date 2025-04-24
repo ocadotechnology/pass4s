@@ -31,7 +31,7 @@ import org.apache.pekko.stream.scaladsl.SourceQueueWithComplete
 import cats.effect.Async
 
 import cats.effect.kernel.Resource.ExitCase
-import cats.implicits._
+import cats.implicits.*
 import fs2.Pipe
 import fs2.Stream
 

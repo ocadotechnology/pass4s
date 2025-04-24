@@ -17,7 +17,7 @@ To use the module make sure to add following import to your `build.sbt`
 With that module added, you can now import additional syntax for consumers and producers. To enable the syntax add following import to your file:
 
 ```scala
-import com.ocadotechnology.pass4s.phobos.syntax._
+import com.ocadotechnology.pass4s.phobos.syntax.*
 ```
 
 The syntax allows you to use `.asXmlSender[T]` on the senders and `.asXmlConsumer[T]` on consumers. Please note that for this to work, you need to provide `XmlEncoder[T]` in case of `Sender` and `XmlDecoder[T]` for `Consumer`. 
@@ -25,10 +25,10 @@ The syntax allows you to use `.asXmlSender[T]` on the senders and `.asXmlConsume
 Here's how to create most basic encoder and decoder using Phobos:
 
 ```scala
-import ru.tinkoff.phobos.decoding._
-import ru.tinkoff.phobos.encoding._
-import ru.tinkoff.phobos.syntax._
-import ru.tinkoff.phobos.derivation.semiauto._
+import ru.tinkoff.phobos.decoding.*
+import ru.tinkoff.phobos.encoding.*
+import ru.tinkoff.phobos.syntax.*
+import ru.tinkoff.phobos.derivation.semiauto.*
 
 final case class XmlMessage(description: String, value: Long, rows: List[String])
 

@@ -2,7 +2,7 @@ package com.ocadotechnology.pass4s.connectors.snssqs
 
 import cats.effect.IO
 import cats.effect.Resource
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.connectors.sqs.Sqs
 import com.ocadotechnology.pass4s.connectors.sqs.SqsClientException
 import com.ocadotechnology.pass4s.connectors.sqs.SqsDestination
@@ -13,7 +13,7 @@ import com.ocadotechnology.pass4s.connectors.sqs.SqsUrl
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.high.Broker
 import com.ocadotechnology.pass4s.kernel.Consumer
-import com.ocadotechnology.pass4s.util.LocalStackContainerUtils._
+import com.ocadotechnology.pass4s.util.LocalStackContainerUtils.*
 import fs2.concurrent.SignallingRef
 import io.laserdisc.pure.sqs.tagless.SqsAsyncClientOp
 import org.testcontainers.containers.localstack.LocalStackContainer.Service
@@ -26,8 +26,8 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import weaver.MutableIOSuite
 
-import scala.concurrent.duration._
-import scala.jdk.CollectionConverters._
+import scala.concurrent.duration.*
+import scala.jdk.CollectionConverters.*
 
 object SqsTests extends MutableIOSuite {
   override type Res = (Broker[IO, Sqs with SqsFifo], SqsAsyncClientOp[IO])

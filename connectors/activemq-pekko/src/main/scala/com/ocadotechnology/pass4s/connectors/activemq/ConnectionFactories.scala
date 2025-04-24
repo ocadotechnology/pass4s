@@ -18,7 +18,7 @@ package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import cats.effect.Resource
 import cats.effect.Sync
-import cats.implicits._
+import cats.implicits.*
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.pool.PooledConnectionFactory
 
