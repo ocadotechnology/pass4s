@@ -3,7 +3,7 @@ package com.ocadotechnology.pass4s.util
 import cats.Endo
 import cats.effect.IO
 import cats.effect.Resource
-import cats.implicits._
+import cats.implicits.*
 import com.dimafeng.testcontainers.LocalStackV2Container
 import com.ocadotechnology.pass4s.connectors.kinesis.KinesisConnector
 import com.ocadotechnology.pass4s.connectors.kinesis.KinesisConnector.KinesisConnector
@@ -29,8 +29,8 @@ import software.amazon.awssdk.services.sqs.model.CreateQueueRequest
 import software.amazon.awssdk.services.sqs.model.DeleteQueueRequest
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 
-import scala.jdk.FutureConverters._
-import scala.jdk.CollectionConverters._
+import scala.jdk.FutureConverters.*
+import scala.jdk.CollectionConverters.*
 import scala.util.Random
 
 object LocalStackContainerUtils {
@@ -108,7 +108,7 @@ object LocalStackContainerUtils {
                           ).build()
                         )
       } yield response.queueUrl())(queueUrl => sqsClient.deleteQueue(DeleteQueueRequest.builder().queueUrl(queueUrl).build()).void)
-      .map(SqsUrl)
+      .map(SqsUrl.apply)
 
   def topicResource(
     snsClient: SnsAsyncClientOp[IO]
@@ -127,7 +127,7 @@ object LocalStackContainerUtils {
             additionalParameters(CreateTopicRequest.builder().name(s"$topicName-$randomSuffix$fifoSuffix").attributes(attrs.asJava)).build()
           )
       } yield response.topicArn())(topicArn => snsClient.deleteTopic(DeleteTopicRequest.builder().topicArn(topicArn).build()).void)
-      .map(SnsArn)
+      .map(SnsArn.apply)
 
   def topicWithSubscriptionResource(
     snsClient: SnsAsyncClientOp[IO],

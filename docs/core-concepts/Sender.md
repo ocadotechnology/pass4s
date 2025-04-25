@@ -41,7 +41,7 @@ Here's a simple sender implementation configured to use with our [localstack set
 import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.connectors.sns.SnsArn
 import com.ocadotechnology.pass4s.connectors.sns.SnsConnector
 import com.ocadotechnology.pass4s.connectors.sns.SnsDestination

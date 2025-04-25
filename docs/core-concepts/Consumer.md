@@ -46,7 +46,7 @@ Here's a simple consumer implementation configured to use with our [localstack s
 import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.connectors.sqs.SqsConnector
 import com.ocadotechnology.pass4s.connectors.sqs.SqsEndpoint
 import com.ocadotechnology.pass4s.connectors.sqs.SqsSource

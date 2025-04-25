@@ -31,10 +31,10 @@ import cats.StackSafeMonad
 import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.Resource
-import cats.effect.implicits._
+import cats.effect.implicits.*
 import cats.effect.kernel.Sync
 import cats.effect.std.Queue
-import cats.implicits._
+import cats.implicits.*
 import cats.kernel.Eq
 import cats.kernel.Monoid
 import cats.kernel.Semigroup
@@ -203,11 +203,20 @@ object Consumer extends ConsumerInstances {
   // Builds a consumer from a function that can be used to start it.
   def fromFunction[F[_], A](f: ((A => F[Unit]) => F[Unit])): Consumer[F, A] = f(_)
 
+  /** TODO: Rewrite using the new Scala 3 type lambda syntax when the codebase moves to support Scala 3 source-specific directories:
+    * {{{
+    * given invariantK[A]: InvariantK[[F[_]] =>> Consumer[F, A]] with {
+    *   def imapK[F[_], G[_]](af: Consumer[F, A])(fk: F ~> G)(gk: G ~> F): Consumer[G, A] = af.imapK(fk)(gk)
+    * }
+    * }}}
+    *
+    * See related discussion: https://github.com/ocadotechnology/pass4s/pull/542#discussion_r2053522966
+    */
   /** [[cats.tagless.InvariantK]] instance for Consumer. The effect appears in both covariant and contravariant positions, so we can't get
     * anything stronger like [[cats.tagless.FunctorK]].
     */
-  implicit def invariantK[A]: InvariantK[Consumer[*[_], A]] =
-    new InvariantK[Consumer[*[_], A]] {
+  implicit def invariantK[A]: InvariantK[({ type C[F[_]] = Consumer[F, A] })#C] =
+    new InvariantK[({ type C[F[_]] = Consumer[F, A] })#C] {
       def imapK[F[_], G[_]](af: Consumer[F, A])(fk: F ~> G)(gk: G ~> F): Consumer[G, A] = af.imapK(fk)(gk)
     }
 
@@ -393,7 +402,11 @@ sealed trait ConsumerInstances extends ConsumerInstances1 {
       private val sem = parZipSemigroup[F, A]
 
       def combine(x: Consumer[F, A], y: Consumer[F, A]): Consumer[F, A] = sem.combine(x, y)
-      val empty: Consumer[F, A] = Consumer.done(Parallel[F].monad)
+
+      val empty: Consumer[F, A] = Consumer.done(
+        using Parallel[F].monad
+      )
+
     }
 
 }

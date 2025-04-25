@@ -16,10 +16,10 @@
 
 package com.ocadotechnology.pass4s.s3proxy
 
-import cats.implicits._
+import cats.implicits.*
 import io.circe.DecodingFailure.Reason.CustomReason
 import io.circe.Json
-import io.circe.literal._
+import io.circe.literal.*
 import io.circe.syntax.EncoderOps
 import weaver.FunSuite
 

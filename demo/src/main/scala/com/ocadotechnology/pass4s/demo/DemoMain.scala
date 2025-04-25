@@ -27,17 +27,17 @@ import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
-import cats.effect.implicits._
-import cats.implicits._
+import cats.effect.implicits.*
+import cats.implicits.*
 import cats.~>
-import com.ocadotechnology.pass4s.circe.syntax._
+import com.ocadotechnology.pass4s.circe.syntax.*
 import com.ocadotechnology.pass4s.connectors.pekko.activemq.Jms
 import com.ocadotechnology.pass4s.connectors.pekko.activemq.JmsConnector
-import com.ocadotechnology.pass4s.core._
+import com.ocadotechnology.pass4s.core.*
 import com.ocadotechnology.pass4s.extra.MessageProcessor
-import com.ocadotechnology.pass4s.high._
-import com.ocadotechnology.pass4s.kernel._
-import com.ocadotechnology.pass4s.logging.syntax._
+import com.ocadotechnology.pass4s.high.*
+import com.ocadotechnology.pass4s.kernel.*
+import com.ocadotechnology.pass4s.logging.syntax.*
 import fs2.Pipe
 import fs2.Stream
 import org.typelevel.log4cats.Logger
@@ -50,9 +50,12 @@ object DemoMain extends IOApp {
   type ConnectionIO[A] = Kleisli[IO, String, A]
   type AppEffect[A] = WriterT[ConnectionIO, Chain[Message[Jms]], A]
 
-  val transactorResource: Resource[IO, ConnectionIO ~> IO] = Resource.pure[IO, ConnectionIO ~> IO](λ[ConnectionIO ~> IO] { cio =>
-    IO(UUID.randomUUID()).map(_.toString()).flatTap(s => IO(println("Transaction ID: " + s))).flatMap(cio.run)
-  })
+  val transactorResource: Resource[IO, ConnectionIO ~> IO] = Resource.pure[IO, ConnectionIO ~> IO] {
+    new (ConnectionIO ~> IO) {
+      def apply[A](cio: ConnectionIO[A]): IO[A] =
+        IO(UUID.randomUUID()).map(_.toString()).flatTap(s => IO(println("Transaction ID: " + s))).flatMap(cio.run)
+    }
+  }
 
   def runAppEffect[F[_]: Monad](sender: Sender[F, Message[Jms]])(transactor: ConnectionIO ~> F): AppEffect ~> F =
     WriterT
@@ -125,7 +128,7 @@ object DemoMain extends IOApp {
     } yield {
       val runEffect = runAppEffect(broker.sender)(transactor)
 
-      import senders._
+      import senders.*
 
       implicit val service: MyService[AppEffect] = MyService.instance[AppEffect]
 

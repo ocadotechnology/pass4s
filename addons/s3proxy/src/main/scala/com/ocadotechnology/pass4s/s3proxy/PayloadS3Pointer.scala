@@ -16,9 +16,9 @@
 
 package com.ocadotechnology.pass4s.s3proxy
 
-import cats.implicits._
+import cats.implicits.*
 import io.circe.DecodingFailure.Reason.CustomReason
-import io.circe._
+import io.circe.*
 
 import scala.annotation.nowarn
 

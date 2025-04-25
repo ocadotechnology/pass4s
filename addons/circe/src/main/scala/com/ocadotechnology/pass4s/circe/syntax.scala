@@ -18,14 +18,14 @@ package com.ocadotechnology.pass4s.circe
 
 import cats.Defer
 import cats.MonadError
-import cats.implicits._
+import cats.implicits.*
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
 import com.ocadotechnology.pass4s.core.Message.Payload
 import com.ocadotechnology.pass4s.core.groupId.GroupIdMeta
 import com.ocadotechnology.pass4s.core.groupId.MessageGroup
-import com.ocadotechnology.pass4s.kernel.Consumer._
-import com.ocadotechnology.pass4s.kernel._
+import com.ocadotechnology.pass4s.kernel.Consumer.*
+import com.ocadotechnology.pass4s.kernel.*
 import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.parser.decode
@@ -105,13 +105,13 @@ object syntax {
   implicit final class ConsumerCirceExtensions[F[_], A](private val consumer: Consumer[F, A]) extends AnyVal {
 
     def asJsonConsumer[B: Decoder](
-      implicit M: MonadError[F, _ >: io.circe.Error],
+      implicit M: MonadError[F, ? >: io.circe.Error],
       ev: A <:< Payload
     ): Consumer[F, B] =
       consumer.mapM(msg => decode[B](msg.text).liftTo[F])
 
     def asJsonConsumerWithMessage[B: Decoder](
-      implicit M: MonadError[F, _ >: io.circe.Error],
+      implicit M: MonadError[F, ? >: io.circe.Error],
       D: Defer[F],
       ev: A <:< Payload
     ): Consumer[F, (A, B)] =

@@ -18,18 +18,18 @@ package com.ocadotechnology.pass4s.connectors.pekko.activemq
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.connectors.jms.scaladsl.JmsProducer
-import org.apache.pekko.stream.connectors.{jms => pekkojms}
+import org.apache.pekko.stream.connectors.jms as pekkojms
 import cats.ApplicativeThrow
 import cats.effect.Concurrent
 import cats.effect.Resource
-import cats.effect.implicits._
+import cats.effect.implicits.*
 import cats.effect.kernel.Async
 import cats.effect.kernel.Deferred
 import cats.effect.kernel.Ref
 import cats.effect.std.Queue
 import cats.effect.std.Semaphore
-import cats.implicits._
-import com.ocadotechnology.pass4s.connectors.pekko.activemq.taps._
+import cats.implicits.*
+import com.ocadotechnology.pass4s.connectors.pekko.activemq.taps.*
 import com.ocadotechnology.pass4s.core.Destination
 import com.ocadotechnology.pass4s.core.Message
 import fs2.Pipe
@@ -39,7 +39,7 @@ import javax.jms
 
 private[activemq] object producer {
 
-  type MessageProducer[F[_]] = Message[_] => F[Unit]
+  type MessageProducer[F[_]] = Message[?] => F[Unit]
 
   private type Attempt = Either[Throwable, Unit]
   private type Promise[F[_]] = Deferred[F, Attempt]
@@ -115,7 +115,7 @@ private[activemq] object producer {
     }
   }
 
-  private def extractJmsDestination[F[_]: ApplicativeThrow](destination: Destination[_]): F[JmsDestination] =
+  private def extractJmsDestination[F[_]: ApplicativeThrow](destination: Destination[?]): F[JmsDestination] =
     destination match {
       case jmsDestination: JmsDestination => jmsDestination.pure[F]
       case unsupportedDestination         =>

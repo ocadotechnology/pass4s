@@ -34,7 +34,7 @@ import cats.data.Const
 import cats.data.WriterT
 import cats.effect.Sync
 import cats.effect.kernel.Ref
-import cats.implicits._
+import cats.implicits.*
 import cats.kernel.Semigroup
 import cats.tagless.FunctorK
 import cats.~>
@@ -256,8 +256,11 @@ object Sender extends SenderInstances {
   // instances
   //
 
-  implicit def functorK[A]: FunctorK[Sender[*[_], A]] =
-    new FunctorK[Sender[*[_], A]] {
+  // TODO: Rewrite using the new Scala 3 type lambda syntax when the codebase moves to support Scala 3 source-specific directories:
+  // See related discussion: https://github.com/ocadotechnology/pass4s/pull/542#discussion_r2053522966
+  //
+  implicit def functorK[A]: FunctorK[({ type S[F[_]] = Sender[F, A] })#S] =
+    new FunctorK[({ type S[F[_]] = Sender[F, A] })#S] {
       def mapK[F[_], G[_]](af: Sender[F, A])(fk: F ~> G): Sender[G, A] = fromFunction(msg => fk(af.sendOne(msg)))
     }
 
