@@ -46,8 +46,8 @@ val Versions = new {
 lazy val IntegrationTest = config("it") extend Test
 
 lazy val securityDependencyOverrides = Seq(
-  "io.netty" % "netty-handler" % "4.2.0.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
-  "io.netty" % "netty-codec-http2" % "4.2.0.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-handler" % "4.2.2.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-codec-http2" % "4.2.2.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
 )
 
 lazy val root = (project in file("."))
