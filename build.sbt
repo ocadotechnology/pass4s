@@ -40,7 +40,7 @@ val Versions = new {
   val Weaver = "0.8.4"
   val Laserdisc = "6.0.5"
   val PekkoConnectors = "1.1.0"
-  val IzumiReflect = "3.0.2"
+  val IzumiReflect = "3.0.3"
 }
 
 lazy val IntegrationTest = config("it") extend Test
