@@ -37,7 +37,7 @@ val Versions = new {
   val Fs2 = "3.12.0"
   val Logback = "1.5.18"
   val Log4Cats = "2.7.1"
-  val Weaver = "0.8.4"
+  val Weaver = "0.9.3"
   val Laserdisc = "6.0.5"
   val PekkoConnectors = "1.1.0"
   val IzumiReflect = "3.0.2"
@@ -58,9 +58,9 @@ lazy val root = (project in file("."))
     name := "pass4s",
     libraryDependencies ++= Seq(
       "com.amazonaws" % "amazon-sqs-java-extended-client-lib" % "2.0.4",
-      "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
-      "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
-      "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
+      "org.typelevel" %% "weaver-cats" % Versions.Weaver,
+      "org.typelevel" %% "weaver-framework" % Versions.Weaver,
+      "org.typelevel" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.19", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.43.0",
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.43.0",
@@ -97,7 +97,7 @@ lazy val kernel = module("kernel").settings(
     "org.typelevel" %% "cats-effect" % Versions.CatsEffect,
     "org.typelevel" %% "cats-tagless-core" % "0.16.3",
     "org.typelevel" %% "cats-laws" % "2.13.0" % Test,
-    "com.disneystreaming" %% "weaver-discipline" % Versions.Weaver % Test
+    "org.typelevel" %% "weaver-discipline" % Versions.Weaver % Test
   )
 )
 
@@ -240,9 +240,9 @@ lazy val commonSettings = Seq(
   compilerOptions,
   Test / fork := true,
   libraryDependencies ++= Seq(
-    "com.disneystreaming" %% "weaver-cats" % Versions.Weaver,
-    "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
-    "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver
+    "org.typelevel" %% "weaver-cats" % Versions.Weaver,
+    "org.typelevel" %% "weaver-framework" % Versions.Weaver,
+    "org.typelevel" %% "weaver-scalacheck" % Versions.Weaver
   ).map(_ % Test),
   mimaPreviousArtifacts := {
     if (VersionNumber(scalaVersion.value).matchesSemVer(SemanticSelector(">=3"))) {
