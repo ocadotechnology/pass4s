@@ -32,7 +32,7 @@ ThisBuild / tlJdkRelease := None
 
 val Versions = new {
   val ActiveMq = "5.19.1"
-  val CatsEffect = "3.6.1"
+  val CatsEffect = "3.6.3"
   val Circe = "0.14.15"
   val Fs2 = "3.12.2"
   val Logback = "1.5.21"
