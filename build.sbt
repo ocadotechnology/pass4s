@@ -33,21 +33,21 @@ ThisBuild / tlJdkRelease := None
 val Versions = new {
   val ActiveMq = "6.1.7"
   val CatsEffect = "3.6.1"
-  val Circe = "0.14.14"
-  val Fs2 = "3.12.0"
-  val Logback = "1.5.18"
+  val Circe = "0.14.15"
+  val Fs2 = "3.12.2"
+  val Logback = "1.5.21"
   val Log4Cats = "2.7.1"
   val Weaver = "0.8.4"
   val Laserdisc = "6.0.5"
-  val PekkoConnectors = "1.1.0"
+  val PekkoConnectors = "1.2.0"
   val IzumiReflect = "3.0.2"
 }
 
 lazy val IntegrationTest = config("it") extend Test
 
 lazy val securityDependencyOverrides = Seq(
-  "io.netty" % "netty-handler" % "4.2.2.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
-  "io.netty" % "netty-codec-http2" % "4.2.2.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-handler" % "4.2.7.Final", // SNYK-JAVA-IONETTY-5725787 introduced through software.amazon.awssdk:s3
+  "io.netty" % "netty-codec-http2" % "4.2.7.Final" // SNYK-JAVA-IONETTY-5953332 introduced through software.amazon.awssdk:s3
 )
 
 lazy val root = (project in file("."))
@@ -62,8 +62,8 @@ lazy val root = (project in file("."))
       "com.disneystreaming" %% "weaver-framework" % Versions.Weaver,
       "com.disneystreaming" %% "weaver-scalacheck" % Versions.Weaver,
       "org.scalatest" %% "scalatest" % "3.2.19", // just for `shouldNot compile`
-      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.43.0",
-      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.43.0",
+      "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.43.6",
+      "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.43.6",
       "org.mock-server" % "mockserver-client-java" % "5.15.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
