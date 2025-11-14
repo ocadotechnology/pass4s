@@ -39,7 +39,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
                     Kleisli(sender.sendOne)
                 }
       sent   <- sender.sent
-    } yield assert(
+    } yield expect(
       sent == List(10, 42)
     )
   }
@@ -57,7 +57,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
                         .forward(consumed)
       consumedSent <- consumed.sent
       ignoredSent  <- ignored.sent
-    } yield assert.all(
+    } yield expect.all(
       consumedSent == List(0, 2, 4),
       ignoredSent == List(1, 3, 5)
     )
@@ -75,7 +75,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
                   }
                   .forward(sender)
       sent   <- sender.sent
-    } yield assert(
+    } yield expect(
       sent == List(List(0, 1, 2), List(1, 2, 3), List(3, 4, 5)).flatten
     )
   }
@@ -94,7 +94,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
                       .mapM(result => state.update(_ append Result(result)))
                       .apply(_ => IO.pure(()))
       finalState <- state.get
-    } yield assert(
+    } yield expect(
       finalState == Chain(
         Result(1),
         PostProcessing("Second post process 1"),
@@ -118,7 +118,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
                   }
                   .forward(sender)
       sent   <- sender.sent
-    } yield assert(
+    } yield expect(
       sent == List(0, 1, 2, 4, 10)
     )
   }
@@ -167,7 +167,7 @@ object ConsumerOpsTests extends SimpleMutableIOSuite with Checkers {
             case msg                 => invalidFunctions(msg)
           }
 
-          assert(
+          expect(
             sent == expectedMessages
           )
         }
