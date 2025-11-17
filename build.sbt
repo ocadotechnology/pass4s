@@ -31,7 +31,7 @@ ThisBuild / githubWorkflowBuild ++= Seq(
 ThisBuild / tlJdkRelease := None
 
 val Versions = new {
-  val ActiveMq = "5.19.1"
+  val ActiveMq = "6.2.0"
   val CatsEffect = "3.6.3"
   val Circe = "0.14.15"
   val Fs2 = "3.12.2"
