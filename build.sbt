@@ -17,7 +17,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / homepage := Some(url("https://github.com/ocadotechnology/sttp-oauth2"))
-val Scala213 = "2.13.16"
+val Scala213 = "2.13.17"
 val Scala3 = "3.3.5"
 ThisBuild / scalaVersion := Scala213
 ThisBuild / crossScalaVersions := Seq(Scala213, Scala3)
