@@ -64,7 +64,7 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.2.19", // just for `shouldNot compile`
       "com.dimafeng" %% "testcontainers-scala-localstack-v2" % "0.43.6",
       "com.dimafeng" %% "testcontainers-scala-mockserver" % "0.43.6",
-      "org.mock-server" % "mockserver-client-java" % "5.15.0",
+      "org.mock-server" % "mockserver-client-java" % "9.2.0",
       "org.apache.activemq" % "activemq-broker" % Versions.ActiveMq,
       "org.typelevel" %% "log4cats-core" % Versions.Log4Cats,
       "org.typelevel" %% "log4cats-slf4j" % Versions.Log4Cats,
